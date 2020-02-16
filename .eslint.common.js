@@ -5,27 +5,30 @@ module.exports = {
 		'@typescript-eslint'
 	],
 	extends: [
-		"eslint:recommended",
-		"plugin:@typescript-eslint/eslint-recommended",
-		"plugin:@typescript-eslint/recommended"
+		'eslint:recommended',
+		'plugin:@typescript-eslint/eslint-recommended',
+		'plugin:@typescript-eslint/recommended'
 	],
 	parserOptions: {
 		ecmaVersion: 9,
-		sourceType: "module",
+		sourceType: 'module',
 		ecmaFeatures: {
 			impliedStrict: true
 		}
 	},
 	rules: {
-		indent: ["warn", "tab", { SwitchCase: 1, flatTernaryExpressions: true }],
-		'linebreak-style': ["error", "unix"],
-		quotes: ["warn", "single", {
+		// General
+		indent: ['warn', 'tab', {SwitchCase: 1, flatTernaryExpressions: true}],
+		quotes: ['warn', 'single', {
 			avoidEscape: true,
 			allowTemplateLiterals: true
 		}],
-		semi: ["error", "always", {omitLastInOneLineBlock: true}],
-		'no-cond-assign': ["error", "always"],
-		'no-console': "off"
+		semi: ['warn', 'always', {omitLastInOneLineBlock: true}],
+		'linebreak-style': ['error', 'unix'],
+		'no-cond-assign': ['error', 'always'],
+		'no-console': 'off',
+		// Typescript
+		'@typescript-eslint/no-inferrable-types': 'off'
 	}
 }
 
