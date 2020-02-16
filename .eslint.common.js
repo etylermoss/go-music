@@ -28,7 +28,8 @@ module.exports = {
 		'no-cond-assign': ['error', 'always'],
 		'no-console': 'off',
 		// Typescript
-		'@typescript-eslint/no-inferrable-types': 'off'
+		'@typescript-eslint/no-inferrable-types': 'off',
+		'@typescript-eslint/no-explicit-any': 'off'
 	}
 }
 
