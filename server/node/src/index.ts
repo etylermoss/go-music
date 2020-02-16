@@ -10,7 +10,6 @@ import util from 'util';
 interface CONFIG {
 	dataDir: string;
 	port?: number;
-	mystery?: string;
 }
 
 /* Manage command line arguments */
@@ -21,10 +20,13 @@ const FATAL_ERROR = function(err: string): void {
 };
 const APPNAME = 'go-music';
 const APPNAME_PRETTY = 'Go Music';
+const CONFIG_PREAMBLE = `# ${APPNAME_PRETTY}: Configuration file.\n
+# This file is written in the TOML format.
+# Available options: <GITHUB/WIKI>.
+# See: https://wikipedia.org/wiki/TOML.\n\n`;
 const CONFIG_DEFAULT: CONFIG = {
 	dataDir: `${xdgBasedir.data}/${APPNAME}`,
-	port: 5000,
-	mystery: 'coon'
+	port: 5000
 };
 let CONFIG_DIR = `${xdgBasedir.config}/${APPNAME}`;
 
@@ -52,7 +54,7 @@ switch(true) {
 
 /** Load config file, or create it from defaults if it doesn't exist **/
 
-const getOrSetConfig = async function(configDir: string, fileName: string, config: CONFIG ): Promise<CONFIG> {
+const getOrSetConfig = async function(configDir: string, fileName: string, config: CONFIG, configPreamble: string ): Promise<CONFIG> {
 	const mode = '0755';
 	const dirExists = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
@@ -82,7 +84,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 					.then(async stats => {
 						// Check if the file is empty
 						if (stats.size !== 0) {
-							// Read from file
+							// Read config from file
 							return file.readFile('utf8')
 								.then(content => toml.parse(content))
 								.then(contentParsed => {
@@ -94,7 +96,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 								.catch(() => { throw `Could not read ${fileName}` });
 						} else {
 							// Write default config to file
-							return file.write(toml.stringify(config as any))
+							return file.write(configPreamble + toml.stringify(config as any))
 								.then(() => config)
 								.catch(() => { throw `Could not write to ${fileName}` });
 						}
@@ -117,7 +119,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 		.catch(err => { throw err });
 };
 
-getOrSetConfig(CONFIG_DIR, `${APPNAME}.config.toml`, CONFIG_DEFAULT)
+getOrSetConfig(CONFIG_DIR, `${APPNAME}.config.toml`, CONFIG_DEFAULT, CONFIG_PREAMBLE)
 	.then(val => console.log('Value of config: ' + util.inspect(val, {showHidden: true, depth: null})))
 	.catch(err => {
 		FATAL_ERROR(err);
