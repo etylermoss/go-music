@@ -55,7 +55,6 @@ switch(true) {
 /** Load config file, or create it from defaults if it doesn't exist **/
 
 const getOrSetConfig = async function(configDir: string, fileName: string, config: CONFIG, configPreamble: string ): Promise<CONFIG> {
-	const mode = '0755';
 	const dirExists = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
 			.then(stats => {
@@ -68,7 +67,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 			});
 	};
 	const dirCreate = async function(): Promise<void> {
-		return fs.promises.mkdir(configDir, mode)
+		return fs.promises.mkdir(configDir, '0755')
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
 	const openFile = async function(): Promise<CONFIG> {
@@ -77,7 +76,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 			See: http://man7.org/linux/man-pages/man2/open.2.html
 			And: fs.constants.
 		*/
-		return fs.promises.open(`${configDir}/${fileName}`, 66, mode)
+		return fs.promises.open(`${configDir}/${fileName}`, 66, '0750')
 			.then(async file => {
 				// Get file information
 				return file.stat()
