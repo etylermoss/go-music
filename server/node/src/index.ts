@@ -10,6 +10,7 @@ import util from 'util';
 interface CONFIG {
 	dataDir: string;
 	port?: number;
+	mystery?: string;
 }
 
 /* Manage command line arguments */
@@ -22,7 +23,8 @@ const APPNAME = 'go-music';
 const APPNAME_PRETTY = 'Go Music';
 const CONFIG_DEFAULT: CONFIG = {
 	dataDir: `${xdgBasedir.data}/${APPNAME}`,
-	port: 5000
+	port: 5000,
+	mystery: 'coon'
 };
 let CONFIG_DIR = `${xdgBasedir.config}/${APPNAME}`;
 
@@ -84,7 +86,10 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 							return file.readFile('utf8')
 								.then(content => toml.parse(content))
 								.then(contentParsed => {
-									return Object.assign(config, contentParsed);
+									/* Copies any values from the config file into the default config schema */
+									return Object.assign({}, ...Object.keys(config).map(key =>
+										({[key]: (key in contentParsed as any ? contentParsed as any : config)[key]})
+									)) as CONFIG;
 								})
 								.catch(() => { throw `Could not read ${fileName}` });
 						} else {
