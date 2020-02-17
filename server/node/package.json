@@ -3,9 +3,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "rm -rf build && webpack --config webpack.dev.js",
-    "prod": "rm -rf build  && webpack --config webpack.prod.js",
-    "start": "node ./build/main.js",
-    "vstart": "DEBUG=express:* node ./build/main.js"
+    "prod": "rm -rf build  && webpack --config webpack.prod.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.19.2",
