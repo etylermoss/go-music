@@ -1,8 +1,11 @@
 import process from 'process';
 import fs, { Dir } from 'fs';
+import path from 'path';
+import childProcess from 'child_process';
 import xdgBasedir from 'xdg-basedir';
 import minimist from 'minimist';
 import toml from '@iarna/toml';
+import express from 'express';
 
 // debug
 import util from 'util';
@@ -19,16 +22,19 @@ const FATAL_ERROR = function(err: string): void {
 	process.exit(1);
 };
 const APPNAME = 'go-music';
-const APPNAME_PRETTY = 'Go Music';
-const CONFIG_PREAMBLE = `# ${APPNAME_PRETTY}: Configuration file.\n
+const DIRS = {
+	GO_API: process.env.release ? path.join(__dirname, '..', '/lib/go-music/go-api') : path.join(__dirname, '/go-api'),
+	CLIENT: process.env.release ? path.join(__dirname, '..', '/share/go-music/client') : path.join(__dirname, '/client')
+};
+const CONFIG_PREAMBLE = `# Go Music: Configuration file.\n
 # This file is written in the TOML format.
 # Available options: <GITHUB/WIKI>.
 # See: https://wikipedia.org/wiki/TOML.\n\n`;
 const CONFIG_DEFAULT: CONFIG = {
-	dataDir: `${xdgBasedir.data}/${APPNAME}`,
+	dataDir: path.join(xdgBasedir.data, '/go-music'),
 	port: 5000
 };
-let CONFIG_DIR = `${xdgBasedir.config}/${APPNAME}`;
+let CONFIG_DIR = path.join(xdgBasedir.config, '/go-music');
 
 const args = minimist(process.argv.slice(2));
 switch(true) {
@@ -42,11 +48,11 @@ switch(true) {
 		break;
 	// -h, --help: print help information
 	case (args?.h || args?.help):
-		console.log(`${APPNAME_PRETTY}: Personal music server.
+		console.log(`Go Music: Personal music server.
 
   -c, --config: The directory of the configuration files.
     It will be created if it does not exist, and contain
-    ${APPNAME}.config.toml.
+    go-music.config.toml.
   -p, --port: The port to run the server on. Defaults to ${CONFIG_DEFAULT.port}.
   -h, --help: Print this help message.`);
 		process.exit(0);
@@ -118,8 +124,38 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 		.catch(err => { throw err });
 };
 
+const spawnGoApi = function(exePath: string, config: CONFIG): void {
+	const GoApi = childProcess.spawn(exePath);
+	
+	const printData = (data: string): void => console.log(`Data from go-api: \n${data}`);
+	GoApi.stdout.on('data', printData);
+	GoApi.stderr.on('data', printData);
+
+	GoApi.stdin.write(JSON.stringify(config));
+
+};
+
+/* Express server */
+const app = express();
+
+// Serve static client build
+app.use(express.static(path.join(DIRS.CLIENT)));
+
+// Test route
+app.get('/getList', (_req, res) => {
+	const list = ['item1', 'item2', 'item3'];
+	res.json(list);
+	console.log('Sent list of items');
+});
+
 getOrSetConfig(CONFIG_DIR, `${APPNAME}.config.toml`, CONFIG_DEFAULT, CONFIG_PREAMBLE)
-	.then(val => console.log('Value of config: ' + util.inspect(val, {showHidden: true, depth: null})))
+	.then(config => {
+		console.log('Value of config: ' + util.inspect(config, {showHidden: true, depth: null}));
+		app.listen(config.port);
+		console.log(`Listening on port ${config.port}`);
+		spawnGoApi(path.join(DIRS.GO_API, './go-api'), config);
+		console.log(`Go API process spawned.`);
+	})
 	.catch(err => {
 		FATAL_ERROR(err);
 	});

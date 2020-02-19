@@ -1,4 +1,4 @@
-const common = require('../../.eslint.common.js');
+const common = require('./.eslint.common.js');
 
 module.exports = {
 	env: {

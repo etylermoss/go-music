@@ -2,8 +2,9 @@
   "name": "node",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rm -rf build && webpack --config webpack.dev.js",
-    "prod": "rm -rf build  && webpack --config webpack.prod.js"
+    "dev": "webpack --config webpack.dev.js",
+    "prod": "webpack --config webpack.prod.js",
+    "release": "webpack --config webpack.prod.js --env.release"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.19.2",
@@ -14,13 +15,16 @@
     "typescript": "^3.7.5",
     "webpack": "^4.41.6",
     "webpack-cli": "^3.3.11",
-    "webpack-merge": "^4.2.2"
+    "webpack-merge": "^4.2.2",
+    "webpack-shell-plugin": "^0.5.0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.3",
+    "@types/express": "^4.17.2",
     "@types/iarna__toml": "^2.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.7.1",
+    "express": "^4.17.1",
     "minimist": "^1.2.0",
     "xdg-basedir": "^4.0.0"
   }
