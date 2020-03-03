@@ -1,31 +1,43 @@
+/* 3rd party imports */
 import process from 'process';
 import fs, { Dir } from 'fs';
 import path from 'path';
-import childProcess from 'child_process';
 import xdgBasedir from 'xdg-basedir';
 import minimist from 'minimist';
 import toml from '@iarna/toml';
 import express from 'express';
 
+/* 1st party imports */
+import AppApi from './api';
+
 // debug
 import util from 'util';
+import readline from 'readline';
 
 interface CONFIG {
 	dataDir: string;
 	port?: number;
 }
 
-/* Manage command line arguments */
-
-const FATAL_ERROR = function(err: string): void {
-	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: ${err}\x1b[0m\n\nExiting...`);
-	process.exit(1);
+const EXIT = function(exitCode: number): void {
+	console.log(`\nExiting...`);
+	process.exit(exitCode);
 };
-const APPNAME = 'go-music';
+const FATAL_ERROR = function(err: string): void {
+	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: ${err}\x1b[0m`);
+	EXIT(1);
+};
+
 const DIRS = {
-	GO_API: process.env.release ? path.join(__dirname, '..', '/lib/go-music/go-api') : path.join(__dirname, '/go-api'),
 	CLIENT: process.env.release ? path.join(__dirname, '..', '/share/go-music/client') : path.join(__dirname, '/client')
 };
+/* Extensions seen by the server, 
+used when searching for music files / album art,
+entries must be lowercase with no . at the start */
+const EXTENSION_WHITELIST = [
+	'mp3', 'opus', 'ogg', 'wav', 'flac', 'm4a', 'aac',
+	'png', 'jpg', 'jpeg', 'bmp', 'gif'
+];
 const CONFIG_PREAMBLE = `# Go Music: Configuration file.\n
 # This file is written in the TOML format.
 # Available options: <GITHUB/WIKI>.
@@ -36,6 +48,7 @@ const CONFIG_DEFAULT: CONFIG = {
 };
 let CONFIG_DIR = path.join(xdgBasedir.config, '/go-music');
 
+/* Manage command line arguments */
 const args = minimist(process.argv.slice(2));
 switch(true) {
 	// -p, --port: port to run the server on
@@ -58,8 +71,13 @@ switch(true) {
 		process.exit(0);
 }
 
-/** Load config file, or create it from defaults if it doesn't exist **/
+for (const dirPath of [CONFIG_DIR, CONFIG_DEFAULT.dataDir]) {
+	if (!path.isAbsolute(dirPath)) {
+		FATAL_ERROR(`${dirPath} is not an absolute directory path, for example don't use './'.`);
+	}
+}
 
+/** Load config file, or create it from defaults if it doesn't exist **/
 const getOrSetConfig = async function(configDir: string, fileName: string, config: CONFIG, configPreamble: string ): Promise<CONFIG> {
 	const dirExists = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
@@ -124,17 +142,6 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 		.catch(err => { throw err });
 };
 
-const spawnGoApi = function(exePath: string, config: CONFIG): void {
-	const GoApi = childProcess.spawn(exePath);
-	
-	const printData = (data: string): void => console.log(`Data from go-api: \n${data}`);
-	GoApi.stdout.on('data', printData);
-	GoApi.stderr.on('data', printData);
-
-	GoApi.stdin.write(JSON.stringify(config));
-
-};
-
 /* Express server */
 const app = express();
 
@@ -148,13 +155,41 @@ app.get('/getList', (_req, res) => {
 	console.log('Sent list of items');
 });
 
-getOrSetConfig(CONFIG_DIR, `${APPNAME}.config.toml`, CONFIG_DEFAULT, CONFIG_PREAMBLE)
+
+getOrSetConfig(CONFIG_DIR, `go-music.config.toml`, CONFIG_DEFAULT, CONFIG_PREAMBLE)
 	.then(config => {
 		console.log('Value of config: ' + util.inspect(config, {showHidden: true, depth: null}));
-		app.listen(config.port);
 		console.log(`Listening on port ${config.port}`);
-		spawnGoApi(path.join(DIRS.GO_API, './go-api'), config);
-		console.log(`Go API process spawned.`);
+		app.listen(config.port);
+
+		const api = new AppApi(config.dataDir, EXTENSION_WHITELIST);
+
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout
+		});
+
+		rl.question('Enter new sourceDir path: ', (sourceDirPath) => {
+			if (!path.isAbsolute(sourceDirPath)) rl.close();
+			api.addSource(path.normalize(sourceDirPath));
+			for (;;) {
+				rl.question('Would you like to get source info, or quit? (i or q): ', (answer) => {
+					if (answer === 'i') {
+						rl.question('Getting source info, enter the path: ', answer => {
+							console.log(util.inspect(api.getSourceInfo(answer), false, null));
+						});
+					} else if (answer === 'q') {
+						rl.close();
+					}
+				});
+			}
+		});
+
+		rl.on('close', () => {
+			console.log('Exiting...');
+			api.stop();
+			process.exit(0);
+		});
 	})
 	.catch(err => {
 		FATAL_ERROR(err);

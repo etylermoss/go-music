@@ -9,8 +9,10 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.19.2",
     "@typescript-eslint/parser": "^2.19.2",
+    "copy-webpack-plugin": "^5.1.1",
     "eslint": "^6.8.0",
     "eslint-loader": "^3.0.3",
+    "raw-loader": "^4.0.0",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.5",
     "webpack": "^4.41.6",
@@ -20,11 +22,16 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.3",
+    "@types/better-sqlite3": "^5.4.0",
     "@types/express": "^4.17.2",
+    "@types/he": "^1.1.0",
     "@types/iarna__toml": "^2.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.7.1",
+    "better-sqlite3": "^6.0.1",
     "express": "^4.17.1",
+    "fast-xml-parser": "^3.16.0",
+    "he": "^1.2.0",
     "minimist": "^1.2.0",
     "xdg-basedir": "^4.0.0"
   }

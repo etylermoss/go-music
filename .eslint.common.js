@@ -27,10 +27,13 @@ module.exports = {
 		'linebreak-style': ['error', 'unix'],
 		'no-cond-assign': ['error', 'always'],
 		'no-console': 'off',
+		"no-warning-comments": [1, { "terms": ["todo", "fixme", "bug", "xxx"], "location": "start" }],
 		// Typescript
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
-		'@typescript-eslint/no-var-requires': 'off'
+		'@typescript-eslint/no-var-requires': 'off',
+		'@typescript-eslint/camelcase': ['warn', { allow: ['^SQL_']}],
+		'@typescript-eslint/class-name-casing': 'off'
 	}
 }
 
