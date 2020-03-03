@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS "sourceDirs" (
+	"path" TEXT NOT NULL UNIQUE,
+	"xmlTree" TEXT,
+	"enabled"	INTEGER NOT NULL DEFAULT 1,
+	PRIMARY KEY("path")
+)
