@@ -3,7 +3,8 @@ build
 # Built files to be consumed by node
 server/node/lib
 
-## Github Golang .gitignore
+## VSCode stuff
+.vscode
 
 # Binaries for programs and plugins
 *.exe
