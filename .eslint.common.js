@@ -27,7 +27,7 @@ module.exports = {
 		'linebreak-style': ['error', 'unix'],
 		'no-cond-assign': ['error', 'always'],
 		'no-console': 'off',
-		"no-warning-comments": [1, { "terms": ["todo", "fixme", "bug", "xxx"], "location": "start" }],
+		"no-warning-comments": ['off', { "terms": ["todo", "fixme", "bug", "xxx"], "location": "start" }],
 		// Typescript
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
