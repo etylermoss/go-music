@@ -1,2 +1,2 @@
-foreign_keys = ON;
-journal_mode = WAL;
+PRAGMA foreign_keys = ON;
+PRAGMA journal_mode = WAL;

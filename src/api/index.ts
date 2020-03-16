@@ -37,7 +37,8 @@ class AppApi {
 		}
 		
 		this.db.exec(Schema);
-		this.db.pragma(Pragma);
+		this.db.exec(Pragma);
+
 	}
 
 	async addSource(path: string): Promise<void> {
