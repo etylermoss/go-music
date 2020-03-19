@@ -69,7 +69,7 @@ const launch = async (): Promise<void> => {
 
 	const api = new Api(newConfig);
 
-	app.use('/go-api', api.getMiddleware());
+	app.use('/api', api.getMiddleware());
 
 	app.listen(newConfig.port);
 };
