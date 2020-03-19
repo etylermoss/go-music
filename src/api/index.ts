@@ -1,11 +1,13 @@
 /* 3rd party imports */
 import path from 'path';
 import SQLite3 from 'better-sqlite3';
+import express from 'express';
 
 /* 1st party imports */
 import { ConfigSchema } from 'go-music/config';
 import Constants from 'go-music/constants';
-import { treeToXML, getXMLDiff, Diff } from 'go-music/go-api/sources';
+import { treeToXML, getXMLDiff, Diff } from 'go-music/api/sources';
+import { launchGraphql } from 'go-music/api/graphql';
 
 /* 1st party imports (SQL) */
 import Schema from 'go-music/go-api/db-setup/schema.sql';
@@ -13,6 +15,7 @@ import Pragma from 'go-music/go-api/db-setup/pragma.sql';
 
 /* Debug */
 import util from 'util';
+import { ApolloServer } from 'apollo-server-express';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
 interface SQL_SourceDir {
@@ -24,22 +27,34 @@ interface SQL_SourceDir {
 	enabled?: number;
 }
 
-class GoApi {
+class Api {
 	
+	private config: ConfigSchema;
 	private db: SQLite3.Database;
-	private dataDirectory: string;
+
+	graphql: ApolloServer;
 
 	constructor(config: ConfigSchema) {
-		this.dataDirectory = config.dataDirectory;
+		this.config = config;
 
 		try {
-			this.db = new SQLite3(path.join(this.dataDirectory, 'go-music.db'));
+			this.db = new SQLite3(path.join(this.config.dataDirectory, 'go-music.db'));
 		} catch(err) {
-			console.error('Error creating SQLITE DB: ' + err);
+			Constants.FATAL_ERROR(`Error creating SQLITE DB: ${err}`);
 		}
 		
 		this.db.exec(Schema);
 		this.db.exec(Pragma);
+
+		this.graphql = launchGraphql();
+	}
+
+	getMiddleware(): express.Router {
+		const router = express.Router();
+
+		router.use(this.graphql.getMiddleware({path: '/graphql'}));
+
+		return router;
 	}
 
 	async addSource(path: string, enabled: number): Promise<void> {
@@ -64,7 +79,7 @@ class GoApi {
 				return getXMLDiff(sourceDir.xmlTree, xml);
 			})
 			.catch(err => {
-				const msg = `Something went wrong scanning ${sourceDir.path}`
+				const msg = `Something went wrong scanning ${sourceDir.path}`;
 				console.error(`${msg}:\n  ${err}`);
 				throw msg;
 			});
@@ -80,4 +95,4 @@ class GoApi {
 
 }
 
-export default GoApi;
+export default Api;

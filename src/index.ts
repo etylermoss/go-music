@@ -7,7 +7,7 @@ import express from 'express';
 /* 1st party imports */
 import Constants from 'go-music/constants';
 import Config, { ConfigSchema } from 'go-music/config';
-import GoApi from 'go-music/go-api';
+import Api from 'go-music/api';
 
 /* Debug */
 import util from 'util';
@@ -67,7 +67,9 @@ const launch = async (): Promise<void> => {
 		Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
-	const api = new GoApi(newConfig);
+	const api = new Api(newConfig);
+
+	app.use('/go-api', api.getMiddleware());
 
 	app.listen(newConfig.port);
 };
