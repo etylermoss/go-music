@@ -24,7 +24,7 @@ interface SQL_SourceDir {
 	enabled?: number;
 }
 
-class AppApi {
+class GoApi {
 	
 	private db: SQLite3.Database;
 	private dataDirectory: string;
@@ -72,6 +72,7 @@ class AppApi {
 	stop(): void {
 		this.db.close();
 	}
+
 }
 
-export default AppApi;
+export default GoApi;

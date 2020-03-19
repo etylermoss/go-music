@@ -7,7 +7,7 @@ import express from 'express';
 /* 1st party imports */
 import Constants from './constants';
 import Config, { ConfigSchema } from './config';
-import AppApi from './api';
+import GoApi from './go-api';
 
 /* Debug */
 import util from 'util';
@@ -83,7 +83,7 @@ const launch = async (): Promise<void> => {
 		FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
-	const api = new AppApi(newConfig);
+	const api = new GoApi(newConfig);
 
 	app.listen(newConfig.port);
 };
