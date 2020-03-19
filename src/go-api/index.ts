@@ -3,15 +3,15 @@ import path from 'path';
 import SQLite3 from 'better-sqlite3';
 
 /* 1st party imports */
-import { ConfigSchema } from '../config';
-import Constants from '../constants';
-import { treeToXML, getXMLDiff, Diff } from './sources';
+import { ConfigSchema } from 'go-music/config';
+import Constants from 'go-music/constants';
+import { treeToXML, getXMLDiff, Diff } from 'go-music/go-api/sources';
 
-/* 1st party imports, SQL */
-import Schema from './db-setup/schema.sql';
-import Pragma from './db-setup/pragma.sql';
+/* 1st party imports (SQL) */
+import Schema from 'go-music/go-api/db-setup/schema.sql';
+import Pragma from 'go-music/go-api/db-setup/pragma.sql';
 
-// debug
+/* Debug */
 import util from 'util';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */

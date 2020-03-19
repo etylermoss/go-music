@@ -32,7 +32,10 @@ module.exports = () => {
 		},
 		externals: [NodeExternals()],
 		resolve: {
-			extensions: [ '.ts', '.js' ]
+			extensions: [ '.ts', '.js' ],
+			alias: {
+				'go-music': path.resolve(__dirname, 'src/')
+			}
 		},
 		plugins: [
 			new webpack.BannerPlugin({

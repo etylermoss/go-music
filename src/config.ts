@@ -5,7 +5,7 @@ import xdgBasedir from 'xdg-basedir';
 import toml from '@iarna/toml';
 
 /* 1st party imports */
-import Constants from './constants';
+import Constants from 'go-music/constants';
 
 export interface ConfigSchema {
     dataDirectory: string;

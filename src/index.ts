@@ -5,9 +5,9 @@ import minimist from 'minimist';
 import express from 'express';
 
 /* 1st party imports */
-import Constants from './constants';
-import Config, { ConfigSchema } from './config';
-import GoApi from './go-api';
+import Constants from 'go-music/constants';
+import Config, { ConfigSchema } from 'go-music/config';
+import GoApi from 'go-music/go-api';
 
 /* Debug */
 import util from 'util';
