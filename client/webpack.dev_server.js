@@ -6,6 +6,6 @@ module.exports = merge(dev, {
 	devServer: {
 		contentBase: path.join(__dirname, 'build'),
 		compress: true,
-		port: 9000
-	  }
+		port: 5001
+	}
 });
