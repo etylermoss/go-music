@@ -3,7 +3,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "dev": "webpack --config webpack.dev.js",
-    "dev_server": "webpack-dev-server --config webpack.dev_server.js",
+    "dev_server": "webpack-dev-server --config webpack.dev_server.js --env.dev_server",
     "prod": "webpack --config webpack.prod.js"
   },
   "devDependencies": {

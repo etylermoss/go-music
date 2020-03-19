@@ -2,9 +2,10 @@
   "name": "node",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --config webpack.dev.js",
-    "prod": "webpack --config webpack.prod.js",
-    "release": "webpack --config webpack.prod.js --env.release"
+    "dev": "npm run dev --prefix './client/' && webpack --config webpack.dev.js",
+    "dev_server": "npm run dev_server --prefix './client/' && webpack --config webpack.dev.js --env.dev_server",
+    "prod": "npm run prod --prefix './client/' && webpack --config webpack.prod.js",
+    "release": "npm run prod --prefix './client/' && webpack --config webpack.prod.js --env.release"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.19.2",
