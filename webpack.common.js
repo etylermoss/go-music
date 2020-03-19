@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 const webpack = require('webpack');
 const path = require('path');
-//const CopyPlugin = require('copy-webpack-plugin');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 const NodeExternals = require('webpack-node-externals');
 
-module.exports = (env) => {
-	const outputPath = path.resolve(__dirname, env && env.release ? 'build/usr/bin' : 'build');
+module.exports = () => {
+	const outputFilename = 'go-music';
+	const outputPath = path.resolve(__dirname, 'build');
 	return {
 		entry: {
 			main: './src/index.ts'
 		},
 		output: {
-			filename: 'go-music',
+			filename: outputFilename,
 			path: outputPath
 		},
 		target: 'node',
@@ -40,7 +40,7 @@ module.exports = (env) => {
 				raw: true
 			}),
 			new WebpackShellPlugin({
-				onBuildEnd: [`chmod +x ${path.join(outputPath, 'go-music')}`],
+				onBuildEnd: [`chmod +x ${path.join(outputPath, outputFilename)}`],
 			})
 		]
 	};
