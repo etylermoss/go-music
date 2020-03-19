@@ -55,13 +55,18 @@ class GoApi {
 		return statement.get(path);
 	}
 
+	/** Scans a single sourcing directory and returns the difference.
+	 *  If the scan fails, an error is thrown.
+	 */
 	async scanSource(sourceDir: SQL_SourceDir): Promise<Diff[]> {
 		return treeToXML(sourceDir.path, Constants.extensionWhitelist)
 			.then(xml => {
 				return getXMLDiff(sourceDir.xmlTree, xml);
 			})
 			.catch(err => {
-				throw `Something went wrong scanning ${sourceDir.path}: ${err}`;
+				const msg = `Something went wrong scanning ${sourceDir.path}`
+				console.error(`${msg}:\n  ${err}`);
+				throw msg;
 			});
 	}
 
