@@ -2,6 +2,11 @@
 import path from 'path';
 import SQLite3 from 'better-sqlite3';
 
+/* 1st party imports */
+import { ConfigSchema } from '../config';
+import Constants from '../constants';
+import { treeToXML, getXMLDiff, Diff } from './sources';
+
 /* 1st party imports, SQL */
 import Schema from './db-setup/schema.sql';
 import Pragma from './db-setup/pragma.sql';
@@ -24,30 +29,26 @@ interface SourceDirDiffs {
 	difference: Diff[];
 }
 
-import { treeToXML, getXMLDiff, Diff } from './sources';
-
 class AppApi {
+	
 	private db: SQLite3.Database;
-	private dataDir: string;
-	private extWhitelist: string[];
+	private dataDirectory: string;
 
-	constructor(dataDir: string, extWhitelist: string[]) {
-		this.dataDir = dataDir;
-		this.extWhitelist = extWhitelist;
+	constructor(config: ConfigSchema) {
+		this.dataDirectory = config.dataDirectory;
 
 		try {
-			this.db = new SQLite3(path.join(this.dataDir, 'go-music.db'));
+			this.db = new SQLite3(path.join(this.dataDirectory, 'go-music.db'));
 		} catch(err) {
 			console.error('Error creating SQLITE DB: ' + err);
 		}
 		
 		this.db.exec(Schema);
 		this.db.exec(Pragma);
-
 	}
 
 	async addSource(path: string): Promise<void> {
-		treeToXML(path, this.extWhitelist)
+		treeToXML(path, Constants.extensionWhitelist)
 			.then(xmlTree => {
 				const statement = this.db.prepare('INSERT INTO sourceDirs (path, xmlTree, enabled) VALUES (?, ?, 1)');
 				statement.run(path, xmlTree);
@@ -67,7 +68,7 @@ class AppApi {
 		const diffs: SourceDirDiffs[] = [];
 
 		for (const sourceDir of sourceDirs) {
-			await treeToXML(sourceDir.path, this.extWhitelist)
+			await treeToXML(sourceDir.path, Constants.extensionWhitelist)
 				.then(xml => {
 					diffs.push({
 						sourceDir: sourceDir,

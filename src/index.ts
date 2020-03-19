@@ -83,7 +83,7 @@ const launch = async (): Promise<void> => {
 		FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
-	const api = new AppApi(newConfig.dataDirectory, Constants.extensionWhitelist);
+	const api = new AppApi(newConfig);
 
 	app.listen(newConfig.port);
 };
