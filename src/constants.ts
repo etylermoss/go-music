@@ -1,3 +1,24 @@
+/* Standard library for commonly used functions & text throughout
+ * the project such as EXIT.
+ * TODO: Rename to something like 'Common' instead of Constants.
+ */
+
+/** Print exit message and exit program execution.
+ *  Accepts process exit code, defaults to 0.
+ */
+const EXIT = function(exitCode: number = 0): void {
+	console.log(`\nExiting...`);
+	process.exit(exitCode);
+};
+
+/** Prints error message and then exits the program
+ *  by calling EXIT().
+ */
+const FATAL_ERROR = function(err: string): void {
+	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: ${err}\x1b[0m`);
+	EXIT(1);
+};
+
 /** Preamble text to be placed at the start of the
  *  configuration file to give information on it.
  */
@@ -37,4 +58,4 @@ Go Music: Personal music server.
   -h, --help: Print this help message.`;
 };
 
-export default { configPreamble, extensionWhitelist, getHelpInfo };
+export default { EXIT, FATAL_ERROR, configPreamble, extensionWhitelist, getHelpInfo };

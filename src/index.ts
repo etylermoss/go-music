@@ -12,22 +12,6 @@ import GoApi from 'go-music/go-api';
 /* Debug */
 import util from 'util';
 
-/** Print exit message and exit program execution.
- *  Accepts process exit code, defaults to 0.
- */
-const EXIT = function(exitCode: number = 0): void {
-	console.log(`\nExiting...`);
-	process.exit(exitCode);
-};
-
-/** Prints error message and then exits the program
- *  by calling EXIT().
- */
-const FATAL_ERROR = function(err: string): void {
-	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: ${err}\x1b[0m`);
-	EXIT(1);
-};
-
 /** Checks whether the provided paths[] are absolute,
  *  i.e they always resolve to the same location
  *  regardless of the working directory.
@@ -53,13 +37,13 @@ switch(true) {
 	case (args?.c || args?.config):
 		config.private.configDirectory = args.c ? args.c : args.config;
 		arePathsAbsolute((path: string) => {
-			FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
+			Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 		}, config.private.configDirectory);
 		break;
 	// -h, --help: print help information
 	case (args?.h || args?.help):
 		console.log(Constants.getHelpInfo(config.port));
-		EXIT();
+		Constants.EXIT();
 }
 
 /* Express server */
@@ -76,11 +60,11 @@ const launch = async (): Promise<void> => {
 		console.log('Value of config: ' + util.inspect(newConfig, {showHidden: true, depth: null}));
 		console.log(`Listening on port ${config.port}`);
 	} catch(err) {
-		FATAL_ERROR(err);
+		Constants.FATAL_ERROR(err);
 	}
 
 	arePathsAbsolute((path: string) => {
-		FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
+		Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
 	const api = new GoApi(newConfig);
