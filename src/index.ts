@@ -91,12 +91,11 @@ const launch = async (): Promise<void> => {
 launch();
 
 /* Run steps:
-__ Start server (main)
-__ command to run: ./entrypoint. Config in ~/.config/go-musc, port 5000, data in ~/.local/share/go-music
-Manage configuration (main)
-Call api (api)
-Load SQLite (api)
-Scan directory tree for changes, compare XML (api)
+/ Start server (main)
+/ Manage configuration (config)
+/ Call api (main)
+/ Load SQLite (api)
+/ Scan directory tree for changes, compare XML (api)
 Update DB to reflect tree changes (api)
 Scan & Parse new files to get metadata (api/tags C++ Node Addon using tagparser)
 Load Graphql pulling from SQLite, serve on /api/graphql (api)
