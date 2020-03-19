@@ -10,8 +10,8 @@ import { treeToXML, getXMLDiff, Diff } from 'go-music/api/sources';
 import { launchGraphql } from 'go-music/api/graphql';
 
 /* 1st party imports (SQL) */
-import Schema from 'go-music/go-api/db-setup/schema.sql';
-import Pragma from 'go-music/go-api/db-setup/pragma.sql';
+import Schema from 'go-music/api/db-setup/schema.sql';
+import Pragma from 'go-music/api/db-setup/pragma.sql';
 
 /* Debug */
 import util from 'util';
