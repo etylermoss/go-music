@@ -24,11 +24,6 @@ interface SQL_SourceDir {
 	enabled?: number;
 }
 
-interface SourceDirDiffs {
-	sourceDir: SQL_SourceDir;
-	difference: Diff[];
-}
-
 class AppApi {
 	
 	private db: SQLite3.Database;
@@ -47,11 +42,11 @@ class AppApi {
 		this.db.exec(Pragma);
 	}
 
-	async addSource(path: string): Promise<void> {
+	async addSource(path: string, enabled: number): Promise<void> {
 		treeToXML(path, Constants.extensionWhitelist)
 			.then(xmlTree => {
-				const statement = this.db.prepare('INSERT INTO sourceDirs (path, xmlTree, enabled) VALUES (?, ?, 1)');
-				statement.run(path, xmlTree);
+				const statement = this.db.prepare('INSERT INTO sourceDirs (path, xmlTree, enabled) VALUES (?, ?, ?)');
+				statement.run(path, xmlTree, enabled ? 1 : 0);
 			});
 	}
 
@@ -60,26 +55,14 @@ class AppApi {
 		return statement.get(path);
 	}
 
-	// TODO: Convert scanSources into scanSource,
-	// users may want to just scan 1 source.
-	// Create scanAllSources() functions.
-	async scanSources(): Promise<SourceDirDiffs[]> {
-		const sourceDirs: SQL_SourceDir[] = this.db.prepare('SELECT path, xmlTree FROM sourceDirs WHERE enabled = 1').all();
-		const diffs: SourceDirDiffs[] = [];
-
-		for (const sourceDir of sourceDirs) {
-			await treeToXML(sourceDir.path, Constants.extensionWhitelist)
-				.then(xml => {
-					diffs.push({
-						sourceDir: sourceDir,
-						difference: getXMLDiff(sourceDir.xmlTree, xml)
-					});
-				})
-				.catch(err => {
-					throw `Something went wrong scanning ${sourceDir.path}: ${err}`;
-				});
-		}
-		return diffs;
+	async scanSource(sourceDir: SQL_SourceDir): Promise<Diff[]> {
+		return treeToXML(sourceDir.path, Constants.extensionWhitelist)
+			.then(xml => {
+				return getXMLDiff(sourceDir.xmlTree, xml);
+			})
+			.catch(err => {
+				throw `Something went wrong scanning ${sourceDir.path}: ${err}`;
+			});
 	}
 
 	async handleSourceChanges(changes: Diff[][]): Promise<void> {
