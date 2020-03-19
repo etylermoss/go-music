@@ -19,6 +19,11 @@ interface SQL_SourceDir {
 	enabled?: number;
 }
 
+interface SourceDirDiffs {
+	sourceDir: SQL_SourceDir;
+	difference: Diff[];
+}
+
 import { treeToXML, getXMLDiff, Diff } from './sources';
 
 class AppApi {
@@ -57,21 +62,23 @@ class AppApi {
 	// TODO: Convert scanSources into scanSource,
 	// users may want to just scan 1 source.
 	// Create scanAllSources() functions.
-	async scanSources(): Promise<Diff[][]> {
+	async scanSources(): Promise<SourceDirDiffs[]> {
 		const sourceDirs: SQL_SourceDir[] = this.db.prepare('SELECT path, xmlTree FROM sourceDirs WHERE enabled = 1').all();
-		if (!sourceDirs) return null;
+		const diffs: SourceDirDiffs[] = [];
 
-		const changes: Diff[][] = [];
-		for await (const sourceDir of sourceDirs) {
-			treeToXML(sourceDir.path, this.extWhitelist)
+		for (const sourceDir of sourceDirs) {
+			await treeToXML(sourceDir.path, this.extWhitelist)
 				.then(xml => {
-					changes.push(getXMLDiff(sourceDir.xmlTree, xml));
+					diffs.push({
+						sourceDir: sourceDir,
+						difference: getXMLDiff(sourceDir.xmlTree, xml)
+					});
 				})
-				.catch(() => {
-					console.error(`Something went wrong scanning ${sourceDir.path}.`);
+				.catch(err => {
+					throw `Something went wrong scanning ${sourceDir.path}: ${err}`;
 				});
 		}
-		return changes;
+		return diffs;
 	}
 
 	async handleSourceChanges(changes: Diff[][]): Promise<void> {
