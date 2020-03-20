@@ -1,5 +1,5 @@
-/* Standard library for commonly used functions & text throughout
- * the project such as EXIT.
+/* Standard library for commonly used functions and large
+ * strings, often throughout the project such as EXIT.
  * TODO: Rename to something like 'Common' instead of Constants.
  */
 
