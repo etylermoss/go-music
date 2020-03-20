@@ -10,9 +10,6 @@ import Constants from 'go-music/constants';
 import Config, { ConfigSchema } from 'go-music/config';
 import Api from 'go-music/api';
 
-/* Debug */
-import util from 'util';
-
 /** Checks whether the provided paths[] are absolute,
  *  i.e they always resolve to the same location
  *  regardless of the working directory.
@@ -57,9 +54,6 @@ const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
 	try {
 		newConfig = await Config.getOrSetConfig(config.private.configDirectory, 'go-music.config.toml', config);
-		// debug
-		console.log('Value of config: ' + util.inspect(newConfig, {showHidden: true, depth: null}));
-		console.log(`Listening on port ${config.port}`);
 	} catch(err) {
 		Constants.FATAL_ERROR(err);
 	}

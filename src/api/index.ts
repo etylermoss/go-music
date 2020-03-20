@@ -2,6 +2,7 @@
 import path from 'path';
 import SQLite3 from 'better-sqlite3';
 import express from 'express';
+import { ApolloServer } from 'apollo-server-express';
 
 /* 1st party imports */
 import { ConfigSchema } from 'go-music/config';
@@ -12,10 +13,6 @@ import { launchGraphql } from 'go-music/api/graphql';
 /* 1st party imports (SQL) */
 import Schema from 'go-music/api/db-setup/schema.sql';
 import Pragma from 'go-music/api/db-setup/pragma.sql';
-
-/* Debug */
-import util from 'util';
-import { ApolloServer } from 'apollo-server-express';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
 interface SQL_SourceDir {
