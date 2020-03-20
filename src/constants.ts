@@ -54,6 +54,7 @@ Go Music: Personal music server.
 	and contain go-music.config.toml.
 	Defaults to ~/.config/go-music/
   -p, --port: The port to run the server on.
+	Currently this is overridden by the config file.
     Defaults to ${port}
   -h, --help: Print this help message.`;
 };
