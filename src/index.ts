@@ -5,6 +5,7 @@ import minimist from 'minimist';
 import express from 'express';
 
 /* 1st party imports */
+import globalConfig from 'go-music/global-config';
 import Constants from 'go-music/constants';
 import Config, { ConfigSchema } from 'go-music/config';
 import Api from 'go-music/api';
@@ -69,7 +70,7 @@ const launch = async (): Promise<void> => {
 
 	const api = new Api(newConfig);
 
-	app.use('/api', api.getMiddleware());
+	app.use(globalConfig.apiPath, api.getMiddleware());
 
 	app.listen(newConfig.port);
 };

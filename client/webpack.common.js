@@ -32,7 +32,11 @@ module.exports = {
 		]
 	},
 	resolve: {
-		extensions: [ '.ts', '.tsx', '.js', '.jsx' ]
+		extensions: [ '.ts', '.tsx', '.js', '.jsx' ],
+		alias: {
+			'go-music/global-config': path.resolve(__dirname, '../', 'global-config.json'),
+			'go-music': path.resolve(__dirname, 'src/')
+		}
 	},
 	plugins: [
 		new HtmlWebPackPlugin({

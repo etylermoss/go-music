@@ -34,6 +34,7 @@ module.exports = () => {
 		resolve: {
 			extensions: [ '.ts', '.js' ],
 			alias: {
+				'go-music/global-config': path.resolve(__dirname, 'global-config.json'),
 				'go-music': path.resolve(__dirname, 'src/')
 			}
 		},

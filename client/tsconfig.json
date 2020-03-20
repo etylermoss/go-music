@@ -8,7 +8,13 @@
       "target": "ES5",
       "allowJs": true,
       "esModuleInterop": true,
-      "jsx": "react"
+      "jsx": "react",
+      "resolveJsonModule": true,
+      "baseUrl": ".",
+      "paths": {
+        "go-music/global-config": ["../global-config.json"],
+        "go-music/*": ["src/*"]
+      }
     }
   }
   

@@ -5,6 +5,7 @@ import xdgBasedir from 'xdg-basedir';
 import toml from '@iarna/toml';
 
 /* 1st party imports */
+import globalConfig from 'go-music/global-config';
 import Constants from 'go-music/constants';
 
 export interface ConfigSchema {
@@ -22,7 +23,7 @@ export interface ConfigSchema {
 /** The default configuration options */
 const defaultConfig: ConfigSchema = {
 	dataDirectory: process.env.release ? path.join(xdgBasedir.data, '/go-music') : path.join(__dirname, './runtime/data'),
-	port: 5000,
+	port: globalConfig.port,
 	private: {
 		configDirectory: process.env.release ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
 		clientDirectory: process.env.release ? path.join(__dirname, './client') : path.join(__dirname, '../client/build')

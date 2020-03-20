@@ -7,8 +7,10 @@
     "target": "es6",
     "allowJs": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "go-music/global-config": ["global-config.json"],
       "go-music/*": ["src/*"]
     }
   },
