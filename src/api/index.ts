@@ -19,6 +19,8 @@ import { ApolloServer } from 'apollo-server-express';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
 interface SQL_SourceDir {
+	/** ID (rowid) of the row */
+	id?: number;
 	/** Path to the directory */
 	path?: string;
 	/** XML String representing the directories tree */
