@@ -57,6 +57,7 @@ class Api {
 		return router;
 	}
 
+	// should be in graphql
 	async addSource(path: string, enabled: number): Promise<void> {
 		treeToXML(path, Constants.extensionWhitelist)
 			.then(xmlTree => {
@@ -65,11 +66,13 @@ class Api {
 			});
 	}
 
+	// should be in graphql
 	getSourceInfo(path: string): SQL_SourceDir {
 		const statement = this.db.prepare('SELECT path, xmlTree, enabled FROM sourceDirs WHERE path = ?');
 		return statement.get(path);
 	}
 
+	// should be in graphql
 	/** Scans a single sourcing directory and returns the difference.
 	 *  If the scan fails, an error is thrown.
 	 */
@@ -85,10 +88,6 @@ class Api {
 			});
 	}
 
-	async handleSourceChanges(changes: Diff[][]): Promise<void> {
-		console.log('Source changes have occured: \n' + util.inspect(changes, false, null));
-	}
-	
 	stop(): void {
 		this.db.close();
 	}
