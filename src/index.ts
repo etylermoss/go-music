@@ -51,7 +51,7 @@ switch(true) {
 const app = express();
 
 /* Serve built client frontend statically */
-app.use(express.static(path.join(config.private.clientDirectory), {dotfiles: 'ignore'}));
+app.use(express.static(path.resolve(config.private.clientDirectory), {dotfiles: 'ignore'}));
 
 const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
