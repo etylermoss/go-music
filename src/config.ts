@@ -56,12 +56,12 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 		*/
 		return fs.promises.open(`${configDir}/${fileName}`, 66, '0750')
 			.then(async file => {
-				// Get file information
+				/* Get file information */
 				return file.stat()
 					.then(async stats => {
-						// Check if the file is empty
+						/* Check if the file is empty */
 						if (stats.size !== 0) {
-							// Read config from file
+							/* Read config from file */
 							return file.readFile('utf8')
 								.then(content => toml.parse(content))
 								.then(contentParsed => {
@@ -76,7 +76,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 								})
 								.catch(() => { throw `Could not read ${fileName}` });
 						} else {
-							// Write default config to file
+							/* Write default config to file */
 							return file.write(Constants.configPreamble + toml.stringify(config as any))
 								.then(() => config)
 								.catch(() => { throw `Could not write to ${fileName}` });
@@ -93,11 +93,12 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 
 	return fs.promises.opendir(configDir)
 		.then(dirExists, dirCreate)
-		// If the dir can't be created (or isn't a dir) the function is thrown
+		/* If the dir can't be created (or isn't a dir) the function is thrown */
 		.catch(err => { throw err })
-		// Can now handle the actual config file
+		/* Can now handle the actual config file */
 		.then(() => openFile())
-		.catch(err => { throw err }); // Error opening the config file
+		/* Error opening the config file */
+		.catch(err => { throw err });
 };
 
 export default { defaultConfig, getOrSetConfig };
