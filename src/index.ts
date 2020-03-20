@@ -31,18 +31,18 @@ const config = Config.defaultConfig;
 const args = minimist(process.argv.slice(2));
 switch(true) {
 	// -p, --port: port to run the server on
-	case (args?.p || args?.port):
+	case Boolean(args?.p || args?.port):
 		config.port = args.p ? args.p : args.port;
 		break;
 	// -c, --config: config directory path
-	case (args?.c || args?.config):
+	case Boolean(args?.c || args?.config):
 		config.private.configDirectory = args.c ? args.c : args.config;
 		arePathsAbsolute((path: string) => {
 			Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 		}, config.private.configDirectory);
 		break;
 	// -h, --help: print help information
-	case (args?.h || args?.help):
+	case Boolean(args?.h || args?.help):
 		console.log(Constants.getHelpInfo(config.port));
 		Constants.EXIT();
 }
