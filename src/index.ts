@@ -67,6 +67,8 @@ const launch = async (): Promise<void> => {
 	app.use(globalConfig.apiPath, api.getMiddleware());
 
 	app.listen(newConfig.port);
+
+	console.log(`Now running at localhost:${config.port}, api at ${globalConfig.apiPath}.`);
 };
 
 launch();
