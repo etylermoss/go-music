@@ -66,10 +66,7 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 							return file.readFile('utf8')
 								.then(content => toml.parse(content))
 								.then(contentParsed => {
-									// Copies any values from the config file into the existing config
-									/*return Object.assign({}, ...Object.keys(config).map(key =>
-										({[key]: (key in contentParsed as any ? contentParsed as any : config)[key]})
-                                    )) as ConfigSchema;*/
+									/* Copies any values from the config file into the existing config */
 									return Object.assign({}, ...Object.keys(config).map(key => {
 										const newKey = key in contentParsed as any && key !== 'private' ? contentParsed as any : config;
 										return {[key]: newKey[key]};
