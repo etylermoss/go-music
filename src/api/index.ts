@@ -9,6 +9,7 @@ import { ConfigSchema } from 'go-music/config';
 import Constants from 'go-music/constants';
 import { treeToXML, getXMLDiff, Diff } from 'go-music/api/sources';
 import { launchGraphql } from 'go-music/api/graphql';
+import { launchRest, RestServer } from 'go-music/api/rest';
 
 /* 1st party imports (SQL) */
 import Schema from 'go-music/api/db-setup/schema.sql';
@@ -32,6 +33,7 @@ class Api {
 	private db: SQLite3.Database;
 
 	graphql: ApolloServer;
+	rest: RestServer;
 
 	constructor(config: ConfigSchema) {
 		this.config = config;
@@ -46,12 +48,14 @@ class Api {
 		this.db.exec(Pragma);
 
 		this.graphql = launchGraphql();
+		this.rest = launchRest();
 	}
 
 	getMiddleware(): express.Router {
 		const router = express.Router();
 
 		router.use(this.graphql.getMiddleware({path: '/graphql'}));
+		router.use(this.rest.getMiddleware({path: '/rest'}));
 
 		return router;
 	}
@@ -86,7 +90,7 @@ class Api {
 				throw msg;
 			});
 	}
-
+	
 	stop(): void {
 		this.db.close();
 	}
