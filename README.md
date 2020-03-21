@@ -70,6 +70,6 @@ There are three main scripts you may want to run, `build`, `build:front`, and `b
 
 `[ dev (default), prod, release ]`
 
-The `MODE` option is used to enable/disable optimizations and change the resulting build directory structure. The `dev` and `prod` modes are the same, except `prod` enables Webpack optimization. Application runtime data will be stored in the *./build/runtime/* directory.
+The `MODE` option is used to enable/disable optimizations and change the application directory structure & paths. The `dev` and `prod` modes are the same, except `prod` enables Webpack optimization. Application runtime data will be stored in the *./build/runtime/* directory.
 
-If `release` is used, application runtime data will be stored in XDG User Directories, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
+If `release` is used, application runtime data will be stored in XDG user directories, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
