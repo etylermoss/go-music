@@ -54,8 +54,8 @@ class Api {
 	getMiddleware(): express.Router {
 		const router = express.Router();
 
-		router.use(this.graphql.getMiddleware({path: '/graphql'}));
-		router.use(this.rest.getMiddleware({path: '/rest'}));
+		router.use('/graphql', this.graphql.getMiddleware({path: '/'}));
+		router.use('/', this.rest.getMiddleware());
 
 		return router;
 	}
