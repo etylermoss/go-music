@@ -41,7 +41,7 @@ class Api {
 		try {
 			this.db = new SQLite3(path.join(this.config.dataDirectory, 'go-music.db'));
 		} catch(err) {
-			Constants.FATAL_ERROR(`Error creating SQLITE DB: ${err}`);
+			Constants.FATAL_ERROR(`Error creating SQLite3 DB: ${err}`);
 		}
 		
 		this.db.exec(Schema);
