@@ -20,18 +20,19 @@ module.exports = {
 		'RELEASE': true
 	},
 	rules: {
-		// General
+		/* General */
 		indent: ['warn', 'tab', {SwitchCase: 1, flatTernaryExpressions: true}],
 		quotes: ['warn', 'single', {
 			avoidEscape: true,
 			allowTemplateLiterals: true
 		}],
 		semi: ['warn', 'always', {omitLastInOneLineBlock: true}],
+		'no-duplicate-imports': 'warn',
 		'linebreak-style': ['error', 'unix'],
 		'no-cond-assign': ['error', 'always'],
 		'no-console': 'off',
 		"no-warning-comments": ['off', { "terms": ["todo", "fixme", "bug", "xxx"], "location": "start" }],
-		// Typescript
+		/* Typescript */
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/no-var-requires': 'off',
