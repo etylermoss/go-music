@@ -16,6 +16,9 @@ module.exports = {
 			impliedStrict: true
 		}
 	},
+	globals: {
+		'RELEASE': true
+	},
 	rules: {
 		// General
 		indent: ['warn', 'tab', {SwitchCase: 1, flatTernaryExpressions: true}],

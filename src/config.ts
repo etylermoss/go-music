@@ -22,11 +22,11 @@ export interface ConfigSchema {
 
 /** The default configuration options */
 const defaultConfig: ConfigSchema = {
-	dataDirectory: process.env.release ? path.join(xdgBasedir.data, '/go-music') : path.join(__dirname, './runtime/data'),
+	dataDirectory: RELEASE ? path.join(xdgBasedir.data, '/go-music') : path.join(__dirname, './runtime/data'),
 	port: globalConfig.port,
 	private: {
-		configDirectory: process.env.release ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
-		clientDirectory: process.env.release ? path.join(__dirname, './client') : path.join(__dirname, '../client/build')
+		configDirectory: RELEASE ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
+		clientDirectory: RELEASE ? path.join(__dirname, './client') : path.join(__dirname, '../client/build')
 	}
 };
 

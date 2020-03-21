@@ -4,7 +4,7 @@ const path = require('path');
 const WebpackShellPlugin = require('webpack-shell-plugin');
 const NodeExternals = require('webpack-node-externals');
 
-module.exports = () => {
+module.exports = (env) => {
 	const outputFilename = 'go-music';
 	const outputPath = path.resolve(__dirname, 'build');
 	return {
@@ -39,6 +39,9 @@ module.exports = () => {
 			}
 		},
 		plugins: [
+			new webpack.DefinePlugin({
+				RELEASE: env && env.release ? env.release : false
+			}),
 			new webpack.BannerPlugin({
 				banner: '#!/usr/bin/env node',
 				raw: true
