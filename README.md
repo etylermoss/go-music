@@ -29,7 +29,7 @@ Description to be completed.
 ## 🏁 [Starting the application](#-starting-the-application)
 
 * Make sure you have the [runtime dependencies](#runtime-dependencies) installed, these include `nodejs` (tested with version ^13.9.0).
-* See #mode for information on what directories the application will use for runtime data, as it dpends on what mode was used at build (e.g release / dev).
+* See [Build details - Modes](#modes) for information on what directories the application will use for runtime data, as it depends on what mode was used at build (e.g release / dev).
 
 	```shell
 	# alternatively: `$> ./build/go-music [ARGS]`
