@@ -7,7 +7,7 @@ import express from 'express';
 /* 1st party imports */
 import globalConfig from 'go-music/global-config';
 import Constants from 'go-music/constants';
-import Config, { ConfigSchema } from 'go-music/config';
+import { defaultConfig, getOrSetConfig, ConfigSchema } from 'go-music/config';
 import Api from 'go-music/api';
 
 /** Checks whether the provided paths[] are absolute,
@@ -22,7 +22,7 @@ const arePathsAbsolute = (callback: any, ...paths: string[]): any => {
 	}
 };
 
-const config = Config.defaultConfig;
+const config = defaultConfig;
 
 /* Manage command line arguments */
 const args = minimist(process.argv.slice(2));
@@ -59,7 +59,7 @@ if (!config.private.apiOnly) {
 const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
 	try {
-		newConfig = await Config.getOrSetConfig(config.private.configDirectory, 'go-music.config.toml', config);
+		newConfig = await getOrSetConfig(config.private.configDirectory, 'go-music.config.toml', config);
 	} catch(err) {
 		Constants.FATAL_ERROR(err);
 	}

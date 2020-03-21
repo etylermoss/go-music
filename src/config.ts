@@ -23,7 +23,7 @@ export interface ConfigSchema {
 }
 
 /** The default configuration options */
-const defaultConfig: ConfigSchema = {
+export const defaultConfig: ConfigSchema = {
 	dataDirectory: RELEASE ? path.join(xdgBasedir.data, '/go-music') : path.join(__dirname, './runtime/data'),
 	port: globalConfig.port,
 	private: {
@@ -36,7 +36,7 @@ const defaultConfig: ConfigSchema = {
 /** Load config file and create ConfigSchema object from it,
  *  or create the file from defaults if it does not exist.
  */
-const getOrSetConfig = async function(configDir: string, fileName: string, config: ConfigSchema ): Promise<ConfigSchema> {
+export const getOrSetConfig = async function(configDir: string, fileName: string, config: ConfigSchema ): Promise<ConfigSchema> {
 	const dirExists = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
 			.then(stats => {
@@ -101,5 +101,3 @@ const getOrSetConfig = async function(configDir: string, fileName: string, confi
 		/* Error opening the config file */
 		.catch(err => { throw err });
 };
-
-export default { defaultConfig, getOrSetConfig };
