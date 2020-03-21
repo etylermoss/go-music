@@ -38,6 +38,10 @@ switch(true) {
 			Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 		}, config.private.configDirectory);
 		break;
+	// -a, --api-only
+	case Boolean(args?.a || args['api-only']):
+		config.private.apiOnly = true;
+		break;
 	// -h, --help: print help information
 	case Boolean(args?.h || args?.help):
 		console.log(Constants.getHelpInfo(config.port));
@@ -48,7 +52,9 @@ switch(true) {
 const app = express();
 
 /* Serve built client frontend statically */
-app.use(express.static(path.resolve(config.private.clientDirectory), {dotfiles: 'ignore'}));
+if (!config.private.apiOnly) {
+	app.use('/', express.static(path.resolve(config.private.clientDirectory), {dotfiles: 'ignore'}));
+}
 
 const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
