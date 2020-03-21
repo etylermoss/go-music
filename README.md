@@ -6,23 +6,68 @@
 
 Description to be completed.
 
-### 🔨 [Building from source](#-building-from-source)
+## 🔨 [Building from source](#-building-from-source)
 
-1. **Install the [dependencies](#dependencies).**
+1. **Install dependencies**
+	
+	You will need to have the [build dependencies](#build-dependencies) installed, these include `npm`, `node`, `node-gyp` and `gcc` (used to build better-sqlite3).
+
 	```shell
 	# Make sure you have the build deps installed!
 	$> npm install
 	```
 2. **Run build**
 	
-	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [Build Arguments](#-build-arguments) for more details. Here is the recommended command for most users:
+	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [build arguments](#-build-arguments) for more details. Here is the recommended command for most users:
 
 	```shell
-	# release uses user directories for data / config,
-	# e.g ~/.config/go-music/ and ~/.local/share/go-music/
+	# See #build-arguments for information on the
+	# difference between release and dev / prod.
 	$> npm run build release
 	```
 
-### 🏁 [Starting the application](#-starting-the-application)
+## 🏁 [Starting the application](#-starting-the-application)
 
-### 📝 [Build arguments](#-build-arguments)
+* Make sure you have the [runtime dependencies](#runtime-dependencies) installed, these include `nodejs` (tested with version ^13.9.0).
+* If the application was built with modes `dev` or `prod`, then data will be stored in the *./build/runtime/* directory. If `release` was used, XDG User Directories are used, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
+
+	```shell
+	# alternatively: `$> ./build/go-music [ARGS]`
+	$> npm run start -- [ARGS]
+	```
+
+	That's it! You can supply arguments such as --config. Run with --help for more information.
+
+	### For developers:
+
+	When developing there is the frontend dev server (uses webpack-dev-server). This is intended for working on the frontend without needing to build the backend every time, as well as live reloading of changes. You can run it like so:
+	
+	```shell
+	# runs dev server on port + 1
+	$> npm run start:front
+	```
+
+	When running the frontend dev server you will likely still need to run the backend for it to pull data from:
+
+	```shell
+	# disables serving of frontend by Express, only exposes /api.
+	# alternatively: `$> ./build/go-music --api-only`
+	$> npm run start:back
+	```
+
+
+## 📝 [Build arguments](#-build-arguments)
+
+There are three main scripts you may want to run, `build`, `build:front`, and `build:back`. End users looking to just build & run the application should only need `build`.
+
+* `build [MODE]:` Build both the frontend and backend components.
+* `build:front [MODE]:` Build the frontend but not the backend.
+* `build:back [MODE]:` Build the backend but not the frontend. The frontend should be built prior to running this, unless running the frontend with `start:front`.
+
+### Mode:
+
+`[ dev (default), prod, release ]`
+
+The `MODE` option is used to enable/disable optimizations and change the resulting build directory structure. The `dev` and `prod` modes are the same, except `prod` enables Webpack optimization. Application runtime data will be stored in the *./build/runtime/* directory.
+
+If `release` is used, application runtime data will be stored in XDG User Directories, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
