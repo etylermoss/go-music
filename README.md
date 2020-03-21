@@ -6,7 +6,7 @@
 
 Description to be completed.
 
-### 🔨 [Building from source](#🔨-building-from-source)
+### 🔨 [Building from source](#-building-from-source)
 
 1. **Install the [dependencies](#dependencies).**
 	```shell
@@ -23,6 +23,6 @@ Description to be completed.
 	$> npm run build release
 	```
 
-### 🏁 [Starting the application](#🏁-starting-the-application)
+### 🏁 [Starting the application](#-starting-the-application)
 
 ### 📝 [Build arguments](#-build-arguments)
