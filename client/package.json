@@ -1,10 +1,16 @@
 {
   "name": "client",
   "scripts": {
-    "test": "echo \"Error: no test specified\"",
-    "dev": "webpack --config webpack.dev.js",
-    "dev_server": "webpack-dev-server --config webpack.dev_server.js --env.dev_server",
-    "prod": "webpack --config webpack.prod.js"
+    "clean": "rm -rf build/",
+    "finished": "echo -e '\n――― Frontend build finished! ―――\n'",
+
+    "build:dev": "webpack --config webpack.dev.js && npm run --silent finished",
+    "build:prod": "webpack --config webpack.prod.js && npm run --silent finished",
+    "build:release": "webpack --config webpack.prod.js && npm run --silent finished",
+
+    "build": "func() { npm run --silent clean && npm run build:\"$1\"; }; func",
+
+    "start": "webpack-dev-server --config webpack.dev_server.js --env.dev_server"
   },
   "devDependencies": {
     "@types/react": "^16.9.19",
