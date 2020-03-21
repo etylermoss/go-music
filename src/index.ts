@@ -59,7 +59,7 @@ if (!config.private.apiOnly) {
 const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
 	try {
-		newConfig = await getOrSetConfig(config.private.configDirectory, 'go-music.config.toml', config);
+		newConfig = await getOrSetConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
 		Constants.FATAL_ERROR(err);
 	}

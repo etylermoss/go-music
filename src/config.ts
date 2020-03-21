@@ -36,19 +36,21 @@ export const defaultConfig: ConfigSchema = {
 /** Load config file and create ConfigSchema object from it,
  *  or create the file from defaults if it does not exist.
  */
-export const getOrSetConfig = async function(configDir: string, fileName: string, config: ConfigSchema ): Promise<ConfigSchema> {
-	const dirExists = async function(dir: Dir): Promise<void> {
+export const getOrSetConfig = async function(configPath: string, config: ConfigSchema ): Promise<ConfigSchema> {
+	const dirIsDir = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
 			.then(stats => {
+				const dirPath = dir.path;
 				dir.close();
 				if (stats.isDirectory()) {
 					return;
 				} else {
-					throw `${configDir} exists but is not a directory`;
+					throw `${dirPath} exists but is not a directory`;
 				}
 			});
 	};
 	const dirCreate = async function(): Promise<void> {
+		const configDir = path.dirname(configPath);
 		return fs.promises.mkdir(configDir, '0755')
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
@@ -58,7 +60,7 @@ export const getOrSetConfig = async function(configDir: string, fileName: string
 			See: http://man7.org/linux/man-pages/man2/open.2.html
 			And: fs.constants.
 		*/
-		return fs.promises.open(`${configDir}/${fileName}`, 66, '0750')
+		return fs.promises.open(configPath, 66, '0750')
 			.then(async file => {
 				/* Get file information */
 				return file.stat()
@@ -75,12 +77,12 @@ export const getOrSetConfig = async function(configDir: string, fileName: string
 										return {[key]: newKey[key]};
 									})) as ConfigSchema;
 								})
-								.catch(() => { throw `Could not read ${fileName}` });
+								.catch(() => { throw `Could not read ${path.basename(configPath)}` });
 						} else {
 							/* Write default config to file */
 							return file.write(Constants.configPreamble + toml.stringify(config as any))
 								.then(() => config)
-								.catch(() => { throw `Could not write to ${fileName}` });
+								.catch(() => { throw `Could not write to ${path.basename(configPath)}` });
 						}
 					})
 					.then(_config => {
@@ -92,9 +94,9 @@ export const getOrSetConfig = async function(configDir: string, fileName: string
 			.catch(err => { throw err });
 	};
 
-	return fs.promises.opendir(configDir)
-		.then(dirExists, dirCreate)
-		/* If the dir can't be created (or isn't a dir) the function is thrown */
+	return fs.promises.opendir(path.dirname(configPath))
+		.then(dirIsDir, dirCreate)
+		/* If the dir isn't a dir, or can't be created, the function is thrown */
 		.catch(err => { throw err })
 		/* Can now handle the actual config file */
 		.then(() => openFile())
