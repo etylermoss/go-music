@@ -14,9 +14,9 @@
     "build:front": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent --prefix 'client/' build \"$mode\"; }; func",
     "build:back": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:\"$mode\"; }; func",
 
-    "start": "echo 'Starting backend server:' && node build/go-music",
+    "start": "node build/go-music",
     "start:front": "echo 'Starting frontend development server:' && npm run --prefix client/ start",
-    "start:back": "echo 'Starting backend server (API only):' && node build/go-music --api-only"
+    "start:back": "echo -e 'Starting backend server (API only):\n' && node build/go-music --api-only"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.19.2",
