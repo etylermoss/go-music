@@ -18,18 +18,18 @@ Description to be completed.
 	```
 2. **Run build**
 	
-	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [build arguments](#-build-arguments) for more details. Here is the recommended command for most users:
+	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [build details](#-build-details) for more details. Here is the recommended command for most users:
 
 	```shell
-	# See #build-arguments for information on the
-	# difference between release and dev / prod.
+	# See #modes for information on the difference
+	# between release and dev / prod.
 	$> npm run build release
 	```
 
 ## 🏁 [Starting the application](#-starting-the-application)
 
 * Make sure you have the [runtime dependencies](#runtime-dependencies) installed, these include `nodejs` (tested with version ^13.9.0).
-* If the application was built with modes `dev` or `prod`, then data will be stored in the *./build/runtime/* directory. If `release` was used, XDG User Directories are used, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
+* See #mode for information on what directories the application will use for runtime data, as it dpends on what mode was used at build (e.g release / dev).
 
 	```shell
 	# alternatively: `$> ./build/go-music [ARGS]`
@@ -56,7 +56,9 @@ Description to be completed.
 	```
 
 
-## 📝 [Build arguments](#-build-arguments)
+## 📝 [Build details](#-build-details)
+
+### Scripts:
 
 There are three main scripts you may want to run, `build`, `build:front`, and `build:back`. End users looking to just build & run the application should only need `build`.
 
@@ -64,7 +66,7 @@ There are three main scripts you may want to run, `build`, `build:front`, and `b
 * `build:front [MODE]:` Build the frontend but not the backend.
 * `build:back [MODE]:` Build the backend but not the frontend. The frontend should be built prior to running this, unless running the frontend with `start:front`.
 
-### Mode:
+### Modes:
 
 `[ dev (default), prod, release ]`
 
