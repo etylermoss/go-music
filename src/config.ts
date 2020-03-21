@@ -55,11 +55,11 @@ export const getOrSetConfig = async function(configPath: string, config: ConfigS
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
 	const openFile = async function(): Promise<ConfigSchema> {
-		/* BUG?: flags: 'w+' reports file size incorrectly as 0,
-			instead we use the raw Linux kernel mode integer.
-			See: http://man7.org/linux/man-pages/man2/open.2.html
-			And: fs.constants.
-		*/
+		/** BUG?: flags: 'w+' reports file size incorrectly as 0,
+		 *  instead we use the raw Linux kernel mode integer.
+		 *  See: http://man7.org/linux/man-pages/man2/open.2.html
+		 *  And: fs.constants.
+		 */
 		return fs.promises.open(configPath, 66, '0750')
 			.then(async file => {
 				/* Get file information */
