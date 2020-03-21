@@ -1,5 +1,6 @@
 /* 3rd party imports */
 import path from 'path';
+import fs from 'fs';
 import SQLite3 from 'better-sqlite3';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -39,6 +40,7 @@ class Api {
 		this.config = config;
 
 		try {
+			if (!fs.existsSync(this.config.dataDirectory)) fs.mkdirSync(this.config.dataDirectory, '0700');
 			this.db = new SQLite3(path.join(this.config.dataDirectory, 'go-music.db'));
 		} catch(err) {
 			Constants.FATAL_ERROR(`Error creating SQLite3 DB: ${err}`);

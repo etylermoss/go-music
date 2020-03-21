@@ -51,7 +51,7 @@ export const getOrSetConfig = async function(configPath: string, config: ConfigS
 	};
 	const dirCreate = async function(): Promise<void> {
 		const configDir = path.dirname(configPath);
-		return fs.promises.mkdir(configDir, '0755')
+		return fs.promises.mkdir(configDir, '0750')
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
 	const openFile = async function(): Promise<ConfigSchema> {
