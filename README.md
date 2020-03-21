@@ -15,7 +15,7 @@ Description to be completed.
 	```
 2. **Run build**
 	
-	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [Build Arguments](#📝-build-arguments) for more details. Here is the recommended command for most users:
+	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [Build Arguments](#-build-arguments) for more details. Here is the recommended command for most users:
 
 	```shell
 	# release uses user directories for data / config,
@@ -25,4 +25,4 @@ Description to be completed.
 
 ### 🏁 [Starting the application](#🏁-starting-the-application)
 
-### 📝 [Build arguments](#📝-build-arguments)
+### 📝 [Build arguments](#-build-arguments)
