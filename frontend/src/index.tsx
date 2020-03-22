@@ -1,11 +1,20 @@
+/* 3rd party imports */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from 'react-dom';
+import ApolloClient from 'apollo-boost';
+import { ApolloProvider } from '@apollo/react-hooks';
 
-import { Hello } from './hello';
+/* 1st party imports */
+import { Greeting } from './hello';
 
-const container = document.getElementById('container');
-if (!container) { throw 'Can\'t find container element.' }
-ReactDOM.render(
-	<Hello compiler='TypeScript' framework='React'/>,
-	container
+const client = new ApolloClient({
+	uri: 'http://localhost:5000/api/graphql'
+});
+
+const Root = (): JSX.Element => (
+	<ApolloProvider client={client}>
+		<Greeting compiler='TypeScript' framework='React'/>
+	</ApolloProvider>
 );
+
+render(<Root/>, document.getElementById('root'));
