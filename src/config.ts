@@ -15,8 +15,8 @@ export interface ConfigSchema {
     private: {
 		/** Configuration directory, usually ~/.config/go-music */
 		configDirectory: string;
-		/** Directory containing the built client / frontend */
-		clientDirectory: string;
+		/** Directory containing the built frontend */
+		frontendDirectory: string;
 		/** True when run with --api-only */
 		apiOnly: boolean;
     };
@@ -28,7 +28,7 @@ export const defaultConfig: ConfigSchema = {
 	port: globalConfig.port,
 	private: {
 		configDirectory: RELEASE ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
-		clientDirectory: RELEASE ? path.join(__dirname, './client') : path.join(__dirname, '../client/build'),
+		frontendDirectory: RELEASE ? path.join(__dirname, './frontend') : path.join(__dirname, '../frontend/build'),
 		apiOnly: false
 	}
 };

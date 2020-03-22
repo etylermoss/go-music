@@ -5,5 +5,4 @@ build
 # don't lint nyc coverage output
 coverage
 # don't lint sub projects
-client
-go-api
+frontend

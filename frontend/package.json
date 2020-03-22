@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "frontend",
   "scripts": {
     "clean": "rm -rf build/",
     "finished": "echo -e '\n――― Frontend build finished! ―――\n'",

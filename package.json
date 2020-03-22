@@ -4,18 +4,18 @@
     "clean": "rm -rf build/",
     "finished": "echo -e '\n――― Backend build finished! ―――\n'",
     "make_runtime_dirs": "mkdir -p build/runtime/{config,data}",
-    "copy_client": "cp -r client/build build/client",
+    "copy_frontend": "cp -r frontend/build build/frontend",
 
     "build:dev": "webpack --config webpack.dev.js && npm run --silent make_runtime_dirs && npm run --silent finished",
     "build:prod": "webpack --config webpack.prod.js && npm run --silent make_runtime_dirs && npm run --silent finished",
-    "build:release": "webpack --config webpack.prod.js --env.release && npm run --silent copy_client && npm run --silent finished",
+    "build:release": "webpack --config webpack.prod.js --env.release && npm run --silent copy_frontend && npm run --silent finished",
 
     "build": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:front \"$mode\" && npm run --silent build:back \"$mode\"; }; func",
-    "build:front": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent --prefix 'client/' build \"$mode\"; }; func",
+    "build:front": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent --prefix 'frontend/' build \"$mode\"; }; func",
     "build:back": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:\"$mode\"; }; func",
 
     "start": "node build/go-music",
-    "start:front": "echo 'Starting frontend development server:' && npm run --prefix client/ start",
+    "start:front": "echo 'Starting frontend development server:' && npm run --prefix frontend/ start",
     "start:back": "echo -e 'Starting backend server (API only):\n' && node build/go-music --api-only"
   },
   "devDependencies": {
