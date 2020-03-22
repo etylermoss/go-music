@@ -58,18 +58,18 @@ Description to be completed.
 
 ## 📝 [Build details](#-build-details)
 
-### Scripts:
+* ### Scripts:
 
-There are three main scripts you may want to run, `build`, `build:front`, and `build:back`. End users looking to just build & run the application should only need `build`.
+	There are three main scripts you may want to run, `build`, `build:front`, and `build:back`. End users looking to just build & run the application should only need `build`.
 
-* `build [MODE]:` Build both the frontend and backend components.
-* `build:front [MODE]:` Build the frontend but not the backend.
-* `build:back [MODE]:` Build the backend but not the frontend. The frontend should be built prior to running this, unless running the frontend with `start:front`.
+	* `build [MODE]:` Build both the frontend and backend components.
+	* `build:front [MODE]:` Build the frontend but not the backend.
+	* `build:back [MODE]:` Build the backend but not the frontend. The frontend should be built prior to running this, unless running the frontend with `start:front`.
 
-### Modes:
+* ### Modes:
 
-`[ dev (default), prod, release ]`
+	`[ dev (default), prod, release ]`
 
-The `MODE` option is used to enable/disable optimizations and change the application directory structure & paths. The `dev` and `prod` modes are the same, except `prod` enables Webpack optimization. Application runtime data will be stored in the *./build/runtime/* directory.
+	The `MODE` option is used to enable/disable optimizations and change the application directory structure & paths. The `dev` and `prod` modes are the same, except `prod` enables Webpack optimization. Application runtime data will be stored in the *./build/runtime/* directory.
 
-If `release` is used, application runtime data will be stored in XDG user directories, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
+	If `release` is used, application runtime data will be stored in XDG user directories, such as *~/.config/go-music/* and *~/.local/share/go-music/*.
