@@ -36,7 +36,7 @@ module.exports = {
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/no-var-requires': 'off',
-		'@typescript-eslint/camelcase': ['warn', { allow: ['^SQL_']}],
+		'@typescript-eslint/camelcase': ['warn', { allow: ['^SQL_', '^GQL_']}],
 		'@typescript-eslint/class-name-casing': 'off'
 	}
 }
