@@ -48,15 +48,11 @@ switch(true) {
 		Constants.EXIT();
 }
 
-/* Express server */
-const app = express();
 
-/* Serve frontend */
-if (!config.private.apiOnly) {
-	app.use('/', express.static(path.resolve(config.private.frontendDirectory), {dotfiles: 'ignore'}));
-}
 
 const launch = async (): Promise<void> => {
+
+	/* Open config file (or write default config to it if it does not exist) */
 	let newConfig: ConfigSchema;
 	try {
 		newConfig = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
@@ -68,10 +64,21 @@ const launch = async (): Promise<void> => {
 		Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
-	const api = new Api(newConfig);
+	/* Initialize express server */
+	const app = express();
 
-	app.use(globalConfig.apiPath, api.getMiddleware());
+	/* Serve backend api */
+	app.use(globalConfig.apiPath, new Api(newConfig).getMiddleware());
 
+	/* Serve frontend */
+	if (!config.private.apiOnly) {
+		const staticServe = express.static(path.resolve(config.private.frontendDirectory));
+		/* Serve the static directory no matter the path, lets the frontend handle routing */
+		app.use('/', staticServe);
+		app.use('/*', staticServe);
+	}
+
+	/* Start listening for HTTP requests */
 	app.listen(newConfig.port);
 
 	console.log(`Now running at http://localhost:${config.port}, api at ${globalConfig.apiPath}.`);
