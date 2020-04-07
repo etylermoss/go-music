@@ -36,8 +36,8 @@ export const defaultConfig: ConfigSchema = {
 /** Load config file and create ConfigSchema object from it,
  *  or create the file from defaults if it does not exist.
  */
-export const openConfig = async function(configPath: string, config: ConfigSchema ): Promise<ConfigSchema> {
-	const dirIsDir = async function(dir: Dir): Promise<void> {
+export const openConfig = async (configPath: string, config: ConfigSchema ): Promise<ConfigSchema> => {
+	const dirIsDir = async (dir: Dir): Promise<void> => {
 		return fs.promises.lstat(dir.path)
 			.then(stats => {
 				const dirPath = dir.path;
@@ -49,12 +49,12 @@ export const openConfig = async function(configPath: string, config: ConfigSchem
 				}
 			});
 	};
-	const dirCreate = async function(): Promise<void> {
+	const dirCreate = async (): Promise<void> => {
 		const configDir = path.dirname(configPath);
 		return fs.promises.mkdir(configDir, '0750')
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
-	const openFile = async function(): Promise<ConfigSchema> {
+	const openFile = async (): Promise<ConfigSchema> => {
 		/** BUG?: flags: 'w+' reports file size incorrectly as 0,
 		 *  instead we use the raw Linux kernel mode integer.
 		 *  See: http://man7.org/linux/man-pages/man2/open.2.html
