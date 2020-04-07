@@ -10,12 +10,14 @@ Description to be completed.
 
 1. **Install dependencies**
 	
-	You will need to have the [build dependencies](#build-dependencies) installed, these include `npm`, `node`, `node-gyp` and `gcc` (used to build better-sqlite3).
+	You will need to have the [build dependencies](#build-dependencies) installed, these include `npm`, `nodejs`, `webpack`, `node-gyp` and `gcc` (used to build better-sqlite3).
 
 	```shell
-	# Make sure you have the build deps installed!
-	$> npm install
+	# Install webpack globally (may require root privileges)
+	$> npm install -g webpack
+	$> npm install && cd frontend/ && npm install
 	```
+
 2. **Run build**
 	
 	Acceptable scripts are: `[ build, build:front, build:back ]`, while the second argument is the mode: `[ dev, prod, release ]`. See [build details](#-build-details) for more details. Here is the recommended command for most users:
@@ -44,15 +46,15 @@ Description to be completed.
 	
 	```shell
 	# runs dev server on port + 1
-	$> npm run start:front
+	$> npm run start:devServer
 	```
 
-	When running the frontend dev server you will likely still need to run the backend for it to pull data from:
+	When running the frontend dev server you will likely still need to run the backend api for it to pull data from:
 
 	```shell
 	# disables serving of frontend by Express, only exposes /api.
 	# alternatively: `$> ./build/go-music --api-only`
-	$> npm run start:back
+	$> npm run start:apiOnly
 	```
 
 

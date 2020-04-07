@@ -23,7 +23,7 @@ const HelloWorld = (): JSX.Element => {
 	return (
 		<p>{data.hello}</p>
 	);
-}
+};
 
 export const Greeting = (props: HelloProps): JSX.Element => {
 	return (

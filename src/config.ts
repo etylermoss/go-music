@@ -36,7 +36,7 @@ export const defaultConfig: ConfigSchema = {
 /** Load config file and create ConfigSchema object from it,
  *  or create the file from defaults if it does not exist.
  */
-export const getOrSetConfig = async function(configPath: string, config: ConfigSchema ): Promise<ConfigSchema> {
+export const openConfig = async function(configPath: string, config: ConfigSchema ): Promise<ConfigSchema> {
 	const dirIsDir = async function(dir: Dir): Promise<void> {
 		return fs.promises.lstat(dir.path)
 			.then(stats => {

@@ -7,7 +7,7 @@ import express from 'express';
 /* 1st party imports */
 import globalConfig from 'go-music/global-config';
 import Constants from 'go-music/constants';
-import { defaultConfig, getOrSetConfig, ConfigSchema } from 'go-music/config';
+import { defaultConfig, openConfig, ConfigSchema } from 'go-music/config';
 import Api from 'go-music/api';
 
 /** Checks whether the provided paths[] are absolute,
@@ -51,7 +51,7 @@ switch(true) {
 /* Express server */
 const app = express();
 
-/* Serve built frontend statically */
+/* Serve frontend */
 if (!config.private.apiOnly) {
 	app.use('/', express.static(path.resolve(config.private.frontendDirectory), {dotfiles: 'ignore'}));
 }
@@ -59,7 +59,7 @@ if (!config.private.apiOnly) {
 const launch = async (): Promise<void> => {
 	let newConfig: ConfigSchema;
 	try {
-		newConfig = await getOrSetConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
+		newConfig = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
 		Constants.FATAL_ERROR(err);
 	}
@@ -74,7 +74,7 @@ const launch = async (): Promise<void> => {
 
 	app.listen(newConfig.port);
 
-	console.log(`Now running at localhost:${config.port}, api at ${globalConfig.apiPath}.`);
+	console.log(`Now running at http://localhost:${config.port}, api at ${globalConfig.apiPath}.`);
 };
 
 launch();
