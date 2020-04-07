@@ -5,10 +5,27 @@ import minimist from 'minimist';
 import express from 'express';
 
 /* 1st party imports */
-import globalConfig from 'go-music/global-config';
-import Constants from 'go-music/constants';
-import { defaultConfig, openConfig, ConfigSchema } from 'go-music/config';
-import Api from 'go-music/api';
+import Common from 'globalCommon';
+import globalConfig from 'globalConfig';
+import { defaultConfig, openConfig, ConfigSchema } from './config';
+import Api from './api';
+
+/** Help information used when the user runs the
+ *  application with -h or --help. 
+ */
+const getHelpInfo = (port: number): string => {
+	return `\
+Go Music: Personal music server.
+
+  -c, --config: The directory of the configuration
+    files. It will be created if it does not exist,
+	and contain go-music.config.toml.
+	Defaults to ~/.config/go-music/
+  -p, --port: The port to run the server on.
+	Currently this is overridden by the config file.
+    Defaults to ${port}
+  -h, --help: Print this help message.`;
+};
 
 /** Checks whether the provided paths[] are absolute,
  *  i.e they always resolve to the same location
@@ -35,7 +52,7 @@ switch(true) {
 	case Boolean(args?.c || args?.config):
 		config.private.configDirectory = args.c ? args.c : args.config;
 		arePathsAbsolute((path: string) => {
-			Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
+			Common.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 		}, config.private.configDirectory);
 		break;
 	// -a, --api-only
@@ -44,11 +61,9 @@ switch(true) {
 		break;
 	// -h, --help: print help information
 	case Boolean(args?.h || args?.help):
-		console.log(Constants.getHelpInfo(config.port));
-		Constants.EXIT();
+		console.log(getHelpInfo(config.port));
+		Common.EXIT();
 }
-
-
 
 const launch = async (): Promise<void> => {
 
@@ -57,11 +72,11 @@ const launch = async (): Promise<void> => {
 	try {
 		newConfig = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
-		Constants.FATAL_ERROR(err);
+		Common.FATAL_ERROR(err);
 	}
 
 	arePathsAbsolute((path: string) => {
-		Constants.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
+		Common.FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, newConfig.dataDirectory);
 
 	/* Initialize express server */

@@ -6,15 +6,15 @@ import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 
 /* 1st party imports */
-import { ConfigSchema } from 'go-music/config';
-import Constants from 'go-music/constants';
-import { treeToXML, getXMLDiff, Diff } from 'go-music/api/sources';
-import { launchGraphql } from 'go-music/api/graphql';
-import { launchRest, RestServer } from 'go-music/api/rest';
+import Common from 'globalCommon';
+import { ConfigSchema } from '../config';
+import { treeToXML, getXMLDiff, Diff } from './sources';
+import { launchGraphql } from './graphql';
+import { launchRest, RestServer } from './rest';
 
 /* 1st party imports (SQL) */
-import Schema from 'go-music/api/db-setup/schema.sql';
-import Pragma from 'go-music/api/db-setup/pragma.sql';
+import Schema from './db-setup/schema.sql';
+import Pragma from './db-setup/pragma.sql';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
 interface SQL_SourceDir {
@@ -43,7 +43,7 @@ class Api {
 			if (!fs.existsSync(this.config.dataDirectory)) fs.mkdirSync(this.config.dataDirectory, '0700');
 			this.db = new SQLite3(path.join(this.config.dataDirectory, 'go-music.db'));
 		} catch(err) {
-			Constants.FATAL_ERROR(`Error creating SQLite3 DB: ${err}`);
+			Common.FATAL_ERROR(`Error creating SQLite3 DB: ${err}`);
 		}
 		
 		this.db.exec(Schema);
@@ -64,7 +64,7 @@ class Api {
 
 	// should be in graphql
 	async addSource(path: string, enabled: number): Promise<void> {
-		treeToXML(path, Constants.extensionWhitelist)
+		treeToXML(path, Common.extensionWhitelist)
 			.then(xmlTree => {
 				const statement = this.db.prepare('INSERT INTO sourceDirs (path, xmlTree, enabled) VALUES (?, ?, ?)');
 				statement.run(path, xmlTree, enabled ? 1 : 0);
@@ -82,7 +82,7 @@ class Api {
 	 *  If the scan fails, an error is thrown.
 	 */
 	async scanSource(sourceDir: SQL_SourceDir): Promise<Diff[]> {
-		return treeToXML(sourceDir.path, Constants.extensionWhitelist)
+		return treeToXML(sourceDir.path, Common.extensionWhitelist)
 			.then(xml => {
 				return getXMLDiff(sourceDir.xmlTree, xml);
 			})

@@ -5,9 +5,9 @@ import xdgBasedir from 'xdg-basedir';
 import toml from '@iarna/toml';
 
 /* 1st party imports */
-import globalConfig from 'go-music/global-config';
-import Constants from 'go-music/constants';
+import globalConfig from 'globalConfig';
 
+/** Schema of application configuration object / file */
 export interface ConfigSchema {
     dataDirectory: string;
 	port: number;
@@ -21,6 +21,18 @@ export interface ConfigSchema {
 		apiOnly: boolean;
     };
 }
+
+/** Preamble text to be placed at the start of the
+ *  configuration file to give information about it.
+ */
+const configPreamble =
+`\
+# Go Music: Configuration file.
+
+# This file is written in the TOML format.
+# Available options: <GITHUB/WIKI>.
+# See: https://wikipedia.org/wiki/TOML.
+\n`;
 
 /** The default configuration options */
 export const defaultConfig: ConfigSchema = {
@@ -80,7 +92,7 @@ export const openConfig = async (configPath: string, config: ConfigSchema ): Pro
 								.catch(() => { throw `Could not read ${path.basename(configPath)}` });
 						} else {
 							/* Write default config to file */
-							return file.write(Constants.configPreamble + toml.stringify(config as any))
+							return file.write(configPreamble + toml.stringify(config as any))
 								.then(() => config)
 								.catch(() => { throw `Could not write to ${path.basename(configPath)}` });
 						}

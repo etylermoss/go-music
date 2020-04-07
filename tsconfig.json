@@ -10,8 +10,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "go-music/global-config": ["global-config.json"],
-      "go-music/*": ["src/*"]
+      "globalConfig": ["global-config.json"],
+      "globalCommon": ["src/common.ts"]
     }
   },
   "exclude": [
