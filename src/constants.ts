@@ -6,7 +6,7 @@
 /** Print exit message and exit program execution.
  *  Accepts process exit code, defaults to 0.
  */
-const EXIT = function(exitCode: number = 0): void {
+const EXIT = (exitCode: number = 0): void => {
 	console.log(`\nExiting...`);
 	process.exit(exitCode);
 };
@@ -14,7 +14,7 @@ const EXIT = function(exitCode: number = 0): void {
 /** Prints error message and then exits the program
  *  by calling EXIT().
  */
-const FATAL_ERROR = function(err: string): void {
+const FATAL_ERROR = (err: string): void => {
 	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: ${err}\x1b[0m`);
 	EXIT(1);
 };
