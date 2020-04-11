@@ -3,6 +3,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 /* 1st party imports */
 import globalConfig from 'globalConfig';
@@ -14,7 +15,9 @@ const client = new ApolloClient({
 
 const Root = (): JSX.Element => (
 	<ApolloProvider client={client}>
+		<Router>
 			<Greeting compiler='TypeScript' framework='React'/>
+		</Router>
 	</ApolloProvider>
 );
 
