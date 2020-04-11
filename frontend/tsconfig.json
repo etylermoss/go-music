@@ -1,19 +1,30 @@
 {
-    "compilerOptions": {
-      "outDir": "./build/",
-      "sourceMap": true,
-      "noImplicitAny": true,
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "target": "ES5",
-      "allowJs": true,
-      "esModuleInterop": true,
-      "jsx": "react",
-      "resolveJsonModule": true,
-      "baseUrl": ".",
-      "paths": {
-        "globalConfig": ["../global-config.json"],
-      }
+  "compilerOptions": {
+    // Target ES6 / ECMA2015
+    "target": "es6",
+    // Search under node_modules for non-relative imports
+    "moduleResolution": "node",
+    // Process & infer types from .js files
+    "allowJs": true,
+    // Don't emit; allow Babel to transform files.
+    "noEmit": true,
+    // Enable strictest settings like strictNullChecks & noImplicitAny.
+    "strict": true,
+    // Import non-ES modules as default imports.
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "globalConfig": ["../global-config.json"],
     }
-  }
+  },
+  "include": [
+    "src"
+  ]
+}
   

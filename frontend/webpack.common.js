@@ -16,26 +16,25 @@ module.exports = {
 		rules: [
 			{
 				test: /\.(j|t)s(x?)$/,
-				use: ['ts-loader', 'eslint-loader'],
+				loader: ['babel-loader', 'eslint-loader'],
 				exclude: /node_modules/
 			},
 			{
-				enforce: 'pre',
 				test: /\.js$/,
-				loader: 'source-map-loader'
+				loader: 'source-map-loader',
+				enforce: 'pre'
 			},
 			{
 				test: /\.html$/,
-				use: {
-					loader: 'html-loader'
-				}
+				loader: 'html-loader'
 			}
 		]
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.js', '.jsx' ],
 		alias: {
-			'globalConfig': path.resolve(__dirname, '../', 'global-config.json')
+			'globalConfig': path.resolve(__dirname, '../', 'global-config.json'),
+			'mobx': __dirname + "/node_modules/mobx/lib/mobx.es6.js"
 		}
 	},
 	plugins: [
