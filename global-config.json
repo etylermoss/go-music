@@ -1,4 +1,4 @@
 {
-	"apiPath": "/api",
+	"apiPath": "api",
 	"port": 5000
 }
