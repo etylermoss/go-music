@@ -17,7 +17,8 @@ module.exports = {
 		}
 	},
 	globals: {
-		'RELEASE': true
+		'RELEASE': 'readonly',
+		'DEVSERVER': 'readonly'
 	},
 	rules: {
 		/* General */

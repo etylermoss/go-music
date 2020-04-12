@@ -7,7 +7,7 @@
     "build:prod": "webpack --config webpack.prod.js && npm run --silent finished",
     "build:release": "webpack --config webpack.prod.js && npm run --silent finished",
     "build": "func() { npm run --silent clean && npm run build:\"$1\"; }; func",
-    "start": "webpack-dev-server --config webpack.dev_server.js --env.dev_server"
+    "start": "webpack-dev-server --config webpack.devServer.js --env.devserver"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

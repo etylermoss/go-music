@@ -23,6 +23,9 @@
       "globalConfig": ["../global-config.json"],
     }
   },
+  "files": [
+    "declarations.d.ts"
+  ],
   "include": [
     "src"
   ]

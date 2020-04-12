@@ -1,5 +1,6 @@
 {
 	"apiPath": "api",
 	"apiGqlPath": "graphql",
-	"port": 5000
+	"port": 5000,
+	"devServerPortOffset": 50
 }
