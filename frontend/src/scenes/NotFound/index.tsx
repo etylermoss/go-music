@@ -1,4 +1,4 @@
-/* 3st party imports */
+/* 3rd party imports */
 import React from 'react';
 
 const Scene = (): JSX.Element => {

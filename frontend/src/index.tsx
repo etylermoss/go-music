@@ -10,7 +10,7 @@ import globalConfig from 'globalConfig';
 import StoreInstance, { StoreContext } from '@/store';
 
 /* 1st party imports - Scenes */
-import SignIn from '@/scenes/SignIn';
+import Login from '@/scenes/Login';
 import NotFound from '@/scenes/NotFound';
 import Home from '@/scenes/Home';
 
@@ -35,8 +35,8 @@ const Root = (): JSX.Element => (
 					<Route exact path="/">
 						<Home compiler='TypeScript' framework='React'/>
 					</Route>
-					<Route path="/signin">
-						<SignIn/>
+					<Route path="/login">
+						<Login/>
 					</Route>
 					<Route path="*">
 						<NotFound/>

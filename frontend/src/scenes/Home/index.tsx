@@ -1,4 +1,4 @@
-/* 3st party imports */
+/* 3rd party imports */
 import React, { useContext } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
