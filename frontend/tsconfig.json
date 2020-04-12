@@ -20,7 +20,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "globalConfig": ["../global-config.json"],
+      "@/*": ["src/*"],
+      "globalConfig": ["../global-config.json"]
     }
   },
   "files": [

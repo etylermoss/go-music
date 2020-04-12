@@ -1,7 +1,11 @@
 /* 3st party imports */
-import React from 'react';
+import React, { useContext } from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
+import { useObserver } from 'mobx-react';
+
+/* 1st party imports */
+import { StoreContext } from '@/store';
 
 export interface HelloProps {
 	compiler: string;
@@ -25,12 +29,18 @@ const HelloWorld = (): JSX.Element => {
 	);
 };
 
-export const Greeting = (props: HelloProps): JSX.Element => {
-	return (
+const Scene = ((props: HelloProps): JSX.Element => {
+	const store = useContext(StoreContext);
+
+	return useObserver(() => (
 		<>
 			<h1>Hello beautiful, love from {props.compiler} and {props.framework}!</h1>
 			<h2>I have a message for you:</h2>
 			<HelloWorld/>
+			<p>Value of token: {store.token}</p>
+			<input onChange={(el): void => {store.updateToken(el.target.value)}} />
 		</>
-	);
-};
+	));
+});
+
+export default Scene;
