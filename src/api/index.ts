@@ -6,6 +6,7 @@ import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 
 /* 1st party imports */
+import globalConfig from 'globalConfig';
 import Common from 'globalCommon';
 import { ConfigSchema } from '../config';
 import { treeToXML, getXMLDiff, Diff } from './sources';
@@ -56,7 +57,7 @@ class Api {
 	getMiddleware(): express.Router {
 		const router = express.Router();
 
-		router.use('/graphql', this.graphql.getMiddleware({path: '/'}));
+		router.use(`/${globalConfig.apiGqlPath}`, this.graphql.getMiddleware({path: '/'}));
 		router.use('/', this.rest.getMiddleware());
 
 		return router;
