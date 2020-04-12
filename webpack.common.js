@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 const webpack = require('webpack');
 const path = require('path');
 const WebpackShellPlugin = require('webpack-shell-plugin');
