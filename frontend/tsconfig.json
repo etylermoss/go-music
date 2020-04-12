@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
+    // Output directory
+    "outDir": "./build/",
     // Target ES6 / ECMA2015
     "target": "es6",
     // Search under node_modules for non-relative imports
     "moduleResolution": "node",
     // Process & infer types from .js files
     "allowJs": true,
-    // Don't emit; allow Babel to transform files.
-    "noEmit": true,
     // Enable strictest settings like strictNullChecks & noImplicitAny.
     "strict": true,
     // Import non-ES modules as default imports.

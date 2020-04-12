@@ -18,7 +18,7 @@ module.exports = (env) => {
 			rules: [
 				{
 					test: /\.(j|t)s(x?)$/,
-					loader: ['babel-loader', 'eslint-loader'],
+					loader: ['ts-loader', 'eslint-loader'],
 					exclude: /node_modules/
 				},
 				{
