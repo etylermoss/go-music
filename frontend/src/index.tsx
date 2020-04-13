@@ -6,7 +6,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 /* 1st party imports */
-import globalConfig from 'globalConfig';
+import GlobalConfig from '@G/config.json';
 import StoreInstance, { StoreContext } from '@/store';
 
 /* 1st party imports - Scenes */
@@ -18,18 +18,21 @@ import Home from '@/scenes/Home';
 let port = Number.parseInt(window.location.port);
 if (!port && window.location.protocol === 'https:') port = 443;
 if (!port && window.location.protocol === 'http:') port = 80;
-if (DEVSERVER) port = port - globalConfig.devServerPortOffset;
+if (DEVSERVER) port = port - GlobalConfig.devServerPortOffset;
 const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 
 /* Launch Apollo Client */
 const client = new ApolloClient({
-	uri: `${url}/${globalConfig.apiPath}/${globalConfig.apiGqlPath}`
+	uri: `${url}/${GlobalConfig.apiPath}/${GlobalConfig.apiGqlPath}`
 });
 
 
 const Root = (): JSX.Element => (
 	<StoreContext.Provider value={StoreInstance}>
 		<ApolloProvider client={client}>
+			<div>
+				<h1>Go Music</h1>
+			</div>
 			<Router>
 				<Switch>
 					<Route exact path="/">

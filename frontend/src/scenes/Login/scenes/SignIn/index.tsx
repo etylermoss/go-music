@@ -12,7 +12,7 @@ const Scene = (props: SceneProps): JSX.Element => {
 	
 	return (
 		<>
-			<h1>Sign in</h1>
+			<h2>Sign in</h2>
 		</>
 	);
 };
