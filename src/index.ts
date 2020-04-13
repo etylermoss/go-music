@@ -5,10 +5,10 @@ import minimist from 'minimist';
 import express from 'express';
 
 /* 1st party imports */
-import Common from 'globalCommon';
-import globalConfig from 'globalConfig';
-import { defaultConfig, openConfig, ConfigSchema } from './config';
-import Api from './api';
+import GlobalConfig from '@G/config.json';
+import Common from '@/common';
+import { defaultConfig, openConfig, ConfigSchema } from '@/config';
+import Api from '@/api';
 
 /** Help information used when the user runs the
  *  application with -h or --help. 
@@ -83,7 +83,7 @@ const launch = async (): Promise<void> => {
 	const app = express();
 
 	/* Serve backend api */
-	app.use(`/${globalConfig.apiPath}`, new Api(newConfig).getMiddleware());
+	app.use(`/${GlobalConfig.apiPath}`, new Api(newConfig).getMiddleware());
 
 	/* Serve frontend */
 	if (!config.private.apiOnly) {
@@ -96,7 +96,7 @@ const launch = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(newConfig.port);
 
-	console.log(`Now running at http://localhost:${config.port}, api at ${globalConfig.apiPath}.`);
+	console.log(`Now running at http://localhost:${config.port}, api at ${GlobalConfig.apiPath}.`);
 };
 
 launch();

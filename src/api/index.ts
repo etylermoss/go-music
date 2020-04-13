@@ -6,16 +6,16 @@ import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 
 /* 1st party imports */
-import globalConfig from 'globalConfig';
-import Common from 'globalCommon';
-import { ConfigSchema } from '../config';
-import { treeToXML, getXMLDiff, Diff } from './sources';
-import { launchGraphql } from './graphql';
-import { launchRest, RestServer } from './rest';
+import GlobalConfig from '@G/config.json';
+import Common from '@/common';
+import { ConfigSchema } from '@/config';
+import { treeToXML, getXMLDiff, Diff } from '@/api/sources';
+import { launchGraphql } from '@/api/graphql';
+import { launchRest, RestServer } from '@/api/rest';
 
 /* 1st party imports (SQL) */
-import Schema from './db-setup/schema.sql';
-import Pragma from './db-setup/pragma.sql';
+import Schema from '@/api/db-setup/schema.sql';
+import Pragma from '@/api/db-setup/pragma.sql';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
 interface SQL_SourceDir {
@@ -57,7 +57,7 @@ class Api {
 	getMiddleware(): express.Router {
 		const router = express.Router();
 
-		router.use(`/${globalConfig.apiGqlPath}`, this.graphql.getMiddleware({path: '/'}));
+		router.use(`/${GlobalConfig.apiGqlPath}`, this.graphql.getMiddleware({path: '/'}));
 		router.use('/', this.rest.getMiddleware());
 
 		return router;

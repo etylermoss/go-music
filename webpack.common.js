@@ -33,8 +33,8 @@ module.exports = (env) => {
 		resolve: {
 			extensions: [ '.ts', '.js' ],
 			alias: {
-				'globalConfig': path.resolve(__dirname, 'global-config.json'),
-				'globalCommon': path.resolve(__dirname, 'src', 'common.ts')
+				'@': path.resolve(__dirname, 'src/'),
+				'@G': path.resolve(__dirname, 'globals/')
 			}
 		},
 		plugins: [

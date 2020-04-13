@@ -36,7 +36,7 @@ module.exports = (env) => {
 			extensions: [ '.ts', '.tsx', '.js', '.jsx' ],
 			alias: {
 				'@': path.resolve(__dirname, 'src/'),
-				'globalConfig': path.resolve(__dirname, '../', 'global-config.json'),
+				'@G': path.resolve(__dirname, '../', 'globals/'),
 				'mobx': path.resolve(__dirname, 'node_modules/mobx/lib/mobx.es6.js')
 			}
 		},

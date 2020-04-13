@@ -10,8 +10,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "globalConfig": ["global-config.json"],
-      "globalCommon": ["src/common.ts"]
+      "@/*": ["src/*"],
+      "@G/*": ["globals/*"]
     }
   },
   "exclude": [
