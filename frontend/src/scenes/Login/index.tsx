@@ -14,7 +14,7 @@ interface ChangeModeProps {
 
 const ChangeMode = (props: ChangeModeProps): JSX.Element => {
 	return (
-		<button onClick={(): void => props.onChangeMode()}>
+		<button onClick={() => props.onChangeMode()}>
 			{props.mode === 'signin' ? 'Create account' : 'Sign in instead'}
 		</button>
 	);
@@ -27,7 +27,7 @@ const Scene = (): JSX.Element => {
 		<>
 			<SignIn active={mode === 'signin'}/>
 			<SignUp active={mode === 'signup'}/>
-			<ChangeMode mode={mode} onChangeMode={(): void => setMode(mode === 'signin' ? 'signup' : 'signin')}/>
+			<ChangeMode mode={mode} onChangeMode={() => setMode(mode === 'signin' ? 'signup' : 'signin')}/>
 		</>
 	);
 };
