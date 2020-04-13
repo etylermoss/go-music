@@ -3,7 +3,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
@@ -30,13 +30,14 @@ const client = new ApolloClient({
 const Root = (): JSX.Element => (
 	<StoreContext.Provider value={StoreInstance}>
 		<ApolloProvider client={client}>
-			<div>
-				<h1>Go Music</h1>
-			</div>
 			<Router>
+				<h1>
+					<Link to="/">Go Music</Link>
+				</h1>
 				<Switch>
 					<Route exact path="/">
 						<Home compiler='TypeScript' framework='React'/>
+						<Link to="/login">Go to login</Link>
 					</Route>
 					<Route path="/login">
 						<Login/>
