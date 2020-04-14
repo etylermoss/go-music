@@ -4,6 +4,8 @@ export interface DetailsValidation {
 	maxLength: number;
 }
 
+type Details = 'username' | 'password';
+
 export default {
 	username: {
 		/** Matches valid usernames:
@@ -13,7 +15,7 @@ export default {
 		regex: /[^a-zA-Z0-9_-]/g,
 		minLength: 3,
 		maxLength: 24
-	} as DetailsValidation,
+	},
 	password: {
 		/** Matches valid passwords:
 		 *  5 or more characters,
@@ -21,7 +23,7 @@ export default {
 		 *  and most common special characters.
 		 */
 		regex: /[^a-zA-Z0-9`¬|!"€£$%^&*()_+\-=[\]{};'#:@~<>?,./\\]/g,
-		minLength: 5,
+		minLength: 8,
 		maxLength: 128
-	} as DetailsValidation
-};
+	}
+} as Record<Details, DetailsValidation>;

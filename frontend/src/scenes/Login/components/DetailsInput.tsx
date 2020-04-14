@@ -9,9 +9,14 @@ interface Valid {
 }
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
+	/** Object containing validation tests such as the maximum input length
+	 */
 	validation: DetailsValidation;
+	/** Supported input types 
+	 */
+	type?: 'text' | 'password';
 	/** Function to be called upon onChange, the input text validity is
-	 *  passed through (as a boolean).
+	 *  passed through (as a boolean)
 	 */
 	valid?: Valid;
 	/** Placed below the input element to provide an explanation to the user
