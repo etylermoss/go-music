@@ -24,7 +24,7 @@ const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 
 /* Launch Apollo Client */
 const client = new ApolloClient({
-	uri: `${url}/${GlobalConfig.apiPath}/${GlobalConfig.apiGqlPath}`
+	uri: `${url}/${GlobalConfig.apiPath}/${GlobalConfig.apiGqlPath}`,
 });
 
 

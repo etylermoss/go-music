@@ -41,8 +41,8 @@ export const defaultConfig: ConfigSchema = {
 	private: {
 		configDirectory: RELEASE ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
 		frontendDirectory: RELEASE ? path.join(__dirname, './frontend') : path.join(__dirname, '../frontend/build'),
-		apiOnly: false
-	}
+		apiOnly: false,
+	},
 };
 
 /** Load config file and create ConfigSchema object from it,

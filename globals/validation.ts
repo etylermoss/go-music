@@ -14,7 +14,7 @@ export default {
 		 */
 		regex: /[^a-zA-Z0-9_-]/g,
 		minLength: 3,
-		maxLength: 24
+		maxLength: 24,
 	},
 	password: {
 		/** Matches valid passwords:
@@ -24,6 +24,6 @@ export default {
 		 */
 		regex: /[^a-zA-Z0-9`¬|!"€£$%^&*()_+\-=[\]{};'#:@~<>?,./\\]/g,
 		minLength: 8,
-		maxLength: 128
-	}
+		maxLength: 128,
+	},
 } as Record<Details, DetailsValidation>;

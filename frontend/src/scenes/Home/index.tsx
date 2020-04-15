@@ -12,14 +12,14 @@ export interface HelloProps {
 	framework: string;
 }
 
-const GQL_hello = gql`
+const gqlHello = gql`
 	query {
 		hello
 	}
 `;
 
 const HelloWorld = (): JSX.Element => {
-	const { loading, error, data } = useQuery(GQL_hello);
+	const { loading, error, data } = useQuery(gqlHello);
 
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>Error :(</p>;

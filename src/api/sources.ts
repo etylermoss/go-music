@@ -83,7 +83,7 @@ const getXMLDiff = (lhs: string, rhs: string): Diff[] => {
 						changes.push({
 							name: child,
 							path: oldMap[index].path,
-							change: secondPass ? 'deleted' : 'added'
+							change: secondPass ? 'deleted' : 'added',
 						});
 					}
 				}
@@ -93,7 +93,7 @@ const getXMLDiff = (lhs: string, rhs: string): Diff[] => {
 					changes.push({
 						name: child,
 						path: oldMap[index].path,
-						change: secondPass ? 'deleted' : 'added'
+						change: secondPass ? 'deleted' : 'added',
 					});
 				}
 			}
@@ -109,7 +109,7 @@ const getXMLDiff = (lhs: string, rhs: string): Diff[] => {
 		arrayMode: true,
 		attrValueProcessor: (val: string): string => he.decode(val, {isAttributeValue: true}),
 		tagValueProcessor: (val: string): string => he.decode(val),
-		trimValues: true
+		trimValues: true,
 	};
 
 	const lhsParsed = fxp.parse(lhs, fxpOptions);

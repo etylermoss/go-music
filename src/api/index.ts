@@ -18,7 +18,7 @@ import Schema from '@/api/db-setup/schema.sql';
 import Pragma from '@/api/db-setup/pragma.sql';
 
 /** User defined directory where music files are gathered from, e.g ~/Music/ */
-interface SQL_SourceDir {
+interface sqlSourceDir {
 	/** ID (rowid) of the row */
 	id?: number;
 	/** Path to the directory */
@@ -73,7 +73,7 @@ class Api {
 	}
 
 	// should be in graphql
-	getSourceInfo(path: string): SQL_SourceDir {
+	getSourceInfo(path: string): sqlSourceDir {
 		const statement = this.db.prepare('SELECT path, xmlTree, enabled FROM sourceDirs WHERE path = ?');
 		return statement.get(path);
 	}
@@ -82,7 +82,7 @@ class Api {
 	/** Scans a single sourcing directory and returns the difference.
 	 *  If the scan fails, an error is thrown.
 	 */
-	async scanSource(sourceDir: SQL_SourceDir): Promise<Diff[]> {
+	async scanSource(sourceDir: sqlSourceDir): Promise<Diff[]> {
 		return treeToXML(sourceDir.path, Common.extensionWhitelist)
 			.then(xml => {
 				return getXMLDiff(sourceDir.xmlTree, xml);

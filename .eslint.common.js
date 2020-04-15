@@ -28,6 +28,7 @@ module.exports = {
 			allowTemplateLiterals: true
 		}],
 		semi: ['warn', 'always', {omitLastInOneLineBlock: true}],
+		'comma-dangle': ['warn', 'always-multiline'],
 		'no-duplicate-imports': 'warn',
 		'linebreak-style': ['error', 'unix'],
 		'no-cond-assign': ['error', 'always'],
@@ -37,9 +38,9 @@ module.exports = {
 		'@typescript-eslint/no-inferrable-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
 		'@typescript-eslint/no-var-requires': 'off',
-		'@typescript-eslint/camelcase': ['warn', {allow: ['^SQL_', '^GQL_']}],
+		'@typescript-eslint/camelcase': 'warn',
 		'@typescript-eslint/class-name-casing': 'off',
-		'@typescript-eslint/explicit-function-return-type': ['error', {allowExpressions: true}]
+		'@typescript-eslint/explicit-function-return-type': ['error', {allowExpressions: true}],
 	}
 }
 

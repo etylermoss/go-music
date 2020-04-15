@@ -25,7 +25,8 @@ module.exports = (env) => {
 				},
 				{
 					test: /\.sql$/,
-					use: 'raw-loader'
+					use: 'raw-loader',
+					exclude: /node_modules/
 				}
 			]
 		},
