@@ -14,7 +14,9 @@ export interface HelloProps {
 
 const gqlHello = gql`
 	query {
-		hello
+		users {
+			username
+		}
 	}
 `;
 

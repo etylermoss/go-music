@@ -34,7 +34,7 @@ class Api {
 	private config: ConfigSchema;
 	private db: SQLite3.Database;
 
-	graphql: ApolloServer;
+	graphql: Promise<ApolloServer>;
 	rest: RestServer;
 
 	constructor(config: ConfigSchema) {
@@ -50,14 +50,15 @@ class Api {
 		this.db.exec(Schema);
 		this.db.exec(Pragma);
 
-		this.graphql = launchGraphql();
+		this.graphql = launchGraphql(this.db);
 		this.rest = launchRest();
 	}
 
-	getMiddleware(): express.Router {
+	async getMiddleware(): Promise<express.Router> {
 		const router = express.Router();
+		const graphql = await this.graphql;
 
-		router.use(`/${GlobalConfig.apiGqlPath}`, this.graphql.getMiddleware({path: '/'}));
+		router.use(`/${GlobalConfig.apiGqlPath}`, graphql.getMiddleware({path: '/'}));
 		router.use('/', this.rest.getMiddleware());
 
 		return router;

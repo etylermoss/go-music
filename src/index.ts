@@ -83,7 +83,7 @@ const launch = async (): Promise<void> => {
 	const app = express();
 
 	/* Serve backend api */
-	app.use(`/${GlobalConfig.apiPath}`, new Api(newConfig).getMiddleware());
+	app.use(`/${GlobalConfig.apiPath}`, await new Api(newConfig).getMiddleware());
 
 	/* Serve frontend */
 	if (!config.private.apiOnly) {
