@@ -1,6 +1,6 @@
 {
-	"apiPath": "api",
-	"apiGqlPath": "graphql",
+	"audioApiPath": "api",
+	"gqlPath": "graphql",
 	"port": 5000,
 	"devServerPortOffset": 50
 }

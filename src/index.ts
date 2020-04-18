@@ -8,7 +8,6 @@ import express from 'express';
 import GlobalConfig from '@G/config.json';
 import Common from '@/common';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
-import Api from '@/api';
 
 /** Help information used when the user runs the
  *  application with -h or --help. 
@@ -82,8 +81,11 @@ const launch = async (): Promise<void> => {
 	/* Initialize express server */
 	const app = express();
 
-	/* Serve backend api */
-	app.use(`/${GlobalConfig.apiPath}`, await new Api(newConfig).getMiddleware());
+	/* Serve Audio Api */
+	app.use(`/${GlobalConfig.audioApiPath}`, /*audio api*/);
+
+	/* Serve Graphql */
+	app.use(`/${GlobalConfig.gqlPath}`, /*gql*/);
 
 	/* Serve frontend */
 	if (!config.private.apiOnly) {
@@ -96,7 +98,7 @@ const launch = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(newConfig.port);
 
-	console.log(`Now running at http://localhost:${config.port}, api at ${GlobalConfig.apiPath}.`);
+	console.log(`Now running at http://localhost:${config.port}, audio api at /${GlobalConfig.audioApiPath}, gql at /${GlobalConfig.gqlPath}.`);
 };
 
 launch();
