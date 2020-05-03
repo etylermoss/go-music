@@ -4,15 +4,15 @@ import { Service } from 'typedi';
 
 /* 1st party imports */
 import { DatabaseService } from '@/database';
-import { User, SignUpInput } from '@/graphql/resolvers/user';
+import { User, SignUpInput } from '@/graphql/resolvers/authentication';
 
 interface PasswordData {
 	salt: Buffer;
 	hash: Buffer;
 }
 
-@Service('user.service')
-export class UserService extends DatabaseService {
+@Service('authentication.service')
+export class AuthenticationService extends DatabaseService {
 
 	/** Retrieves a users data (username, email etc.), searching for them by username.
 	 */
@@ -25,6 +25,7 @@ export class UserService extends DatabaseService {
 	 */
 	getUserByID(user_id: string): User | null {
 		const statement = this.connection.prepare('SELECT user_id, username, email, real_name FROM Users WHERE user_id = $user_id');
+		console.log('getUserByID Error?', user_id, typeof user_id);
 		return statement.get({user_id}) as User;
 	}
 
@@ -94,7 +95,7 @@ export class UserService extends DatabaseService {
 	 */
 	checkAuthToken(token: string): string | null {
 		const statement = this.connection.prepare('SELECT user_id FROM UserAuthTokens WHERE token = $token');
-		return statement.get({token});
+		return statement.get({token}).user_id;
 	}
 
 	/** Removes the authToken from the database,
@@ -104,7 +105,6 @@ export class UserService extends DatabaseService {
 		const statement = this.connection.prepare('DELETE FROM UserAuthTokens WHERE token = $token');
 		return statement.run({token}).changes > 0 ? true : false;
 	}
-
 
 	/** Removes all authTokens from the database that are
 	 *  associated with the given user_id. The number of

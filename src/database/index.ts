@@ -3,4 +3,4 @@
  */
 
 export * from '@/database/database';
-export * from '@/database/services/user';
+export * from '@/database/services/authentication';

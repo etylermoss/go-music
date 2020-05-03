@@ -9,15 +9,33 @@ type AuthResponse {
 }
 
 type Mutation {
+  """Sign into the application, setting authToken (if successful)"""
   signIn(data: SignInInput!): AuthResponse!
+
+  """Sign out of the application, revoking authToken."""
   signOut: AuthResponse!
+
+  """
+  Sign out of the application on all currently authorized clients,including the
+  client sending the request. Required to sign in again.
+  """
   signOutAll(data: SignInInput!): AuthResponse!
+
+  """Sign up, creating a new user/account, signs in automatically."""
   signUp(data: SignUpInput!): AuthResponse!
+
+  """
+  Check whether the client is signed in, ensures the authTokencookie (httpOnly)
+  is present in the database and associated with a user.
+  """
   isSignedIn: AuthResponse!
 }
 
 type Query {
-  user(username: String!): User!
+  """
+  Dummy query until more are added, as theroot Query must not be empty according to graphql spec.
+  """
+  dummy: String!
 }
 
 input SignInInput {

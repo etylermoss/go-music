@@ -11,7 +11,7 @@ import { ExecutionParams } from 'subscriptions-transport-ws';
 /* 1st party imports */
 import { ConfigSchema } from '@/config';
 import { FATAL_ERROR, EXIT } from '@/common';
-import UserResolver from '@/graphql/resolvers/user';
+import UserResolver from '@/graphql/resolvers/authentication';
 
 export interface Context {
 	res: Response;

@@ -20,7 +20,7 @@ module.exports = (env) => {
 			rules: [
 				{
 					test: /\.ts$|\.js$/,
-					use: ['ts-loader', 'eslint-loader'],
+					use: ['ts-loader', 'typegraphql-description-loader', 'eslint-loader'],
 					exclude: /node_modules/
 				},
 				{
