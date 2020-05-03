@@ -13,12 +13,17 @@ interface PasswordData {
 
 @Service('user.service')
 export class UserService extends DatabaseService {
-	getUserByUsername(username: string): User | undefined {
+
+	/** Retrieves a users data (username, email etc.), searching for them by username.
+	 */
+	getUserByUsername(username: string): User | null {
 		const statement = this.connection.prepare('SELECT user_id, username, email, real_name FROM Users WHERE username = $username');
 		return statement.get({username}) as User;
 	}
 
-	getUserByID(user_id: string): User | undefined {
+	/** Retrieves a users data (username, email etc.), searching for them by user_id.
+	 */
+	getUserByID(user_id: string): User | null {
 		const statement = this.connection.prepare('SELECT user_id, username, email, real_name FROM Users WHERE user_id = $user_id');
 		return statement.get({user_id}) as User;
 	}
@@ -58,6 +63,19 @@ export class UserService extends DatabaseService {
 		return statement.get({user_id});
 	}
 
+	/** Retrieves a users data, searching for them by username, as well as ensuring
+	 *  that the input password matches the users stored password.
+	 */
+	getUserByUsernameAndPassword(username: string, password: string): User | null {
+		const user = this.getUserByUsername(username);
+		if (user) {
+			const userPasswordData = this.getUserPasswordData(user.user_id);
+			const inputHash = scryptSync(password, userPasswordData.salt, 256);
+			if (inputHash.equals(userPasswordData.hash)) return user;
+		}
+		return null;
+	}
+
 	/** Generates and returns a new 128 bit authToken, and removes
 	 *  the oldest token from the database if the user is at the limit.
 	 */
@@ -87,12 +105,13 @@ export class UserService extends DatabaseService {
 		return statement.run({token}).changes > 0 ? true : false;
 	}
 
-	/** Removes the authToken from the database,
-	 *  as well as any tokens that share the associated user_id,
-	 *  returns tokens removed (> 0 === success).
+
+	/** Removes all authTokens from the database that are
+	 *  associated with the given user_id. The number of
+	 *  tokens retrieved is returned (> 0 === success).
 	 */
-	removeAllAuthTokens(token: string): number {
-		const statement = this.connection.prepare('DELETE FROM UserAuthTokens WHERE user_id = ( SELECT user_id FROM UserAuthTokens WHERE token = $token )');
-		return statement.run({token}).changes;
+	removeAllAuthTokens(user_id: string): number {
+		const statement = this.connection.prepare('DELETE FROM UserAuthTokens WHERE user_id = $user_id');
+		return statement.run({user_id}).changes;
 	}
 }

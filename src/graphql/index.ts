@@ -47,6 +47,6 @@ export const launchGraphql = async (config: ConfigSchema): Promise<ApolloServer>
 	
 		return new ApolloServer({ schema, ...apolloOptions });
 	} catch (err) {
-		FATAL_ERROR('// Error generating schema?: ', err);
+		FATAL_ERROR(err);
 	}
 };

@@ -7,9 +7,6 @@
 // START Enums and Input Objects
 //==============================================================
 
-/**
- * Create new user
- */
 export interface SignUpInput {
   username: string;
   password: string;

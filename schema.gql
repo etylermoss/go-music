@@ -11,6 +11,7 @@ type AuthResponse {
 type Mutation {
   signIn(data: SignInInput!): AuthResponse!
   signOut: AuthResponse!
+  signOutAll(data: SignInInput!): AuthResponse!
   signUp(data: SignUpInput!): AuthResponse!
   isSignedIn: AuthResponse!
 }
@@ -19,13 +20,11 @@ type Query {
   user(username: String!): User!
 }
 
-"""Sign in to user"""
 input SignInInput {
   username: String!
   password: String!
 }
 
-"""Create new user"""
 input SignUpInput {
   username: String!
   password: String!
