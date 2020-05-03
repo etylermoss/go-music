@@ -19,7 +19,9 @@ export interface Context {
 	connection: ExecutionParams;
 }
 
-export const launchGraphql = async (config: ConfigSchema): Promise<ApolloServer> => {
+export const launchGraphql = async (): Promise<ApolloServer> => {
+
+	const config: ConfigSchema = Container.get('config');
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,

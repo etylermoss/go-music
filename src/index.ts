@@ -4,14 +4,26 @@ import path from 'path';
 import minimist from 'minimist';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import 'reflect-metadata';
 import { Container } from 'typedi';
+import 'reflect-metadata';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
 import { FATAL_ERROR, EXIT } from '@/common';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
 import { launchGraphql } from '@/graphql';
+
+/** Checks whether the provided paths[] are absolute,
+ *  i.e they always resolve to the same location
+ *  regardless of the working directory.
+ */
+const arePathsAbsolute = (callback: Function, ...paths: string[]): any => {
+	for (const dirPath of paths) {
+		if (!path.isAbsolute(dirPath)) {
+			return callback(dirPath);
+		}
+	}
+};
 
 /** Help information used when the user runs the
  *  application with -h or --help. 
@@ -30,51 +42,46 @@ Go Music: Personal music server.
   -h, --help: Print this help message.`;
 };
 
-/** Checks whether the provided paths[] are absolute,
- *  i.e they always resolve to the same location
- *  regardless of the working directory.
+/** Parse command line arguments supplied to the application,
+ *  and apply them to the configuration object.
  */
-const arePathsAbsolute = (callback: Function, ...paths: string[]): any => {
-	for (const dirPath of paths) {
-		if (!path.isAbsolute(dirPath)) {
-			return callback(dirPath);
-		}
+const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
+	const args = minimist(process.argv.slice(2));
+	switch(true) {
+		// -p, --port: port to run the server on
+		case Boolean(args?.p || args?.port):
+			config.port = args.p ? args.p : args.port;
+			break;
+		// -c, --config: config directory path
+		case Boolean(args?.c || args?.config):
+			config.private.configDirectory = args.c ? args.c : args.config;
+			arePathsAbsolute((path: string) => {
+				FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
+			}, config.private.configDirectory);
+			break;
+		// -a, --api-only
+		case Boolean(args?.a || args['api-only']):
+			config.private.apiOnly = true;
+			break;
+		// -s, --gen-schema
+		case Boolean(args?.s || args['gen-schema']):
+			config.private.genSchema = true;
+			if (RELEASE) FATAL_ERROR('Cannot generate schema with release build.');
+			break;
+		// -h, --help: print help information
+		case Boolean(args?.h || args?.help):
+			console.log(getHelpInfo(defaultConfig.port));
+			EXIT();
 	}
+	return config;
 };
 
-let config: ConfigSchema = defaultConfig;
+/** Retrieves the config object and applys the supplied CLI arguments to it,
+ *  if the config file does not exist it will be created.
+ */
+const retrieveConfig = async (): Promise<ConfigSchema> => {
+	let config = manageCliArgs(defaultConfig);
 
-/* Manage command line arguments */
-const args = minimist(process.argv.slice(2));
-switch(true) {
-	// -p, --port: port to run the server on
-	case Boolean(args?.p || args?.port):
-		config.port = args.p ? args.p : args.port;
-		break;
-	// -c, --config: config directory path
-	case Boolean(args?.c || args?.config):
-		config.private.configDirectory = args.c ? args.c : args.config;
-		arePathsAbsolute((path: string) => {
-			FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
-		}, config.private.configDirectory);
-		break;
-	// -a, --api-only
-	case Boolean(args?.a || args['api-only']):
-		config.private.apiOnly = true;
-		break;
-	// -s, --gen-schema
-	case Boolean(args?.s || args['gen-schema']):
-		config.private.genSchema = true;
-		break;
-	// -h, --help: print help information
-	case Boolean(args?.h || args?.help):
-		console.log(getHelpInfo(config.port));
-		EXIT();
-}
-
-const main = async (): Promise<void> => {
-
-	/* Open config file (or write default config to it if it does not exist) */
 	try {
 		config = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
@@ -86,7 +93,16 @@ const main = async (): Promise<void> => {
 		FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
 	}, config.dataDirectory);
 
-	/* Store configuration in IoC container so it can be accessed anywhere */
+	return config;
+};
+
+/** Entrypoint into the application
+ */
+const main = async (): Promise<void> => {
+
+	const config = await retrieveConfig();
+
+	/* Store configuration in Typedi container so it can be accessed anywhere */
 	Container.set('config', config);
 
 	/* Initialize express server */
@@ -96,7 +112,7 @@ const main = async (): Promise<void> => {
 	app.use(cookieParser());
 
 	/* Serve Graphql */
-	const graphql = await launchGraphql(config);
+	const graphql = await launchGraphql();
 	app.use(`/${GlobalConfig.gqlPath}`, graphql.getMiddleware({path: '/', cors: false}));
 
 	/* Serve Frontend */
