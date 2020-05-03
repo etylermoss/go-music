@@ -40,11 +40,11 @@ module.exports = (env) => {
 		},
 		plugins: [
 			new webpack.DefinePlugin({
-				RELEASE: env && env.release ? env.release : false
+				RELEASE: env && env.release ? env.release : false,
 			}),
 			new webpack.BannerPlugin({
 				banner: '#!/usr/bin/env node',
-				raw: true
+				raw: true,
 			}),
 			new WebpackShellPlugin({
 				onBuildEnd: [`chmod +x ${path.join(outputPath, outputFilename)}`],

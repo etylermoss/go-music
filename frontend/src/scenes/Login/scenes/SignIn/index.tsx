@@ -5,11 +5,7 @@ import { useObserver } from 'mobx-react';
 /* 1st party imports */
 import { StoreContext } from '@/store';
 
-interface SceneProps {
-	active: boolean;
-}
-
-const Scene = (props: SceneProps): JSX.Element => {
+const Scene = (props: { active: boolean }): JSX.Element => {
 
 	const store = useContext(StoreContext);
 	

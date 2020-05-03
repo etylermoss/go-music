@@ -5,10 +5,11 @@
     "finished": "echo -e '\n――― Backend build finished! ―――\n'",
     "make_runtime_dirs": "mkdir -p build/runtime/{config,data}",
     "copy_frontend": "cp -r frontend/build build/frontend",
+    "generate_schema": "echo -e 'Generating schema.gql file.\n' && node build/go-music --gen-schema",
     "build:dev": "webpack --config webpack.dev.js && npm run --silent make_runtime_dirs && npm run --silent finished",
     "build:prod": "webpack --config webpack.prod.js && npm run --silent make_runtime_dirs && npm run --silent finished",
     "build:release": "webpack --config webpack.prod.js --env.release && npm run --silent copy_frontend && npm run --silent finished",
-    "build": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:front \"$mode\" && npm run --silent build:back \"$mode\"; }; func",
+    "build": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:back \"$mode\" && npm run --silent generate_schema && npm run --silent build:front \"$mode\"; }; func",
     "build:front": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent --prefix 'frontend/' build \"$mode\"; }; func",
     "build:back": "func() { [ -z \"$1\" ] && mode='dev' || mode=\"$1\"; npm run --silent clean && npm run --silent build:\"$mode\"; }; func",
     "start": "node build/go-music",
@@ -16,6 +17,7 @@
     "start:apiOnly": "echo -e 'Starting backend server (API only):\n' && node build/go-music --api-only"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.2",
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "@typescript-eslint/parser": "^2.28.0",
     "copy-webpack-plugin": "^5.1.1",
@@ -41,6 +43,7 @@
     "@types/node": "^13.11.1",
     "apollo-server-express": "^2.12.0",
     "better-sqlite3": "^6.0.1",
+    "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
     "fast-xml-parser": "^3.16.0",
     "graphql": "^14.6.0",
@@ -48,6 +51,7 @@
     "minimist": "^1.2.5",
     "reflect-metadata": "^0.1.13",
     "type-graphql": "^0.17.6",
+    "typedi": "^0.8.0",
     "xdg-basedir": "^4.0.0"
   }
 }

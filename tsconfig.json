@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    // TODO: Try removing outDir, not needed since using ts-loader, neither is exclude.
     "outDir": "./build/",
     "noImplicitAny": true,
     "module": "es6",

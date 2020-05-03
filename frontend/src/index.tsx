@@ -1,7 +1,7 @@
 /* 3rd party imports */
 import React from 'react';
 import { render } from 'react-dom';
-import ApolloClient from 'apollo-boost';
+import ApolloClient, { InMemoryCache } from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 import 'mobx-react/batchingForReactDom';
@@ -25,8 +25,9 @@ const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 /* Launch Apollo Client */
 const client = new ApolloClient({
 	uri: `${url}/${GlobalConfig.gqlPath}`,
+	cache: new InMemoryCache(),
+	credentials: 'same-origin',
 });
-
 
 const Root = (): JSX.Element => (
 	<StoreContext.Provider value={StoreInstance}>

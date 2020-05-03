@@ -1,17 +1,17 @@
 /* 3rd party imports */
 import path from 'path';
-import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
+import { Container } from 'typedi';
 
 /* 3rd party imports - Types only */
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
-import { Database } from 'better-sqlite3';
 import { Response, Request } from 'express';
 import { ExecutionParams } from 'subscriptions-transport-ws';
 
 /* 1st party imports */
-import UserResolver from '@/api/graphql/resolvers/user';
-import AuthResolver from '@/api/graphql/resolvers/auth';
+import { ConfigSchema } from '@/config';
+import { FATAL_ERROR, EXIT } from '@/common';
+import UserResolver from '@/graphql/resolvers/user';
 
 export interface Context {
 	res: Response;
@@ -19,18 +19,34 @@ export interface Context {
 	connection: ExecutionParams;
 }
 
-export const launchGraphql = async (db: Database): Promise<ApolloServer> => {
+export const launchGraphql = async (config: ConfigSchema): Promise<ApolloServer> => {
+
 	const apolloOptions: ApolloServerExpressConfig = {
-		playground: !RELEASE,
 		introspection: !RELEASE,
 		debug: !RELEASE,
 		uploads: false,
+		playground: RELEASE ? false : {
+			settings: {
+				'request.credentials': 'same-origin',
+			},
+		},
+		context: ctx => {
+		/* Can mutate context here, set auth level etc */
+			return ctx;
+		},
 	};
 
-	const schema = await buildSchema({
-		resolvers: [UserResolver, AuthResolver],
-		emitSchemaFile: RELEASE ? false : path.resolve(__dirname, 'schema.gql'),
-	});
+	try {
+		const schema = await buildSchema({
+			resolvers: [UserResolver],
+			emitSchemaFile: RELEASE ? false : path.resolve(__dirname, '../', 'schema.gql'),
+			container: Container,
+		});
 
-	return new ApolloServer({ schema, ...apolloOptions });
+		if (config.private.genSchema) EXIT();
+	
+		return new ApolloServer({ schema, ...apolloOptions });
+	} catch (err) {
+		FATAL_ERROR('// Error generating schema?: ', err);
+	}
 };

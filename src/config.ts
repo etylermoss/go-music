@@ -19,6 +19,8 @@ export interface ConfigSchema {
 		frontendDirectory: string;
 		/** True when run with --api-only */
 		apiOnly: boolean;
+		/** Generate schema.gql file (then exit) with -s or --gen-schema */
+		genSchema: boolean;
     };
 }
 
@@ -42,6 +44,7 @@ export const defaultConfig: ConfigSchema = {
 		configDirectory: RELEASE ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
 		frontendDirectory: RELEASE ? path.join(__dirname, './frontend') : path.join(__dirname, '../frontend/build'),
 		apiOnly: false,
+		genSchema: false,
 	},
 };
 
