@@ -67,8 +67,8 @@ const cookieOptions: CookieOptions = {
 @Resolver()
 class UserResolver {
 
-	/* Inject UserService Database Service */
-	@Inject('user.service')
+	/* Inject Authentication Service */
+	@Inject('authentication.service')
 	authSvc: AuthenticationService;
 
 	/** @typegraphql Dummy query until more are added, as the root Query

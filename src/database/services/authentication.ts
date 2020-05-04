@@ -11,6 +11,14 @@ interface PasswordData {
 	hash: Buffer;
 }
 
+/** Template string function to mark an SQL statement as unsafe, i.e
+ *  it contains sensitive information that should not be logged.
+ *  This will be looked for by the database logging function.
+ */
+const unsafe = (sqlInput: TemplateStringsArray): string => {
+	return '/*UNSAFE*/' + sqlInput;
+};
+
 @Service('authentication.service')
 export class AuthenticationService extends DatabaseService {
 
@@ -58,7 +66,7 @@ export class AuthenticationService extends DatabaseService {
 		INSERT INTO Users (user_id, username, email, real_name)
 		VALUES ($user_id, $username, $email, $real_name)
 		`);
-		const sqlCreatePasswordData = this.connection.prepare(`
+		const sqlCreatePasswordData = this.connection.prepare(unsafe`
 		INSERT INTO UserPasswords (user_id, salt, hash)
 		VALUES ($user_id, $salt, $hash)
 		`);
@@ -87,7 +95,7 @@ export class AuthenticationService extends DatabaseService {
 	/** Retrieves the associated user_id's password data (salt and hash).
 	 */
 	getUserPasswordData(user_id: string): PasswordData {
-		return this.connection.prepare(`
+		return this.connection.prepare(unsafe`
 		SELECT salt, hash
 		FROM UserPasswords
 		WHERE user_id = $user_id
@@ -136,7 +144,7 @@ export class AuthenticationService extends DatabaseService {
 		SELECT user_id
 		FROM UserAuthTokens
 		WHERE token = $token
-		`).get({token}).user_id;
+		`).get({token})?.user_id || null;
 	}
 
 	/** Removes the authToken from the database, returning boolean success.
