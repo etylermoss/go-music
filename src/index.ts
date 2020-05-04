@@ -55,9 +55,6 @@ const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 		// -c, --config: config directory path
 		case Boolean(args?.c || args?.config):
 			config.private.configDirectory = args.c ? args.c : args.config;
-			arePathsAbsolute((path: string) => {
-				FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
-			}, config.private.configDirectory);
 			break;
 		// -a, --api-only
 		case Boolean(args?.a || args['api-only']):
@@ -76,22 +73,25 @@ const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 	return config;
 };
 
-/** Retrieves the config object and applys the supplied CLI arguments to it,
- *  if the config file does not exist it will be created.
+/** Retrieve the config object and apply supplied CLI arguments to it, if
+ *  the config file does not exist it will be created.
  */
 const retrieveConfig = async (): Promise<ConfigSchema> => {
 	let config = manageCliArgs(defaultConfig);
+
+	arePathsAbsolute((path: string): void => {
+		FATAL_ERROR(`${path} is not an absolute directory path.`);	
+	},
+	config.dataDirectory,
+	config.private.configDirectory,
+	config.private.frontendDirectory,
+	);
 
 	try {
 		config = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
 		FATAL_ERROR(err);
 	}
-
-	/* Ensures directories specified in config are absolute, so can always be resolved */
-	arePathsAbsolute((path: string): void => {
-		FATAL_ERROR(`${path} is not an absolute directory path, for example don't use './'.`);	
-	}, config.dataDirectory);
 
 	return config;
 };
@@ -102,7 +102,7 @@ const main = async (): Promise<void> => {
 
 	const config = await retrieveConfig();
 
-	/* Store configuration in Typedi container so it can be accessed anywhere */
+	/* Store configuration in Typedi container */
 	Container.set('config', config);
 
 	/* Initialize express server */
@@ -118,7 +118,7 @@ const main = async (): Promise<void> => {
 	/* Serve Frontend */
 	if (!config.private.apiOnly) {
 		const staticServe = express.static(path.resolve(config.private.frontendDirectory));
-		/* Serve the static directory no matter the path, lets the frontend handle routing */
+		/* Serve frontend on all paths, as it handles routing */
 		app.use('/', staticServe);
 		app.use('/*', staticServe);
 	}
@@ -126,7 +126,12 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	console.log(`Now running at http://localhost:${config.port}, audio api at /${GlobalConfig.audioApiPath}, gql at /${GlobalConfig.gqlPath}.`);
+	console.log(
+		`Now running at http://localhost:${config.port}.`,
+		(RELEASE ? undefined :
+		`Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`
+		),
+	);
 };
 
 main();

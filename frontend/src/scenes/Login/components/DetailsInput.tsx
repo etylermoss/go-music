@@ -19,13 +19,15 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
 	 *  passed through (as a boolean)
 	 */
 	valid?: Valid;
-	/** Placed below the input element to provide an explanation to the user
-	 *  (e.g "Only use letters and numbers")
+	/** Placed below the input element to provide an explanation to the
+	 *  user (e.g "Only use letters and numbers").
 	 */
 	children?: React.ReactNode;
 }
 
-/** Extension of <input> that adds warnings on invalid input, and an explanation element */
+/** Extension of <input> that adds warnings on invalid input, and an
+ *  explanation element (e.g 'Only letters allowed').
+ */
 const Component = (props: Props): JSX.Element => {
 	const { validation, valid, onChange, children, ...inputProps } = props; 
 
@@ -35,7 +37,9 @@ const Component = (props: Props): JSX.Element => {
 
 	const checkValid = (event: React.ChangeEvent<HTMLInputElement>): void => {
 		const invalidChars = event.target.value.match(validation.regex);
-		const validLength = event.target.value.length >= validation.minLength && event.target.value.length <= validation.maxLength;
+		const aboveMinLength = event.target.value.length >= validation.minLength;
+		const belowMaxLength = event.target.value.length <= validation.maxLength;
+		const validLength = aboveMinLength && belowMaxLength;
 		const isValid = validLength && !invalidChars ? true : false;
 
 		if (valid) valid(isValid);

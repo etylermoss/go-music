@@ -71,15 +71,16 @@ class UserResolver {
 	@Inject('user.service')
 	authSvc: AuthenticationService;
 
-	/** @typegraphql Dummy query until more are added, as the
-	 *  root Query must not be empty according to graphql spec.
+	/** @typegraphql Dummy query until more are added, as the root Query
+	 *  must not be empty according to GraphQL spec.
 	 */
 	@Query(_returns => String)
 	dummy(): string {
 		return 'dummy';
 	}
 
-	/** @typegraphql Sign into the application, setting authToken (if successful) */
+	/** @typegraphql Sign into the application, if the supplied credentials
+	 *  are correct, the authToken httpOnly cookie is set. */
 	@Mutation(_returns => AuthResponse)
 	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.authSvc.getUserByUsernameAndPassword(data.username, data.password);
@@ -107,8 +108,9 @@ class UserResolver {
 		};
 	}
 
-	/** @typegraphql Sign out of the application on all currently authorized clients,
-	 *  including the client sending the request. Required to sign in again.
+	/** @typegraphql Sign out of the application on all currently
+	 *  authorized clients, including the client sending the request.
+	 *  Required to sign in again.
 	 */
 	@Mutation(_returns => AuthResponse)
 	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
@@ -126,7 +128,8 @@ class UserResolver {
 		};
 	}
 
-	/** @typegraphql Sign up, creating a new user/account, signs in automatically.
+	/** @typegraphql Sign up, creating a new user/account, and signing in
+	 *  the user automatically.
 	 */
 	@Mutation(_returns => AuthResponse)
 	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): AuthResponse {
@@ -140,8 +143,9 @@ class UserResolver {
 		};
 	}
 
-	/** @typegraphql Check whether the client is signed in, ensures the authToken
-	 *  cookie (httpOnly) is present in the database and associated with a user.
+	/** @typegraphql Check whether the client is signed in, ensures the
+	 *  authToken cookie (httpOnly) is present in the database and
+	 *  associated with a user.
 	 */
 	@Mutation(_returns => AuthResponse)
 	isSignedIn(@Ctx() ctx: Context): AuthResponse {

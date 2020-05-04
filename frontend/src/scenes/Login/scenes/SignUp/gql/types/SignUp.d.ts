@@ -25,7 +25,7 @@ export interface SignUp_signUp {
 
 export interface SignUp {
   /**
-   * Sign up, creating a new user/account, signs in automatically.
+   * Sign up, creating a new user/account, and signing inthe user automatically.
    */
   signUp: SignUp_signUp;
 }

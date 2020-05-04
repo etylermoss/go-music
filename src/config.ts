@@ -38,13 +38,19 @@ const configPreamble =
 
 /** The default configuration options */
 export const defaultConfig: ConfigSchema = {
-	dataDirectory: RELEASE ? path.join(xdgBasedir.data, '/go-music') : path.join(__dirname, './runtime/data'),
 	port: GlobalConfig.port,
+	dataDirectory: RELEASE
+		? path.join(xdgBasedir.data, '/go-music')
+		: path.join(__dirname, './runtime/data'),
 	private: {
-		configDirectory: RELEASE ? path.join(xdgBasedir.config, '/go-music') : path.join(__dirname, './runtime/config'),
-		frontendDirectory: RELEASE ? path.join(__dirname, './frontend') : path.join(__dirname, '../frontend/build'),
 		apiOnly: false,
 		genSchema: false,
+		configDirectory: RELEASE
+			? path.join(xdgBasedir.config, '/go-music')
+			: path.join(__dirname, './runtime/config'),
+		frontendDirectory: RELEASE
+			? path.join(__dirname, './frontend')
+			: path.join(__dirname, '../frontend/build'),
 	},
 };
 
@@ -70,11 +76,11 @@ export const openConfig = async (configPath: string, config: ConfigSchema ): Pro
 			.catch(() => { throw `Could not create ${configDir}` });
 	};
 	const openFile = async (): Promise<ConfigSchema> => {
-		/** BUG?: flags: 'w+' reports file size incorrectly as 0,
+		/* BUG?: flags: 'w+' reports file size incorrectly as 0,
 		 *  instead we use the raw Linux kernel mode integer.
 		 *  See: http://man7.org/linux/man-pages/man2/open.2.html
 		 *  And: fs.constants.
-		 */
+		*/
 		return fs.promises.open(configPath, 66, '0750')
 			.then(async file => {
 				/* Get file information */
@@ -86,9 +92,14 @@ export const openConfig = async (configPath: string, config: ConfigSchema ): Pro
 							return file.readFile('utf8')
 								.then(content => toml.parse(content))
 								.then(contentParsed => {
-									/* Copies any values from the config file into the existing config */
+									/* Copies any values from the config
+									 * file into the existing config
+									*/
 									return Object.assign({}, ...Object.keys(config).map(key => {
-										const newKey = key in contentParsed as any && key !== 'private' ? contentParsed as any : config;
+										const newKey = key in contentParsed as any
+											&& key === 'private'
+											? config
+											: contentParsed as any;
 										return {[key]: newKey[key]};
 									})) as ConfigSchema;
 								})
@@ -111,7 +122,7 @@ export const openConfig = async (configPath: string, config: ConfigSchema ): Pro
 
 	return fs.promises.opendir(path.dirname(configPath))
 		.then(dirIsDir, dirCreate)
-		/* If the dir isn't a dir, or can't be created, the function is thrown */
+		/* Throw if the dir isn't a dir, or can't be created */
 		.catch(err => { throw err })
 		/* Can now handle the actual config file */
 		.then(() => openFile())

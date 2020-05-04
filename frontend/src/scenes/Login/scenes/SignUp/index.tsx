@@ -67,7 +67,9 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 						Must be at least 8 characters long.
 						You can use letters, numbers, and common symbols.
 					</DetailsInput>
-					<input type="submit" value="Submit" disabled={usernameValidity && passwordValidity ? false : true}/>
+					<input type="submit" value="Submit"
+						disabled={usernameValidity && passwordValidity ? false : true}
+					/>
 				</form>
 			</>
 		);

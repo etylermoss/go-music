@@ -15,7 +15,9 @@ import Login from '@/scenes/Login';
 import NotFound from '@/scenes/NotFound';
 import Home from '@/scenes/Home';
 
-/* Get URL with correct port, accounting for Webpack Dev Server port offset */
+/* Get URL with correct port, accounting for Webpack Dev Server port
+ * offset, may not work behind reverse proxy.
+*/
 let port = Number.parseInt(window.location.port);
 if (!port && window.location.protocol === 'https:') port = 443;
 if (!port && window.location.protocol === 'http:') port = 80;

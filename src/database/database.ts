@@ -26,7 +26,10 @@ export abstract class DatabaseService {
 
 		try {
 			if (!fs.existsSync(this.config.dataDirectory)) fs.mkdirSync(this.config.dataDirectory, '0700');
-			this.connection = new sqlite(path.join(this.config.dataDirectory, 'go-music.db'), databaseOptions);
+			this.connection = new sqlite(
+				path.join(this.config.dataDirectory, 'go-music.db'),
+				databaseOptions,
+			);
 		} catch(err) {
 			FATAL_ERROR(`Error creating SQLite3 DB: `, err);
 		}
