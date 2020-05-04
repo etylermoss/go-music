@@ -9,11 +9,14 @@ import GlobalConfig from '@G/config.json';
 
 /** Schema of application configuration object / file */
 export interface ConfigSchema {
-    dataDirectory: string;
 	port: number;
+	/** Maximum number of clients any one user can logged in*/
+	maxClients: number;
+	/** Data directory (e.g Database files), usually ~/.local/go-music/ */
+	dataDirectory: string;
 	/** Private options cannot be changed by the configuration file */
     private: {
-		/** Configuration directory, usually ~/.config/go-music */
+		/** Configuration directory, usually ~/.config/go-music/ */
 		configDirectory: string;
 		/** Directory containing the built frontend */
 		frontendDirectory: string;
@@ -39,6 +42,7 @@ const configPreamble =
 /** The default configuration options */
 export const defaultConfig: ConfigSchema = {
 	port: GlobalConfig.port,
+	maxClients: 8,
 	dataDirectory: RELEASE
 		? path.join(xdgBasedir.data, '/go-music')
 		: path.join(__dirname, './runtime/data'),

@@ -1,8 +1,9 @@
 /* 3rd party imports */
 import { scryptSync, randomBytes } from 'crypto';
-import { Service } from 'typedi';
+import { Service, Container } from 'typedi';
 
 /* 1st party imports */
+import { ConfigSchema } from '@/config';
 import { DatabaseService } from '@/database';
 import { User, SignUpInput } from '@/graphql/resolvers/authentication';
 
@@ -106,7 +107,6 @@ export class AuthenticationService extends DatabaseService {
 	 *  the oldest token from the database if the user is at the limit.
 	 */
 	newAuthToken(user_id: string): string {
-		// TODO: Get token limit from config
 		const sqlGetTokenCount = this.connection.prepare(`
 		SELECT COUNT(*)
 		FROM UserAuthTokens
@@ -127,11 +127,14 @@ export class AuthenticationService extends DatabaseService {
 		VALUES ($user_id, $token)
 		`);
 
+		const config: ConfigSchema = Container.get('config');
 		const token = randomBytes(16).toString('base64');
 		const tokenCount = sqlGetTokenCount.get({user_id});
-		if (tokenCount > 10) {
+
+		if (tokenCount > config.maxClients) {
 			sqlDeleteOldestToken.run({user_id});
 		}
+		
 		sqlInsertToken.run({user_id, token});
 		return token;
 	}
