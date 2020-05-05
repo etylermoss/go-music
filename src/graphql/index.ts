@@ -10,7 +10,7 @@ import { ExecutionParams } from 'subscriptions-transport-ws';
 
 /* 1st party imports */
 import { ConfigSchema } from '@/config';
-import { FATAL_ERROR, EXIT } from '@/common';
+import { LoggerService } from '@/logger';
 import UserResolver from '@/graphql/resolvers/authentication';
 
 export interface Context {
@@ -22,6 +22,7 @@ export interface Context {
 export const launchGraphql = async (): Promise<ApolloServer> => {
 
 	const config: ConfigSchema = Container.get('config');
+	const logger: LoggerService = Container.get('logger.service');
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,
@@ -45,10 +46,10 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 			container: Container,
 		});
 
-		if (config.private.genSchema) EXIT();
+		if (config.private.genSchema) process.exit(0);
 	
 		return new ApolloServer({ schema, ...apolloOptions });
 	} catch (err) {
-		FATAL_ERROR(err);
+		logger.log('FATAL_ERROR', err);
 	}
 };

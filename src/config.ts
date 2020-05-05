@@ -6,11 +6,16 @@ import toml from '@iarna/toml';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
+import { LogLevel } from '@/logger';
 
 /** Schema of application configuration object / file */
 export interface ConfigSchema {
 	port: number;
-	/** Maximum number of clients any one user can logged in*/
+	/** Verbosity of program logging */
+	logLevel: LogLevel;
+	/** Log file path, where logging data will be written */
+	logFile: string;
+	/** Maximum number of clients any one user can have logged in */
 	maxClients: number;
 	/** Data directory (e.g Database files), usually ~/.local/go-music/ */
 	dataDirectory: string;
@@ -42,6 +47,10 @@ const configPreamble =
 /** The default configuration options */
 export const defaultConfig: ConfigSchema = {
 	port: GlobalConfig.port,
+	logLevel: RELEASE ? LogLevel.ERROR : LogLevel.INFO,
+	logFile: RELEASE
+		? path.join('/tmp', 'go-music.log')
+		: path.join(__dirname, './runtime/go-music.log'),
 	maxClients: 8,
 	dataDirectory: RELEASE
 		? path.join(xdgBasedir.data, '/go-music')

@@ -4,6 +4,7 @@ import { Inject } from 'typedi';
 import { CookieOptions } from 'express';
 
 /* 1st party imports */
+import { LoggerService } from '@/logger';
 import { AuthenticationService } from '@/database';
 import { Context } from '@/graphql';
 
@@ -71,6 +72,10 @@ class UserResolver {
 	@Inject('authentication.service')
 	authSvc: AuthenticationService;
 
+	/* Inject Authentication Service */
+	@Inject('logger.service')
+	logSvc: LoggerService;
+
 	/** @typegraphql Dummy query until more are added, as the root Query
 	 *  must not be empty according to GraphQL spec.
 	 */
@@ -91,6 +96,7 @@ class UserResolver {
 				user: user,
 			};
 		}
+		this.logSvc.log('WARN', `Incorrect signin attempt from ${ctx.req.ip}.`);
 		return {
 			success: false,
 			user: null,

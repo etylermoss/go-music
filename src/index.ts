@@ -9,9 +9,26 @@ import 'reflect-metadata';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
-import { FATAL_ERROR, EXIT } from '@/common';
+import { LoggerService } from '@/logger';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
 import { launchGraphql } from '@/graphql';
+
+/** Print exit message and exit program execution.
+ *  Accepts process exit code, defaults to 0.
+ */
+const Exit = (exitCode: number = 0, ...msg: string[]): void => {
+	if (msg.length > 0) console.log(...msg);
+	console.log(`\nExiting...`);
+	process.exit(exitCode);
+};
+
+/** Prints error message and then exits the program
+ *  by calling EXIT().
+ */
+const FatalError = (...err: any[]): void => {
+	console.error(`\x1b[31m\x1b[1m [FATAL ERROR]: `, ...err, `\x1b[0m`);
+	Exit(1);
+};
 
 /** Checks whether the provided paths[] are absolute,
  *  i.e they always resolve to the same location
@@ -38,7 +55,12 @@ Go Music: Personal music server.
 	Defaults to ~/.config/go-music/
   -p, --port: The port to run the server on.
 	Currently this is overridden by the config file.
-    Defaults to ${port}
+	Defaults to ${port}
+  -l, --log-level: Verbosity of logging output.
+	Accepts an integer from 0 to 4, with 4 being
+	the most verbose.
+  -a, --api-only: Runs the backend of the application
+    only, useful when developing frontend code.
   -h, --help: Print this help message.`;
 };
 
@@ -48,27 +70,38 @@ Go Music: Personal music server.
 const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 	const args = minimist(process.argv.slice(2));
 	switch(true) {
-		// -p, --port: port to run the server on
-		case Boolean(args?.p || args?.port):
-			config.port = args.p ? args.p : args.port;
-			break;
 		// -c, --config: config directory path
 		case Boolean(args?.c || args?.config):
 			config.private.configDirectory = args.c ? args.c : args.config;
 			break;
-		// -a, --api-only
+		// -p, --port: port to run the server on
+		case Boolean(args?.p || args?.port):
+			config.port = args.p ? args.p : args.port;
+			break;
+		// -l, --log-level: logging verbosity level (0-4)
+		case Boolean(args?.l || args['log-level']):
+			config.logLevel = args.l ? args.l : args['log-level'];
+			if (RELEASE && config.logLevel === 4) {
+				FatalError('This log level is not allowed with Release builds.');
+			}
+			break;
+		// -L, --log-file: file path to output logs to
+		case Boolean(args?.L || args['log-file']):
+			config.logFile = args.L ? args.L : args['log-file'];
+			break;
+		// -a, --api-only: don't serve frontend
 		case Boolean(args?.a || args['api-only']):
 			config.private.apiOnly = true;
 			break;
 		// -s, --gen-schema
 		case Boolean(args?.s || args['gen-schema']):
 			config.private.genSchema = true;
-			if (RELEASE) FATAL_ERROR('Cannot generate schema with release build.');
+			if (RELEASE) FatalError('Cannot generate schema with Release builds.');
 			break;
 		// -h, --help: print help information
 		case Boolean(args?.h || args?.help):
 			console.log(getHelpInfo(defaultConfig.port));
-			EXIT();
+			Exit();
 	}
 	return config;
 };
@@ -80,7 +113,7 @@ const retrieveConfig = async (): Promise<ConfigSchema> => {
 	let config = manageCliArgs(defaultConfig);
 
 	arePathsAbsolute((path: string): void => {
-		FATAL_ERROR(`${path} is not an absolute directory path.`);	
+		FatalError(`${path} is not an absolute directory path.`);	
 	},
 	config.dataDirectory,
 	config.private.configDirectory,
@@ -90,7 +123,7 @@ const retrieveConfig = async (): Promise<ConfigSchema> => {
 	try {
 		config = await openConfig(path.join(config.private.configDirectory, 'go-music.config.toml'), config);
 	} catch(err) {
-		FATAL_ERROR(err);
+		FatalError(err);
 	}
 
 	return config;
@@ -104,6 +137,8 @@ const main = async (): Promise<void> => {
 
 	/* Store configuration in Typedi container */
 	Container.set('config', config);
+
+	const logger: LoggerService = Container.get('logger.service');
 
 	/* Initialize express server */
 	const app = express();
@@ -126,7 +161,7 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	console.log(
+	logger.log('INFO',
 		`Now running at http://localhost:${config.port}.`,
 		(RELEASE ? undefined :
 		`Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`

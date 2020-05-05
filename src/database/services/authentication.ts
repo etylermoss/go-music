@@ -1,9 +1,8 @@
 /* 3rd party imports */
 import { scryptSync, randomBytes } from 'crypto';
-import { Service, Container } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports */
-import { ConfigSchema } from '@/config';
 import { DatabaseService } from '@/database';
 import { User, SignUpInput } from '@/graphql/resolvers/authentication';
 
@@ -88,7 +87,8 @@ export class AuthenticationService extends DatabaseService {
 				hash,
 			});
 		} catch {
-			return null; // TODO: App logging functionality to log error
+			this.logger.log('WARN', `Could not create user '${username}', likely already exists.`);
+			return null;
 		}
 		return this.getUserByID(user_id);
 	}
@@ -126,12 +126,11 @@ export class AuthenticationService extends DatabaseService {
 		INSERT INTO UserAuthTokens (user_id, token)
 		VALUES ($user_id, $token)
 		`);
-
-		const config: ConfigSchema = Container.get('config');
+		
 		const token = randomBytes(16).toString('base64');
 		const tokenCount = sqlGetTokenCount.get({user_id});
 
-		if (tokenCount > config.maxClients) {
+		if (tokenCount > this.config.maxClients) {
 			sqlDeleteOldestToken.run({user_id});
 		}
 		
