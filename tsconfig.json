@@ -1,17 +1,14 @@
 {
   "compilerOptions": {
-    // TODO: Try removing outDir, not needed since using ts-loader, neither is exclude.
-    "outDir": "./build/",
     "noImplicitAny": true,
     "module": "es6",
     "moduleResolution": "Node",
-    "target": "es2016",
-    "allowJs": true,
+    "target": "es2018",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["es2016", "esnext.asynciterable"],
+    "lib": ["es2018", "esnext.asynciterable"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
