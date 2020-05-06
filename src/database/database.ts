@@ -12,9 +12,9 @@ import { LoggerService } from '@/logger';
 import Schema from '@/database/setup/schema.sql';
 import Pragma from '@/database/setup/pragma.sql';
 
-@Service('database.service')
+@Service()
 export abstract class DatabaseService {
-	protected readonly connection: sqlite.Database;
+	protected readonly db: sqlite.Database;
 	protected readonly config: ConfigSchema;
 	protected readonly logger: LoggerService;
 
@@ -30,7 +30,7 @@ export abstract class DatabaseService {
 
 		try {
 			if (!fs.existsSync(this.config.dataDirectory)) fs.mkdirSync(this.config.dataDirectory, '0700');
-			this.connection = new sqlite(
+			this.db = new sqlite(
 				path.join(this.config.dataDirectory, 'go-music.db'),
 				databaseOptions,
 			);
@@ -38,7 +38,7 @@ export abstract class DatabaseService {
 			this.logger.log('FATAL_ERROR', `Error creating SQLite3 DB: `, err);
 		}
 		
-		this.connection.exec(Schema);
-		this.connection.exec(Pragma);
+		this.db.exec(Schema);
+		this.db.exec(Pragma);
 	}
 }

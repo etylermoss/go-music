@@ -26,7 +26,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  by username.
 	 */
 	getUserByUsername(username: string): User | null {
-		const statement = this.connection.prepare(`
+		const statement = this.db.prepare(`
 		SELECT user_id, username, email, real_name
 		FROM Users WHERE username = $username
 		`);
@@ -37,7 +37,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  by user_id.
 	 */
 	getUserByID(user_id: string): User | null {
-		const statement = this.connection.prepare(`
+		const statement = this.db.prepare(`
 		SELECT user_id, username, email, real_name
 		FROM Users
 		WHERE user_id = $user_id
@@ -62,11 +62,11 @@ export class AuthenticationService extends DatabaseService {
 	 *  exists), null is returned.
 	 */
 	createUser({ username, password, email, real_name}: SignUpInput): User | null {
-		const sqlCreateUser = this.connection.prepare(`
+		const sqlCreateUser = this.db.prepare(`
 		INSERT INTO Users (user_id, username, email, real_name)
 		VALUES ($user_id, $username, $email, $real_name)
 		`);
-		const sqlCreatePasswordData = this.connection.prepare(unsafe`
+		const sqlCreatePasswordData = this.db.prepare(unsafe`
 		INSERT INTO UserPasswords (user_id, salt, hash)
 		VALUES ($user_id, $salt, $hash)
 		`);
@@ -96,7 +96,7 @@ export class AuthenticationService extends DatabaseService {
 	/** Retrieves the associated user_id's password data (salt and hash).
 	 */
 	getUserPasswordData(user_id: string): PasswordData {
-		return this.connection.prepare(unsafe`
+		return this.db.prepare(unsafe`
 		SELECT salt, hash
 		FROM UserPasswords
 		WHERE user_id = $user_id
@@ -107,12 +107,12 @@ export class AuthenticationService extends DatabaseService {
 	 *  the oldest token from the database if the user is at the limit.
 	 */
 	newAuthToken(user_id: string): string {
-		const sqlGetTokenCount = this.connection.prepare(`
+		const sqlGetTokenCount = this.db.prepare(`
 		SELECT COUNT(*)
 		FROM UserAuthTokens
 		WHERE user_id = $user_id
 		`);
-		const sqlDeleteOldestToken = this.connection.prepare(`
+		const sqlDeleteOldestToken = this.db.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE rowid =
 			(
@@ -122,7 +122,7 @@ export class AuthenticationService extends DatabaseService {
 				ORDER BY creation_time ASC LIMIT 1
 			)
 		`);
-		const sqlInsertToken = this.connection.prepare(`
+		const sqlInsertToken = this.db.prepare(`
 		INSERT INTO UserAuthTokens (user_id, token)
 		VALUES ($user_id, $token)
 		`);
@@ -142,7 +142,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  associated user_id.
 	 */
 	checkAuthToken(token: string): string | null {
-		return this.connection.prepare(`
+		return this.db.prepare(`
 		SELECT user_id
 		FROM UserAuthTokens
 		WHERE token = $token
@@ -152,7 +152,7 @@ export class AuthenticationService extends DatabaseService {
 	/** Removes the authToken from the database, returning boolean success.
 	 */
 	removeAuthToken(token: string): boolean {
-		return this.connection.prepare(`
+		return this.db.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE token = $token
 		`).run({token}).changes > 0 ? true : false;
@@ -163,7 +163,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  tokens retrieved is returned (> 0 === success).
 	 */
 	removeAllAuthTokens(user_id: string): number {
-		return this.connection.prepare(`
+		return this.db.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE user_id = $user_id
 		`).run({user_id}).changes;
