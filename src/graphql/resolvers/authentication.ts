@@ -1,12 +1,13 @@
 /* 3rd party imports */
-import { ObjectType, Field, ID, Resolver, Arg, Ctx, Mutation, InputType, Query } from 'type-graphql';
+import { ObjectType, Resolver, InputType, Arg, Ctx, Field,  Mutation, Query, ID } from 'type-graphql';
 import { Inject } from 'typedi';
 import { CookieOptions } from 'express';
 
 /* 1st party imports */
-import { LoggerService } from '@/logger';
-import { AuthenticationService } from '@/database';
-import { Context } from '@/graphql';
+import Context from '@/context';
+import { LoggingService } from '@/logging';
+import { AuthenticationService } from '@/database/services/authentication';
+import { AccessControl } from '@/database/services/access-control';
 
 @ObjectType()
 class User {
@@ -73,8 +74,8 @@ class UserResolver {
 	authSvc: AuthenticationService;
 
 	/* Inject Authentication Service */
-	@Inject('logger.service')
-	logSvc: LoggerService;
+	@Inject('logging.service')
+	logSvc: LoggingService;
 
 	/** @typegraphql Dummy query until more are added, as the root Query
 	 *  must not be empty according to GraphQL spec.
@@ -85,7 +86,8 @@ class UserResolver {
 	}
 
 	/** @typegraphql Sign into the application, if the supplied credentials
-	 *  are correct, the authToken httpOnly cookie is set. */
+	 *  are correct, the authToken httpOnly cookie is set.
+	 */
 	@Mutation(_returns => AuthResponse)
 	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.authSvc.getUserByUsernameAndPassword(data.username, data.password);
@@ -160,6 +162,18 @@ class UserResolver {
 		return {
 			success: user_id ? true : false,
 			user: user_id ? this.authSvc.getUserByID(user_id) : null,
+		};
+	}
+
+	/** @typegraphql Deletes the specified user from the database, used
+	 *  to test the Authorization & Access Control functionality.
+	 */
+	@AccessControl('DELETE', 'user')
+	@Mutation(_returns => AuthResponse, {nullable: true})
+	deleteUser(@Arg('user_id') user_id: string): AuthResponse {
+		this.logSvc.log('INFO', `Deleting user ${user_id}.`);
+		return {
+			success: this.authSvc.deleteUser(user_id),
 		};
 	}
 }

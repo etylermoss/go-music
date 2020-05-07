@@ -21,8 +21,8 @@ export enum LogLevel {
 
 type LogLevelStrings = keyof typeof LogLevel;
 
-@Service('logger.service')
-export class LoggerService {
+@Service('logging.service')
+export class LoggingService {
 
 	/* Inject Config */
 	@Inject('config')
@@ -32,7 +32,7 @@ export class LoggerService {
 		if (this.config.logFile !== '') {
 			return fs.promises.appendFile(
 				this.config.logFile,
-				msg.join(''),
+				msg.join('') + '\n',
 				{
 					mode: '0700',
 				},
@@ -44,11 +44,34 @@ export class LoggerService {
 	async log(level: LogLevelStrings, ...msg: any[]): Promise<void> {
 		const num = LogLevel[level];
 		let fileWrite: Promise<void>;
-		msg.unshift(`[${level}]:`);
+
 		if (num <= this.config.logLevel) {
-			console[num <= 1 ? 'error' : 'log'](...msg);
-			fileWrite = this.writeToFile(...msg);
+			const outputMessage = msg.join('');
+			let color: number = null;
+			switch(level) {
+				case 'FATAL_ERROR':
+				case 'ERROR': color = 31; break;
+				case 'WARN': color = 33; break;
+				case 'INFO': color = 34; break;
+				case 'EXTRA': color = 36; break;
+			}
+			const now = new Date(Date.now());
+			const timeString = `${now.getFullYear()}:${now.getMonth()+1}:${now.getDate()} ${now.getHours()}:${now.getMinutes()+1}:${now.getSeconds()}`; // eslint-disable-line max-len
+			const label = `[${level} - ${timeString}]: `;
+			const consoleLabel = `\x1b[${color}m\x1b[1m${label}\x1b[0m`;
+			const multiLine = outputMessage.search(/\n/) !== -1;
+			const fileMessage = multiLine
+				? label + '{\n' + outputMessage + '\n}'
+				: label + outputMessage;
+
+			const consoleMessage = multiLine
+				? consoleLabel + '{\n' + outputMessage + '\n}'
+				: consoleLabel + outputMessage;
+
+			console[num <= 1 ? 'error' : 'log'](consoleMessage);
+			fileWrite = this.writeToFile(fileMessage);
 		}
+
 		if (level === 'FATAL_ERROR') {
 			await fileWrite;
 			process.exit(1);

@@ -33,6 +33,11 @@ type Mutation {
   is present in the database andassociated with a user.
   """
   isSignedIn: AuthResponse!
+
+  """
+  Deletes the specified user from the database, usedto test the Authorization & Access Control functionality.
+  """
+  deleteUser(user_id: String!): AuthResponse
 }
 
 type Query {

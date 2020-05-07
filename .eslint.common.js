@@ -42,7 +42,7 @@ module.exports = {
 			"code": 110,
 			"comments": 75,
 			"ignorePattern": "^\\s*//",
-			"ignoreComments": false,
+			"ignoreComments": true,
 			"ignoreTrailingComments": false,
 			"ignoreStrings": false
 		}],

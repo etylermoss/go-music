@@ -2,27 +2,20 @@
 import path from 'path';
 import { buildSchema } from 'type-graphql';
 import { Container } from 'typedi';
-
-/* 3rd party imports - Types only */
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
-import { Response, Request } from 'express';
-import { ExecutionParams } from 'subscriptions-transport-ws';
 
 /* 1st party imports */
+import Context from '@/context';
 import { ConfigSchema } from '@/config';
-import { LoggerService } from '@/logger';
-import UserResolver from '@/graphql/resolvers/authentication';
+import { LoggingService } from '@/logging';
 
-export interface Context {
-	res: Response;
-	req: Request;
-	connection: ExecutionParams;
-}
+/* 1st party imports - Resolvers */
+import UserResolver from '@/graphql/resolvers/authentication';
 
 export const launchGraphql = async (): Promise<ApolloServer> => {
 
 	const config: ConfigSchema = Container.get('config');
-	const logger: LoggerService = Container.get('logger.service');
+	const logSvc: LoggingService = Container.get('logging.service');
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,
@@ -33,10 +26,7 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 				'request.credentials': 'same-origin',
 			},
 		},
-		context: ctx => {
-		/* Can mutate context here, set auth level etc */
-			return ctx;
-		},
+		context: ctx => ctx as Context,
 	};
 
 	try {
@@ -50,6 +40,6 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 	
 		return new ApolloServer({ schema, ...apolloOptions });
 	} catch (err) {
-		logger.log('FATAL_ERROR', err);
+		logSvc.log('FATAL_ERROR', err);
 	}
 };

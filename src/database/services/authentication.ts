@@ -1,9 +1,11 @@
 /* 3rd party imports */
 import { scryptSync, randomBytes } from 'crypto';
-import { Service } from 'typedi';
+import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
+import { ConfigSchema } from '@/config';
 import { DatabaseService } from '@/database';
+import { LoggingService } from '@/logging';
 import { User, SignUpInput } from '@/graphql/resolvers/authentication';
 
 interface PasswordData {
@@ -20,13 +22,22 @@ const unsafe = (sqlInput: TemplateStringsArray): string => {
 };
 
 @Service('authentication.service')
-export class AuthenticationService extends DatabaseService {
+export class AuthenticationService {
+
+	@Inject('database.service')
+	dbSvc: DatabaseService;
+
+	@Inject('logging.service')
+	logSvc: LoggingService;
+
+	@Inject('config')
+	config: ConfigSchema;
 
 	/** Retrieves a users data (username, email etc.), searching for them
 	 *  by username.
 	 */
 	getUserByUsername(username: string): User | null {
-		const statement = this.db.prepare(`
+		const statement = this.dbSvc.prepare(`
 		SELECT user_id, username, email, real_name
 		FROM Users WHERE username = $username
 		`);
@@ -37,7 +48,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  by user_id.
 	 */
 	getUserByID(user_id: string): User | null {
-		const statement = this.db.prepare(`
+		const statement = this.dbSvc.prepare(`
 		SELECT user_id, username, email, real_name
 		FROM Users
 		WHERE user_id = $user_id
@@ -62,11 +73,11 @@ export class AuthenticationService extends DatabaseService {
 	 *  exists), null is returned.
 	 */
 	createUser({ username, password, email, real_name}: SignUpInput): User | null {
-		const sqlCreateUser = this.db.prepare(`
+		const sqlCreateUser = this.dbSvc.prepare(`
 		INSERT INTO Users (user_id, username, email, real_name)
 		VALUES ($user_id, $username, $email, $real_name)
 		`);
-		const sqlCreatePasswordData = this.db.prepare(unsafe`
+		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
 		INSERT INTO UserPasswords (user_id, salt, hash)
 		VALUES ($user_id, $salt, $hash)
 		`);
@@ -87,7 +98,7 @@ export class AuthenticationService extends DatabaseService {
 				hash,
 			});
 		} catch {
-			this.logger.log('WARN', `Could not create user '${username}', likely already exists.`);
+			this.logSvc.log('WARN', `Could not create user '${username}', likely already exists.`);
 			return null;
 		}
 		return this.getUserByID(user_id);
@@ -96,23 +107,33 @@ export class AuthenticationService extends DatabaseService {
 	/** Retrieves the associated user_id's password data (salt and hash).
 	 */
 	getUserPasswordData(user_id: string): PasswordData {
-		return this.db.prepare(unsafe`
+		return this.dbSvc.prepare(unsafe`
 		SELECT salt, hash
 		FROM UserPasswords
 		WHERE user_id = $user_id
 		`).get({user_id});
 	}
 
+	/** Deletes a user, by user_id. Used to test Access Control, should not
+	 *  be used in final application.
+	 */
+	deleteUser(user_id: string): boolean {
+		return this.dbSvc.prepare(`
+		DELETE FROM Users
+		WHERE user_id = $user_id
+		`).run({user_id}).changes > 0 ? true : false;
+	}
+
 	/** Generates and returns a new 128 bit authToken, and removes
 	 *  the oldest token from the database if the user is at the limit.
 	 */
 	newAuthToken(user_id: string): string {
-		const sqlGetTokenCount = this.db.prepare(`
+		const sqlGetTokenCount = this.dbSvc.prepare(`
 		SELECT COUNT(*)
 		FROM UserAuthTokens
 		WHERE user_id = $user_id
 		`);
-		const sqlDeleteOldestToken = this.db.prepare(`
+		const sqlDeleteOldestToken = this.dbSvc.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE rowid =
 			(
@@ -122,7 +143,7 @@ export class AuthenticationService extends DatabaseService {
 				ORDER BY creation_time ASC LIMIT 1
 			)
 		`);
-		const sqlInsertToken = this.db.prepare(`
+		const sqlInsertToken = this.dbSvc.prepare(`
 		INSERT INTO UserAuthTokens (user_id, token)
 		VALUES ($user_id, $token)
 		`);
@@ -142,7 +163,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  associated user_id.
 	 */
 	checkAuthToken(token: string): string | null {
-		return this.db.prepare(`
+		return this.dbSvc.prepare(`
 		SELECT user_id
 		FROM UserAuthTokens
 		WHERE token = $token
@@ -152,7 +173,7 @@ export class AuthenticationService extends DatabaseService {
 	/** Removes the authToken from the database, returning boolean success.
 	 */
 	removeAuthToken(token: string): boolean {
-		return this.db.prepare(`
+		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE token = $token
 		`).run({token}).changes > 0 ? true : false;
@@ -163,7 +184,7 @@ export class AuthenticationService extends DatabaseService {
 	 *  tokens retrieved is returned (> 0 === success).
 	 */
 	removeAllAuthTokens(user_id: string): number {
-		return this.db.prepare(`
+		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE user_id = $user_id
 		`).run({user_id}).changes;

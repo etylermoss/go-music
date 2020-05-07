@@ -9,8 +9,8 @@ import 'reflect-metadata';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
-import { LoggerService } from '@/logger';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
+import { LoggingService } from '@/logging';
 import { launchGraphql } from '@/graphql';
 
 /** Print exit message and exit program execution.
@@ -138,7 +138,8 @@ const main = async (): Promise<void> => {
 	/* Store configuration in Typedi container */
 	Container.set('config', config);
 
-	const logger: LoggerService = Container.get('logger.service');
+	/* Load logging service */
+	const logSvc: LoggingService = Container.get('logging.service');
 
 	/* Initialize express server */
 	const app = express();
@@ -161,10 +162,10 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	logger.log('INFO',
+	logSvc.log('INFO',
 		`Now running at http://localhost:${config.port}.`,
 		(RELEASE ? undefined :
-		`Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`
+		` Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`
 		),
 	);
 };

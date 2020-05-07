@@ -6,7 +6,7 @@ import toml from '@iarna/toml';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
-import { LogLevel } from '@/logger';
+import { LogLevel } from '@/logging';
 
 /** Schema of application configuration object / file */
 export interface ConfigSchema {
@@ -47,7 +47,7 @@ const configPreamble =
 /** The default configuration options */
 export const defaultConfig: ConfigSchema = {
 	port: GlobalConfig.port,
-	logLevel: RELEASE ? LogLevel.ERROR : LogLevel.INFO,
+	logLevel: RELEASE ? LogLevel.ERROR : LogLevel.EXTRA,
 	logFile: RELEASE
 		? path.join('/tmp', 'go-music.log')
 		: path.join(__dirname, './runtime/go-music.log'),
