@@ -64,11 +64,12 @@ export const AccessControl = (
 ): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({args, info, context}, next) => {
 		const authSvc: AuthenticationService = Container.get('authentication.service');
+		const operationLevel = Operations[requiredLevel];
 		const token = context.req.cookies['authToken'];
 		const user_id = token ? authSvc.checkAuthToken(token) : null;
-		if (!requiredLevel && !targetType) return user_id !== null;
 
-		const operationLevel = Operations[requiredLevel];
+		if (!requiredLevel && !targetType) return user_id !== null;
+		if (!user_id) return null;
 
 		const acSvc: AccessControlService = Container.get('access-control.service');
 
