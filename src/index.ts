@@ -81,9 +81,6 @@ const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 		// -l, --log-level: logging verbosity level (0-4)
 		case Boolean(args?.l || args['log-level']):
 			config.logLevel = args.l ? args.l : args['log-level'];
-			if (RELEASE && config.logLevel === 4) {
-				FatalError('This log level is not allowed with Release builds.');
-			}
 			break;
 		// -L, --log-file: file path to output logs to
 		case Boolean(args?.L || args['log-file']):
@@ -96,7 +93,6 @@ const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 		// -s, --gen-schema
 		case Boolean(args?.s || args['gen-schema']):
 			config.private.genSchema = true;
-			if (RELEASE) FatalError('Cannot generate schema with Release builds.');
 			break;
 		// -h, --help: print help information
 		case Boolean(args?.h || args?.help):

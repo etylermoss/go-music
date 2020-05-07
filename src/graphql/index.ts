@@ -32,7 +32,7 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 	try {
 		const schema = await buildSchema({
 			resolvers: [UserResolver],
-			emitSchemaFile: RELEASE ? false : path.resolve(__dirname, '../', 'schema.gql'),
+			emitSchemaFile: config.private.genSchema ? path.resolve(__dirname, '../', 'schema.gql') : false,
 			container: Container,
 		});
 

@@ -56,7 +56,7 @@ type AccessControlTypes = 'resource' | 'user' | 'group';
  *  is null (thus it must be nullable in the schema).
  * 
  * 	@param requiredLevel Required level of access to get (or set) data.
- *  @param targetType The type of the object that the client is being checked against. 
+ *  @param targetType Type of the object that the client is being checked against. 
  */
 export const AccessControl = (
 	requiredLevel: OperationsStrings,
@@ -64,40 +64,38 @@ export const AccessControl = (
 ): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({args, info, context}, next) => {
 		const authSvc: AuthenticationService = Container.get('authentication.service');
-		const operationLevel = Operations[requiredLevel];
+		const aclSvc: AccessControlService = Container.get('access-control.service');
+
+		/* If the user is not signed in, they're always unauthorized */
 		const token = context.req.cookies['authToken'];
 		const user_id = token ? authSvc.checkAuthToken(token) : null;
-
-		if (!requiredLevel && !targetType) return user_id !== null;
 		if (!user_id) return null;
-
-		const acSvc: AccessControlService = Container.get('access-control.service');
 
 		let userLevel = null;
 		switch (targetType) {
 			case 'resource': {
 				const target_resource_id = args['resource_id'];
 				if (!target_resource_id) throw new MissingTargetIdError('resource_id', info.fieldName);
-				userLevel = acSvc.getResourceAccessLevelForUser(user_id, target_resource_id);
+				userLevel = aclSvc.getResourceAccessLevelForUser(user_id, target_resource_id);
 				break;
 			}
 			case 'user': {
 				const target_user_id = args['user_id'];
 				if (!target_user_id) throw new MissingTargetIdError('user_id', info.fieldName);
-				userLevel = acSvc.getUserAccessLevelForUser(user_id, target_user_id);
+				userLevel = aclSvc.getUserAccessLevelForUser(user_id, target_user_id);
 				break;
 			}
 			case 'group': {
 				const target_group_id = args['group_id'];
 				if (!target_group_id) throw new MissingTargetIdError('group_id', info.fieldName);
-				userLevel = acSvc.getGroupAccessLevelForUser(user_id, target_group_id);
+				userLevel = aclSvc.getGroupAccessLevelForUser(user_id, target_group_id);
 				break;
 			}
 			default:
 				throw new Error(`Incorrect Target '${targetType}' passed to Authorized decorator.`);
 		}
 
-		return userLevel && userLevel >= operationLevel ? next() : null;
+		return userLevel && userLevel >= Operations[requiredLevel] ? next() : null;
 	});
 };
 
