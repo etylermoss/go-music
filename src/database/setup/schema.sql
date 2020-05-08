@@ -2,9 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS 'Users' (
 	'user_id' TEXT NOT NULL UNIQUE,
-	'username' TEXT NOT NULL UNIQUE,
-	'email' TEXT NOT NULL,
-	'real_name' TEXT NOT NULL
+	'username' TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS 'UserPasswords' (
@@ -18,6 +16,13 @@ CREATE TABLE IF NOT EXISTS 'UserAuthTokens' (
 	'user_id' TEXT NOT NULL,
 	'token' TEXT NOT NULL UNIQUE,
 	'creation_time' INTEGER NOT NULL DEFAULT ( strftime('%s', 'now') ),
+	FOREIGN KEY ("user_id") REFERENCES "Users" ("user_id") ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS 'UserDetails' (
+	'user_id' TEXT NOT NULL UNIQUE,
+	'email' TEXT NOT NULL,
+	'real_name' TEXT NOT NULL,
 	FOREIGN KEY ("user_id") REFERENCES "Users" ("user_id") ON DELETE CASCADE
 );
 

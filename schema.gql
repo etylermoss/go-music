@@ -5,63 +5,69 @@
 
 type AuthResponse {
   success: Boolean!
-  user: User
 }
 
 type Mutation {
+  """Delete a user from the application."""
+  deleteUser(user_id: String!): User
+
+  """
+  Check whether the client is signed in, ensures theauthToken cookie (httpOnly) is present in the database andassociated with a user.
+  """
+  isSignedIn: User
+
   """
   Sign into the application, if the supplied credentialsare correct, the authToken httpOnly cookie is set.
   """
-  signIn(data: SignInInput!): AuthResponse!
+  signIn(data: SignInInput!): User
 
   """Sign out of the application, revoking authToken."""
   signOut: AuthResponse!
 
   """
-  Sign out of the application on all currentlyauthorized clients, including the
-  client sending the request.Required to sign in again.
+  Sign out of the application on all currentlyauthorized clients, including the client sending the request.Required to sign in again.
   """
   signOutAll(data: SignInInput!): AuthResponse!
 
   """
   Sign up, creating a new user/account, and signing inthe user automatically.
   """
-  signUp(data: SignUpInput!): AuthResponse!
+  signUp(data: SignUpInput!): User
 
   """
-  Check whether the client is signed in, ensures theauthToken cookie (httpOnly)
-  is present in the database andassociated with a user.
+  Update the users password. Requires the client tosign-in again (i.e provide username & password).
   """
-  isSignedIn: AuthResponse!
-
-  """
-  Deletes the specified user from the database, usedto test the Authorization & Access Control functionality.
-  """
-  deleteUser(user_id: String!): AuthResponse
+  updatePassword(data: SignInInput!): AuthResponse!
 }
 
 type Query {
-  """
-  Dummy query until more are added, as the root Querymust not be empty according to GraphQL spec.
-  """
-  dummy: String!
+  """Query a user and their details."""
+  user(user_id: String!): User
 }
 
 input SignInInput {
-  username: String!
   password: String!
+  username: String!
 }
 
 input SignUpInput {
-  username: String!
+  details: UserDetailsInput!
   password: String!
+  username: String!
+}
+
+type User {
+  details: UserDetails
+  user_id: ID!
+  username: String!
+}
+
+type UserDetails {
   email: String!
   real_name: String!
 }
 
-type User {
-  user_id: ID!
-  username: String!
+input UserDetailsInput {
   email: String!
   real_name: String!
 }

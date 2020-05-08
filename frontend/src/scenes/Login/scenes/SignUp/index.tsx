@@ -40,7 +40,7 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 		signUp({variables: { data: user }})
 			.then(({data}: ExecutionResult<signUpTypes.SignUp>): void => {
 				// TODO: Update user details in store
-				console.log(`Signing up success: `, data?.signUp.user);
+				console.log(`Signing up success: `, data?.signUp);
 			});
 	};
 

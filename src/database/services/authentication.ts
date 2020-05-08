@@ -4,9 +4,15 @@ import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
 import { ConfigSchema } from '@/config';
+
+/* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { LoggingService } from '@/logging';
-import { User, SignUpInput } from '@/graphql/resolvers/authentication';
+import { UserService } from '@/database/services/user';
+
+/* 1st party imports - GraphQL types */
+import { SignUpInput } from '@/graphql/types/authentication';
+import { User, UserDetails } from '@/graphql/types/user';
 
 interface PasswordData {
 	salt: Buffer;
@@ -25,83 +31,77 @@ const unsafe = (sqlInput: TemplateStringsArray): string => {
 export class AuthenticationService {
 
 	@Inject('database.service')
-	dbSvc: DatabaseService;
+	private dbSvc: DatabaseService;
 
 	@Inject('logging.service')
-	logSvc: LoggingService;
+	private logSvc: LoggingService;
 
 	@Inject('config')
-	config: ConfigSchema;
+	private config: ConfigSchema;
 
-	/** Retrieves a users data (username, email etc.), searching for them
-	 *  by username.
+	@Inject('user.service')
+	private userSvc: UserService;
+
+	/** Creates a new user along with related data such as their password.
+	 *  Returns the user, including their personal details (email etc).
 	 */
-	getUserByUsername(username: string): User | null {
-		const statement = this.dbSvc.prepare(`
-		SELECT user_id, username, email, real_name
-		FROM Users WHERE username = $username
-		`);
-		return statement.get({username}) as User;
-	}
-
-	/** Retrieves a users data (username, email etc.), searching for them
-	 *  by user_id.
-	 */
-	getUserByID(user_id: string): User | null {
-		const statement = this.dbSvc.prepare(`
-		SELECT user_id, username, email, real_name
-		FROM Users
-		WHERE user_id = $user_id
-		`);
-		return statement.get({user_id}) as User;
-	}
-
-	/** Retrieves a users data, searching for them by username, as well as
-	 *  ensuring that the input password matches the users stored password.
-	 */
-	getUserByUsernameAndPassword(username: string, password: string): User | null {
-		const user = this.getUserByUsername(username);
-		if (user) {
-			const userPasswordData = this.getUserPasswordData(user.user_id);
-			const inputHash = scryptSync(password, userPasswordData.salt, 256);
-			if (inputHash.equals(userPasswordData.hash)) return user;
-		}
-		return null;
-	}
-
-	/** Create a new user. If the user cannot be created (e.g it already
-	 *  exists), null is returned.
-	 */
-	createUser({ username, password, email, real_name}: SignUpInput): User | null {
-		const sqlCreateUser = this.dbSvc.prepare(`
-		INSERT INTO Users (user_id, username, email, real_name)
-		VALUES ($user_id, $username, $email, $real_name)
-		`);
-		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
-		INSERT INTO UserPasswords (user_id, salt, hash)
-		VALUES ($user_id, $salt, $hash)
-		`);
-
+	createUser({ username, password, details}: SignUpInput): User | null {
 		const user_id = randomBytes(8).toString('base64');
-		const salt = randomBytes(16);
-		const hash = scryptSync(password, salt, 256);
-		try {
-			sqlCreateUser.run({
-				user_id,
-				username,
-				email,
-				real_name,
-			});
-			sqlCreatePasswordData.run({
-				user_id,
-				salt,
-				hash,
-			});
-		} catch {
+		const createUserChanges = this.dbSvc.prepare(`
+		INSERT INTO Users (user_id, username)
+		VALUES ($user_id, $username)
+		`).run({ user_id, username }).changes;
+
+		if (createUserChanges === 1) {
+			this.createOrUpdateUserDetails(user_id, details);
+		} else {
 			this.logSvc.log('WARN', `Could not create user '${username}', likely already exists.`);
 			return null;
 		}
-		return this.getUserByID(user_id);
+
+		this.createOrUpdateUserPassword(user_id, password);
+		return this.userSvc.getUserByID(user_id, true);
+	}
+
+	/** Updates a users personal information (email etc.), returning
+	 *  success as a boolean.
+	 */
+	createOrUpdateUserDetails(user_id: string, details: UserDetails): boolean {
+		return this.dbSvc.prepare(`
+		REPLACE INTO UserDetails (user_id, email, real_name)
+		VALUES ($user_id, $email, $real_name)
+		`).run({
+			user_id: user_id,
+			email: details.email,
+			real_name: details.real_name,
+		}).changes === 1 ? true : false; 
+	}
+
+	/** Updates the users password in the database, creating it if it (and
+	 *  the salt) does not already exist. Returns success as a boolean.
+	 */
+	createOrUpdateUserPassword(user_id: string, password: string): boolean {
+		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
+		REPLACE INTO UserPasswords (user_id, salt, hash)
+		VALUES ($user_id, $salt, $hash)
+		`);
+		const salt = randomBytes(16);
+		const hash = this.hashUserPassword(password, salt);
+		return sqlCreatePasswordData.run({
+			user_id,
+			salt,
+			hash,
+		}).changes === 1 ? true : false;
+	}
+
+	/** Checks the supplied password against the supplied user_id.
+	 */
+	comparePasswordToUser(user_id: string, password: string): boolean {
+		const passwordData = this.getUserPasswordData(user_id);
+		if (passwordData && this.hashUserPassword(password, passwordData.salt).equals(passwordData.hash)) {
+			return true;
+		}
+		return false;
 	}
 
 	/** Retrieves the associated user_id's password data (salt and hash).
@@ -112,16 +112,6 @@ export class AuthenticationService {
 		FROM UserPasswords
 		WHERE user_id = $user_id
 		`).get({user_id});
-	}
-
-	/** Deletes a user, by user_id. Used to test Access Control, should not
-	 *  be used in final application.
-	 */
-	deleteUser(user_id: string): boolean {
-		return this.dbSvc.prepare(`
-		DELETE FROM Users
-		WHERE user_id = $user_id
-		`).run({user_id}).changes > 0 ? true : false;
 	}
 
 	/** Generates and returns a new 128 bit authToken, and removes
@@ -188,5 +178,10 @@ export class AuthenticationService {
 		DELETE FROM UserAuthTokens
 		WHERE user_id = $user_id
 		`).run({user_id}).changes;
+	}
+
+	/** Takes a password and hashes it using scrypt with the given salt. */
+	private hashUserPassword(password: string, salt: Buffer): Buffer {
+		return scryptSync(password, salt, 256);
 	}
 }

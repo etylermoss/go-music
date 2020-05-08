@@ -4,10 +4,9 @@ import gql from 'graphql-tag';
 export default gql`
 	mutation SignUp($data: SignUpInput!) {
 		signUp(data: $data) {
-			success
-			user {
-				user_id
-				username
+			user_id
+			username
+			details {
 				email
 				real_name
 			}

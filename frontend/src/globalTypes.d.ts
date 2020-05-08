@@ -8,8 +8,12 @@
 //==============================================================
 
 export interface SignUpInput {
-  username: string;
+  details: UserDetailsInput;
   password: string;
+  username: string;
+}
+
+export interface UserDetailsInput {
   email: string;
   real_name: string;
 }

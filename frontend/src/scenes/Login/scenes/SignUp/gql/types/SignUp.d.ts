@@ -9,25 +9,24 @@ import { SignUpInput } from "./../../../../../../globalTypes";
 // GraphQL mutation operation: SignUp
 // ====================================================
 
-export interface SignUp_signUp_user {
-  __typename: "User";
-  user_id: string;
-  username: string;
+export interface SignUp_signUp_details {
+  __typename: "UserDetails";
   email: string;
   real_name: string;
 }
 
 export interface SignUp_signUp {
-  __typename: "AuthResponse";
-  success: boolean;
-  user: SignUp_signUp_user | null;
+  __typename: "User";
+  user_id: string;
+  username: string;
+  details: SignUp_signUp_details | null;
 }
 
 export interface SignUp {
   /**
    * Sign up, creating a new user/account, and signing inthe user automatically.
    */
-  signUp: SignUp_signUp;
+  signUp: SignUp_signUp | null;
 }
 
 export interface SignUpVariables {

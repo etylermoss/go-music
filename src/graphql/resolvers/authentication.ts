@@ -1,63 +1,21 @@
 /* 3rd party imports */
-import { ObjectType, Resolver, InputType, Arg, Ctx, Field,  Mutation, Query, ID } from 'type-graphql';
+import { Resolver, Arg, Ctx, Mutation } from 'type-graphql';
 import { Inject } from 'typedi';
 import { CookieOptions } from 'express';
 
 /* 1st party imports */
 import Context from '@/context';
+
+/* 1st party imports - Services */
 import { LoggingService } from '@/logging';
 import { AuthenticationService } from '@/database/services/authentication';
-import { AccessControl } from '@/database/services/access-control';
+import { UserService } from '@/database/services/user';
 
-@ObjectType()
-class User {
-	@Field(_type => ID)
-	user_id: string;
+/* 1st party imports - GraphQL types */
+import { AuthResponse, SignUpInput, SignInInput } from '@/graphql/types/authentication';
+import { User } from '@/graphql/types/user';
 
-	@Field()
-	username: string;
-
-	@Field()
-	email: string;
-
-	@Field()
-	real_name: string;
-}
-
-@InputType()
-class SignInInput implements Partial<User> {
-	@Field()
-	username: string;
-
-	@Field()
-	password: string;
-}
-
-@InputType()
-class SignUpInput implements Partial<User> {
-	@Field()
-	username: string;
-
-	@Field()
-	password: string;
-
-	@Field()
-	email: string;
-
-	@Field()
-	real_name: string;
-}
-
-@ObjectType()
-class AuthResponse {
-	@Field()
-	success: boolean;
-
-	@Field({nullable: true})
-	user?: User;
-}
-
-const cookieOptions: CookieOptions = {
+const authTokenCookie: CookieOptions = {
 	/* Prevent XSRF */
 	sameSite: 'strict',
 	/* 28 days (value multiplied by miliseconds in a day) */
@@ -67,42 +25,70 @@ const cookieOptions: CookieOptions = {
 };
 
 @Resolver()
-class UserResolver {
-
-	/* Inject Authentication Service */
+export default class AuthResolver {
+	
 	@Inject('authentication.service')
 	authSvc: AuthenticationService;
 
-	/* Inject Authentication Service */
+	@Inject('user.service')
+	userSvc: UserService;
+
 	@Inject('logging.service')
 	logSvc: LoggingService;
 
-	/** @typegraphql Dummy query until more are added, as the root Query
-	 *  must not be empty according to GraphQL spec.
+	/** @typegraphql Sign up, creating a new user/account, and signing in
+	 *  the user automatically.
 	 */
-	@Query(_returns => String)
-	dummy(): string {
-		return 'dummy';
+	@Mutation(_returns => User, {nullable: true})
+	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): User {
+		const user = this.authSvc.createUser(data);
+
+		if (user) {
+			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+			return user;
+		}
+		return null;
 	}
 
 	/** @typegraphql Sign into the application, if the supplied credentials
 	 *  are correct, the authToken httpOnly cookie is set.
 	 */
-	@Mutation(_returns => AuthResponse)
-	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
-		const user = this.authSvc.getUserByUsernameAndPassword(data.username, data.password);
-		if (user) {
-			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), cookieOptions);
-			return {
-				success: true,
-				user: user,
-			};
+	@Mutation(_returns => User, {nullable: true})
+	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): User {
+		const user = this.userSvc.getUserByUsername(data.username, true);
+		if (user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+			return user;
 		}
-		this.logSvc.log('WARN', `Incorrect signin attempt from ${ctx.req.ip}.`);
-		return {
-			success: false,
-			user: null,
-		};
+		this.logSvc.log('WARN', `Incorrect sign-in attempt from ${ctx.req.ip}.`);
+		return null;
+	}
+
+	/** @typegraphql Check whether the client is signed in, ensures the
+	 *  authToken cookie (httpOnly) is present in the database and
+	 *  associated with a user.
+	 */
+	@Mutation(_returns => User, {nullable: true})
+	isSignedIn(@Ctx() ctx: Context): User {
+		const token = ctx.req.cookies['authToken'];
+		const user_id = token ? this.authSvc.checkAuthToken(token) : null;
+		return user_id ? this.userSvc.getUserByID(user_id, true) : null;
+	}
+
+	/** @typegraphql Update the users password. Requires the client to
+	 *  sign-in again (i.e provide username & password).
+	 */
+	@Mutation(_returns => AuthResponse)
+	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
+		const user = this.userSvc.getUserByUsername(data.username, true);
+		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
+		if (user_id && user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			this.authSvc.removeAllAuthTokens(user_id);
+			this.authSvc.createOrUpdateUserPassword(user_id, data.password);
+			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+			return { success: true };
+		}
+		return { success: false };
 	}
 
 	/** @typegraphql Sign out of the application, revoking authToken.
@@ -111,9 +97,7 @@ class UserResolver {
 	signOut(@Ctx() ctx: Context): AuthResponse {
 		const token = ctx.req.cookies['authToken'];
 		ctx.res.clearCookie('authToken');
-		return {
-			success: this.authSvc.removeAuthToken(token),
-		};
+		return { success: this.authSvc.removeAuthToken(token) };
 	}
 
 	/** @typegraphql Sign out of the application on all currently
@@ -122,61 +106,13 @@ class UserResolver {
 	 */
 	@Mutation(_returns => AuthResponse)
 	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
-		const user = this.authSvc.getUserByUsernameAndPassword(data.username, data.password);
+		const user = this.userSvc.getUserByUsername(data.username, true);
 		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
-		if (user && user_id) {
+		if (user_id && user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
 			ctx.res.clearCookie('authToken');
 			this.authSvc.removeAllAuthTokens(user_id);
-			return {
-				success: true,
-			};
+			return { success: true };
 		}
-		return {
-			success: false,
-		};
-	}
-
-	/** @typegraphql Sign up, creating a new user/account, and signing in
-	 *  the user automatically.
-	 */
-	@Mutation(_returns => AuthResponse)
-	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): AuthResponse {
-		const user = this.authSvc.createUser(data);
-
-		if (user) ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), cookieOptions);
-
-		return {
-			success: user ? true : false,
-			user: user ? user : null,
-		};
-	}
-
-	/** @typegraphql Check whether the client is signed in, ensures the
-	 *  authToken cookie (httpOnly) is present in the database and
-	 *  associated with a user.
-	 */
-	@Mutation(_returns => AuthResponse)
-	isSignedIn(@Ctx() ctx: Context): AuthResponse {
-		const token = ctx.req.cookies['authToken'];
-		const user_id = token ? this.authSvc.checkAuthToken(token) : null;
-		return {
-			success: user_id ? true : false,
-			user: user_id ? this.authSvc.getUserByID(user_id) : null,
-		};
-	}
-
-	/** @typegraphql Deletes the specified user from the database, used
-	 *  to test the Authorization & Access Control functionality.
-	 */
-	@AccessControl('DELETE', 'user')
-	@Mutation(_returns => AuthResponse, {nullable: true})
-	deleteUser(@Arg('user_id') user_id: string): AuthResponse {
-		this.logSvc.log('INFO', `Deleting user ${user_id}.`);
-		return {
-			success: this.authSvc.deleteUser(user_id),
-		};
+		return { success: false };
 	}
 }
-
-export { User, SignUpInput };
-export default UserResolver;
