@@ -12,7 +12,7 @@ import { AccessControlService, Operations, OperationsStrings } from '@/database/
 
 class MissingTargetIdError extends Error {
 
-	@Inject()
+	@Inject('logging.service')
 	logSvc: LoggingService;
 
 	constructor(targetId: string, resolverFieldName: string) {
