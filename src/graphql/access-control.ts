@@ -13,9 +13,9 @@ import { AccessControlService, Operations, OperationsStrings } from '@/database/
 
 type TargetTypes = 'resource_id' | 'user_id' | 'group_id';
 
-/** Decorator used to control access to GraphQL Fields, Mutations, and
- *  Queries. If the user is not authorized, the return value of the field
- *  is null (thus it must be nullable in the schema).
+/** Decorator used to control access to GraphQL Queries and Mutations.
+ *  If the user is not authorized, the return value of the object is null
+ *  (thus it must be nullable in the schema).
  * 
  * 	@param requiredLevel Required level of access to get (or set) data.
  *  @param targetType Type of the object that the client is being checked against. 
@@ -53,6 +53,13 @@ export const AccessControl = (
 	});
 };
 
+/** Decorator used to control access to GraphQL Fields (field resolvers).
+ *  If the user is not authorized, the return value of the field is null
+ *  (thus it must be nullable in the schema).
+ * 
+ * 	@param requiredLevel Required level of access to get (or set) data.
+ *  @param targetType Type of the object that the client is being checked against. 
+ */
 export const FieldAccessControl = (
 	requiredLevel?: OperationsStrings,
 	targetTypeArg?: TargetTypes,
