@@ -1,27 +1,17 @@
 /* 3rd party imports */
-import { Inject, Container } from 'typedi';
+import { Container } from 'typedi';
 import { createMethodDecorator} from 'type-graphql';
 
 /* 1st party imports */
 import Context from '@/context';
 
 /* 1st party imports - Services */
-import { LoggingService } from '@/logging';
 import { AuthenticationService } from '@/database/services/authentication';
 import { AccessControlService, Operations, OperationsStrings } from '@/database/services/access-control';
 
-class MissingTargetIdError extends Error {
+/*  Stop-gap until MichalLytek/type-graphql#629 is solved */
 
-	@Inject('logging.service')
-	logSvc: LoggingService;
-
-	constructor(targetId: string, resolverFieldName: string) {
-		const message = `Resolver '${resolverFieldName}' was not supplied with '${targetId}' argument.`;
-		super(message);
-		this.logSvc.log('ERROR', message);
-		this.name = 'MissingTargetIdError';
-	}
-}
+type TargetTypes = 'resource_id' | 'user_id' | 'group_id';
 
 /** Decorator used to control access to GraphQL Fields, Mutations, and
  *  Queries. If the user is not authorized, the return value of the field
@@ -31,10 +21,11 @@ class MissingTargetIdError extends Error {
  *  @param targetType Type of the object that the client is being checked against. 
  */
 export const AccessControl = (
-	requiredLevel: OperationsStrings,
-	targetType: 'resource' | 'user' | 'group',
+	requiredLevel?: OperationsStrings,
+	targetTypeArg?: TargetTypes,
+	fieldResolver: boolean = false,
 ): MethodDecorator => {
-	return createMethodDecorator<Context>(async ({args, info, context}, next) => {
+	return createMethodDecorator<Context>(async ({args, info, context, root}, next) => {
 		const authSvc: AuthenticationService = Container.get('authentication.service');
 		const aclSvc: AccessControlService = Container.get('access-control.service');
 
@@ -42,31 +33,29 @@ export const AccessControl = (
 		const token = context.req.cookies['authToken'];
 		const user_id = token ? authSvc.checkAuthToken(token) : null;
 		if (!user_id) return null;
+		if (!requiredLevel && !targetTypeArg) return next();
 
+		/* Check that a resource id was passed to the decorator */
+		const target_id = (fieldResolver ? root : args)[targetTypeArg];
+		if (!target_id) {
+			throw new Error(`Field ${info.fieldName} was not supplied with ${targetTypeArg} argument.`);
+		}
+
+		/* Get the access level the user has for the specified resource */
 		let userLevel = null;
-		switch (targetType) {
-			case 'resource': {
-				const target_resource_id = args['resource_id'];
-				if (!target_resource_id) throw new MissingTargetIdError('resource_id', info.fieldName);
-				userLevel = aclSvc.getResourceAccessLevelForUser(user_id, target_resource_id);
-				break;
-			}
-			case 'user': {
-				const target_user_id = args['user_id'];
-				if (!target_user_id) throw new MissingTargetIdError('user_id', info.fieldName);
-				userLevel = aclSvc.getUserAccessLevelForUser(user_id, target_user_id);
-				break;
-			}
-			case 'group': {
-				const target_group_id = args['group_id'];
-				if (!target_group_id) throw new MissingTargetIdError('group_id', info.fieldName);
-				userLevel = aclSvc.getGroupAccessLevelForUser(user_id, target_group_id);
-				break;
-			}
-			default:
-				throw new Error(`Incorrect Target '${targetType}' passed to Authorized decorator.`);
+		switch (targetTypeArg) {
+			case 'resource_id': userLevel = aclSvc.getResourceAccessLevelForUser(user_id, target_id); break;
+			case 'user_id': userLevel = aclSvc.getUserAccessLevelForUser(user_id, target_id); break;
+			case 'group_id': userLevel = aclSvc.getGroupAccessLevelForUser(user_id, target_id); break;
 		}
 
 		return userLevel && userLevel >= Operations[requiredLevel] ? next() : null;
 	});
+};
+
+export const FieldAccessControl = (
+	requiredLevel?: OperationsStrings,
+	targetTypeArg?: TargetTypes,
+): MethodDecorator => {
+	return AccessControl(requiredLevel, targetTypeArg, true);
 };
