@@ -7,7 +7,7 @@ import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
 /* 1st party imports */
 import Context from '@/context';
 import { ConfigSchema } from '@/config';
-import { LoggingService } from '@/logging';
+import { LoggerService } from '@/services/logger';
 
 /* 1st party imports - Resolvers */
 import AuthResolver from '@/graphql/resolvers/authentication';
@@ -16,7 +16,7 @@ import UserResolver from '@/graphql/resolvers/user';
 export const launchGraphql = async (): Promise<ApolloServer> => {
 
 	const config: ConfigSchema = Container.get('config');
-	const logSvc: LoggingService = Container.get('logging.service');
+	const logSvc: LoggerService = Container.get('logger.service');
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,

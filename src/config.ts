@@ -6,7 +6,7 @@ import toml from '@iarna/toml';
 
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
-import { LogLevel } from '@/logging';
+import { LogLevel } from '@/services/logger';
 
 /** Schema of application configuration object / file */
 export interface ConfigSchema {

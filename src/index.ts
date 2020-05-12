@@ -10,7 +10,7 @@ import 'reflect-metadata';
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
-import { LoggingService } from '@/logging';
+import { LoggerService } from '@/services/logger';
 import { launchGraphql } from '@/graphql';
 
 /** Print exit message and exit program execution.
@@ -134,8 +134,8 @@ const main = async (): Promise<void> => {
 	/* Store configuration in Typedi container */
 	Container.set('config', config);
 
-	/* Load logging service */
-	const logSvc: LoggingService = Container.get('logging.service');
+	/* Load logger service */
+	const logSvc: LoggerService = Container.get('logger.service');
 
 	/* Initialize express server */
 	const app = express();

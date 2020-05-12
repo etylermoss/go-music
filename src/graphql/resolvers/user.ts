@@ -6,8 +6,8 @@ import { Inject } from 'typedi';
 import { AccessControl, FieldAccessControl } from '@/graphql/access-control';
 
 /* 1st party imports - Services */
-import { LoggingService } from '@/logging';
-import { UserService } from '@/database/services/user';
+import { LoggerService } from '@/services/logger';
+import { UserService } from '@/services/user';
 
 /* 1st party imports - GraphQL types */
 import { User, UserDetails } from '@/graphql/types/user';
@@ -18,8 +18,8 @@ export default class UserResolver implements ResolverInterface<User> {
 	@Inject('user.service')
 	userSvc: UserService;
 
-	@Inject('logging.service')
-	logSvc: LoggingService;
+	@Inject('logger.service')
+	logSvc: LoggerService;
 
 	/** @typegraphql Query a user, must be logged in.
 	 */

@@ -21,8 +21,8 @@ export enum LogLevel {
 
 type LogLevelStrings = keyof typeof LogLevel;
 
-@Service('logging.service')
-export class LoggingService {
+@Service('logger.service')
+export class LoggerService {
 
 	/* Inject Config */
 	@Inject('config')

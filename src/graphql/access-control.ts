@@ -6,8 +6,8 @@ import { createMethodDecorator} from 'type-graphql';
 import Context from '@/context';
 
 /* 1st party imports - Services */
-import { AuthenticationService } from '@/database/services/authentication';
-import { AccessControlService, Operations, OperationsStrings } from '@/database/services/access-control';
+import { AuthenticationService } from '@/services/authentication';
+import { AccessControlService, Operations, OperationsStrings } from '@/services/access-control';
 
 /*  Stop-gap until MichalLytek/type-graphql#629 is solved */
 

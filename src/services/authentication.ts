@@ -7,8 +7,8 @@ import { ConfigSchema } from '@/config';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-import { LoggingService } from '@/logging';
-import { UserService } from '@/database/services/user';
+import { LoggerService } from '@/services/logger';
+import { UserService } from '@/services/user';
 
 /* 1st party imports - GraphQL types */
 import { SignUpInput } from '@/graphql/types/authentication';
@@ -33,8 +33,8 @@ export class AuthenticationService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	@Inject('logging.service')
-	private logSvc: LoggingService;
+	@Inject('logger.service')
+	private logSvc: LoggerService;
 
 	@Inject('config')
 	private config: ConfigSchema;

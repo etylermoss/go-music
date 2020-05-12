@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
-import { LoggingService } from '@/logging';
+import { LoggerService } from '@/services/logger';
 import { DatabaseService } from '@/database';
 
 export enum Operations { READ, WRITE, DELETE }
@@ -39,8 +39,8 @@ export class AccessControlService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	@Inject('logging.service')
-	private logSvc: LoggingService;
+	@Inject('logger.service')
+	private logSvc: LoggerService;
 
 	getResourceAccessLevelForUser(user_id: string, target_resource_id: string): Operations | null {
 		const resource = this.getResourceByID(target_resource_id);

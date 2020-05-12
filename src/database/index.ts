@@ -6,7 +6,7 @@ import { Service, Container } from 'typedi';
 
 /* 1st party imports */
 import { ConfigSchema } from '@/config';
-import { LoggingService } from '@/logging';
+import { LoggerService } from '@/services/logger';
 
 /* 1st party imports - SQL */
 import Schema from '@/database/setup/schema.sql';
@@ -16,9 +16,8 @@ import Pragma from '@/database/setup/pragma.sql';
 export class DatabaseService extends sqlite {
 
 	constructor() {
-
 		const config: ConfigSchema = Container.get('config');
-		const logSvc: LoggingService = Container.get('logging.service');
+		const logSvc: LoggerService = Container.get('logger.service');
 		const databaseOptions: sqlite.Options = {
 			verbose: (msg: string) => {
 				logSvc.logSql(msg.slice(0, 10) === '/*UNSAFE*/', msg);

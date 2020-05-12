@@ -7,9 +7,9 @@ import { CookieOptions } from 'express';
 import Context from '@/context';
 
 /* 1st party imports - Services */
-import { LoggingService } from '@/logging';
-import { AuthenticationService } from '@/database/services/authentication';
-import { UserService } from '@/database/services/user';
+import { LoggerService } from '@/services/logger';
+import { AuthenticationService } from '@/services/authentication';
+import { UserService } from '@/services/user';
 
 /* 1st party imports - GraphQL types */
 import { AuthResponse, SignUpInput, SignInInput } from '@/graphql/types/authentication';
@@ -33,8 +33,8 @@ export default class AuthResolver {
 	@Inject('user.service')
 	userSvc: UserService;
 
-	@Inject('logging.service')
-	logSvc: LoggingService;
+	@Inject('logger.service')
+	logSvc: LoggerService;
 
 	/** @typegraphql Sign up, creating a new user/account, and signing in
 	 *  the user automatically.
