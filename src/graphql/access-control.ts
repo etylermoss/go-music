@@ -6,16 +6,16 @@ import { createMethodDecorator} from 'type-graphql';
 import Context from '@/context';
 
 /* 1st party imports - Services */
-import { AuthenticationService } from '@/services/authentication';
 import { AccessControlService, Operations, OperationsStrings } from '@/services/access-control';
 
 /*  Stop-gap until MichalLytek/type-graphql#629 is solved */
 
 type TargetTypes = 'resource_id' | 'user_id' | 'group_id';
 
-/** Decorator used to control access to GraphQL Queries and Mutations.
- *  If the user is not authorized, the return value of the object is null
- *  (thus it must be nullable in the schema).
+/** Decorator used to control access to GraphQL Objects. If the user is not
+ *  authorized, the return value of the object is null (thus it must be
+ *  nullable in the schema). If no arguments are passed, this simply checks
+ *  the user is logged in.
  * 
  * 	@param requiredLevel Required level of access to get (or set) data.
  *  @param targetType Type of the object that the client is being checked against. 
@@ -26,12 +26,9 @@ export const AccessControl = (
 	fieldResolver: boolean = false,
 ): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({args, info, context, root}, next) => {
-		const authSvc: AuthenticationService = Container.get('authentication.service');
 		const aclSvc: AccessControlService = Container.get('access-control.service');
+		const user_id = context.user_id;
 
-		/* If the user is not signed in, they're always unauthorized */
-		const token = context.req.cookies['authToken'];
-		const user_id = token ? authSvc.checkAuthToken(token) : null;
 		if (!user_id) return null;
 		if (!requiredLevel && !targetTypeArg) return next();
 
@@ -53,9 +50,10 @@ export const AccessControl = (
 	});
 };
 
-/** Decorator used to control access to GraphQL Fields (field resolvers).
- *  If the user is not authorized, the return value of the field is null
- *  (thus it must be nullable in the schema).
+/** Decorator used to control access to GraphQL Objects. If the user is not
+ *  authorized, the return value of the object is null (thus it must be
+ *  nullable in the schema). If no arguments are passed, this simply checks
+ *  the user is logged in.
  * 
  * 	@param requiredLevel Required level of access to get (or set) data.
  *  @param targetType Type of the object that the client is being checked against. 

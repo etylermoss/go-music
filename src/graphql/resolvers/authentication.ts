@@ -42,9 +42,8 @@ export default class AuthResolver {
 	@Mutation(_returns => User, {nullable: true})
 	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): User {
 		const user = this.authSvc.createUser(data);
-
 		if (user) {
-			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+			this.authUser(ctx, user.user_id);
 			return user;
 		}
 		return null;
@@ -57,7 +56,7 @@ export default class AuthResolver {
 	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): User {
 		const user = this.userSvc.getUserByUsername(data.username, true);
 		if (user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
-			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+			this.authUser(ctx, user.user_id);
 			return user;
 		}
 		this.logSvc.log('WARN', `Incorrect sign-in attempt from ${ctx.req.ip}.`);
@@ -82,10 +81,11 @@ export default class AuthResolver {
 	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.userSvc.getUserByUsername(data.username, true);
 		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
-		if (user_id && user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
-			this.authSvc.removeAllAuthTokens(user_id);
-			this.authSvc.createOrUpdateUserPassword(user_id, data.password);
-			ctx.res.cookie('authToken', this.authSvc.newAuthToken(user.user_id), authTokenCookie);
+		if (!user || !user_id) return { success: false };
+		if (user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			this.authSvc.revokeAllAuthTokens(user_id);
+			this.authSvc.updateUserPassword(user_id, data.password);
+			this.authUser(ctx, user.user_id);
 			return { success: true };
 		}
 		return { success: false };
@@ -95,9 +95,7 @@ export default class AuthResolver {
 	 */
 	@Mutation(_returns => AuthResponse)
 	signOut(@Ctx() ctx: Context): AuthResponse {
-		const token = ctx.req.cookies['authToken'];
-		ctx.res.clearCookie('authToken');
-		return { success: this.authSvc.removeAuthToken(token) };
+		return { success: this.unAuthUser(ctx) };
 	}
 
 	/** @typegraphql Sign out of the application on all currently
@@ -108,11 +106,28 @@ export default class AuthResolver {
 	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.userSvc.getUserByUsername(data.username, true);
 		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
-		if (user_id && user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
-			ctx.res.clearCookie('authToken');
-			this.authSvc.removeAllAuthTokens(user_id);
-			return { success: true };
+		if (!user || !user_id) return { success: false };
+		if (user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			return { success: this.unAuthUser(ctx, user_id) };
 		}
 		return { success: false };
+	}
+
+	/** Revokes a users authToken cookie, signing them out. If a user_id is
+	 *  passed, all the user's authTokens are revoked.
+	 */
+	private unAuthUser(ctx: Context, user_id?: string): boolean {
+		ctx.user_id = null;
+		ctx.res.clearCookie('authToken');
+		if (user_id) return this.authSvc.revokeAllAuthTokens(user_id);
+		else return this.authSvc.revokeAuthToken(ctx.req.cookies['authToken']);
+	}
+
+	/** Set context.user_id, and generate a new authToken which is then
+	 *  stored in a browser cookie (httpOnly). 
+	 */
+	private authUser(ctx: Context, user_id: string): void {
+		ctx.user_id = user_id;
+		ctx.res.cookie('authToken', this.authSvc.newAuthToken(user_id), authTokenCookie);
 	}
 }

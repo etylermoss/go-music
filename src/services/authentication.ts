@@ -59,7 +59,7 @@ export class AuthenticationService {
 			return null;
 		}
 
-		this.createOrUpdateUserPassword(user_id, password);
+		this.updateUserPassword(user_id, password);
 		return this.userSvc.getUserByID(user_id, true);
 	}
 
@@ -80,7 +80,7 @@ export class AuthenticationService {
 	/** Updates the users password in the database, creating it if it (and
 	 *  the salt) does not already exist. Returns success as a boolean.
 	 */
-	createOrUpdateUserPassword(user_id: string, password: string): boolean {
+	updateUserPassword(user_id: string, password: string): boolean {
 		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
 		REPLACE INTO UserPasswords (user_id, salt, hash)
 		VALUES ($user_id, $salt, $hash)
@@ -162,22 +162,21 @@ export class AuthenticationService {
 
 	/** Removes the authToken from the database, returning boolean success.
 	 */
-	removeAuthToken(token: string): boolean {
+	revokeAuthToken(token: string): boolean {
 		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE token = $token
-		`).run({token}).changes > 0 ? true : false;
+		`).run({token}).changes === 1 ? true : false;
 	}
 
-	/** Removes all authTokens from the database that are
-	 *  associated with the given user_id. The number of
-	 *  tokens retrieved is returned (> 0 === success).
+	/** Removes all authTokens from the database that are associated with
+	 *  the given user_id, returning boolean success.
 	 */
-	removeAllAuthTokens(user_id: string): number {
+	revokeAllAuthTokens(user_id: string): boolean {
 		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthTokens
 		WHERE user_id = $user_id
-		`).run({user_id}).changes;
+		`).run({user_id}).changes > 0 ? true : false;
 	}
 
 	/** Takes a password and hashes it using scrypt with the given salt. */

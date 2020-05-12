@@ -7,4 +7,5 @@ export default interface Context {
 	res: Response;
 	req: Request;
 	connection: ExecutionParams;
+	user_id: string | null;
 }

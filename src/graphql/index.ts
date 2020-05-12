@@ -7,7 +7,10 @@ import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
 /* 1st party imports */
 import Context from '@/context';
 import { ConfigSchema } from '@/config';
+
+/* 1st party imports - Services */
 import { LoggerService } from '@/services/logger';
+import { AuthenticationService } from '@/services/authentication';
 
 /* 1st party imports - Resolvers */
 import AuthResolver from '@/graphql/resolvers/authentication';
@@ -25,9 +28,14 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 		playground: RELEASE ? false : {
 			settings: {
 				'request.credentials': 'same-origin',
-			},
+				'schema.polling.enable': false,
+			} as any,
 		},
-		context: ctx => ctx as Context,
+		context: (ctx: Context) => {
+			const authSvc: AuthenticationService = Container.get('authentication.service');
+			ctx.user_id = authSvc.checkAuthToken(ctx.req.cookies['authToken']);
+			return ctx;
+		},
 	};
 
 	try {
