@@ -69,9 +69,7 @@ export default class AuthResolver {
 	 */
 	@Mutation(_returns => User, {nullable: true})
 	isSignedIn(@Ctx() ctx: Context): User {
-		const token = ctx.req.cookies['authToken'];
-		const user_id = token ? this.authSvc.checkAuthToken(token) : null;
-		return user_id ? this.userSvc.getUserByID(user_id, true) : null;
+		return ctx.user_id ? this.userSvc.getUserByID(ctx.user_id, true) : null;
 	}
 
 	/** @typegraphql Update the users password. Requires the client to
@@ -80,11 +78,11 @@ export default class AuthResolver {
 	@Mutation(_returns => AuthResponse)
 	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.userSvc.getUserByUsername(data.username, true);
-		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
-		if (!user || !user_id) return { success: false };
-		if (user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
-			this.authSvc.revokeAllAuthTokens(user_id);
-			this.authSvc.updateUserPassword(user_id, data.password);
+		if (!user || !ctx.user_id) return { success: false };
+		
+		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			this.authSvc.revokeAllAuthTokens(ctx.user_id);
+			this.authSvc.updateUserPassword(ctx.user_id, data.password);
 			this.authUser(ctx, user.user_id);
 			return { success: true };
 		}
@@ -105,10 +103,9 @@ export default class AuthResolver {
 	@Mutation(_returns => AuthResponse)
 	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
 		const user = this.userSvc.getUserByUsername(data.username, true);
-		const user_id = this.authSvc.checkAuthToken(ctx.req.cookies['authToken']);
-		if (!user || !user_id) return { success: false };
-		if (user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
-			return { success: this.unAuthUser(ctx, user_id) };
+		if (!user || !ctx.user_id) return { success: false };
+		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+			return { success: this.unAuthUser(ctx, ctx.user_id) };
 		}
 		return { success: false };
 	}
