@@ -2,13 +2,24 @@
 import { createContext } from 'react';
 import { observable, action } from 'mobx';
 
+interface User {
+	user_id: string;
+	username: string;
+	details: UserDetails;
+}
+
+interface UserDetails {
+	email: string;
+	real_name: string;
+}
+
 class Store {
 	@observable
-	token: string = 'hola!'
+	user: User | null = null;
 
 	@action
-	updateToken(token: string): void {
-		this.token = token;
+	updateUser(user: User | null): void {
+		this.user = user;
 	}
 }
 

@@ -5,19 +5,15 @@ import { useObserver } from 'mobx-react';
 /* 1st party imports */
 import { StoreContext } from '@/store';
 
-const Scene = (props: { active: boolean }): JSX.Element => {
-
+const Scene = (): JSX.Element => {
 	const store = useContext(StoreContext);
-	
-	return useObserver(() => {
-		if (!props.active) return ( <></> );
-		return (
-			<>
-				<h2>Sign in</h2>
-				<p>Username is: {store.user?.username}</p>
-			</>
-		);
-	});
+
+	return useObserver(() => (
+		<>
+			<h1>You are logged in!</h1>
+			<h2>You are: <b>{store.user?.username}</b></h2>
+		</>
+	));
 };
 
 export default Scene;

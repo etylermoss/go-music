@@ -2,7 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { useObserver } from 'mobx-react';
 import { useMutation } from '@apollo/react-hooks';
-import { ExecutionResult } from 'apollo-boost';
+import { useHistory } from 'react-router-dom';
 
 /* 1st party imports */
 import Validation from '@G/validation';
@@ -14,14 +14,16 @@ import signUpTag from '@/scenes/Login/scenes/SignUp/gql/SignUp';
 import signUpTypes from '@/scenes/Login/scenes/SignUp/gql/types/SignUp';
 
 const Scene = (props: { active: boolean }): JSX.Element => {
-
 	const store = useContext(StoreContext);
+	const history = useHistory();
 
 	const [user, setUser] = useState({
 		username: '',
 		password: '',
-		email: 'ajjy@email.io',
-		real_name: 'notme',
+		details: {
+			email: 'ajjy@email.io',
+			real_name: 'notme',
+		},
 	});
 
 	const updateUser = (evt: React.ChangeEvent<HTMLInputElement>): void => setUser({
@@ -32,15 +34,17 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 	const [usernameValidity, setUsernameValidity] = useState(false);
 	const [passwordValidity, setPasswordValidity] = useState(false);
 
-	// TODO: Research how useMutation / data works
-	const [signUp] = useMutation(signUpTag);
+	const [signUp] = useMutation<signUpTypes.SignUp>(signUpTag);
 
 	const submit = (event: React.FormEvent<HTMLFormElement>): void => {
 		event.preventDefault();
 		signUp({variables: { data: user }})
-			.then(({data}: ExecutionResult<signUpTypes.SignUp>): void => {
-				// TODO: Update user details in store
-				console.log(`Signing up success: `, data?.signUp);
+			.then(({data}): void => {
+				if (data?.signUp?.details) {
+					const { user_id, username, details } = data?.signUp;
+					store.updateUser({ user_id, username, details });
+					history.push('/dashboard');
+				}
 			});
 	};
 
@@ -49,7 +53,6 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 		return (
 			<>
 				<h2>Register</h2>
-				<p>Token is: {store.token}</p>
 				<form onSubmit={submit}>
 					<DetailsInput name="username" type="text" placeholder="Username"
 						value={user.username}

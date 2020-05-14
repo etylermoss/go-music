@@ -41,7 +41,7 @@ type Mutation {
 }
 
 type Query {
-  """Query a user and their details."""
+  """Query a user, must be logged in."""
   user(user_id: String!): User
 }
 

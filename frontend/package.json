@@ -3,7 +3,7 @@
   "scripts": {
     "clean": "rm -rf build/",
     "finished": "echo -e '\n――― Frontend build finished! ―――\n'",
-    "generate_schema_types": "apollo codegen:generate --localSchemaFile='../schema.gql' --target=typescript --includes=src/**/gql/*.ts --tagName=gql --addTypename --tsFileExtension='d.ts' --globalTypesFile='./src/globalTypes.d.ts' types",
+    "generate_schema_types": "apollo codegen:generate --localSchemaFile='../schema.gql' --target='typescript' --includes='src/**/gql/*.ts' --tagName=gql --addTypename --tsFileExtension='d.ts' --globalTypesFile='./src/globalTypes.d.ts' types",
     "build:dev": "webpack --config webpack.dev.js && npm run --silent finished",
     "build:prod": "webpack --config webpack.prod.js && npm run --silent finished",
     "build:release": "webpack --config webpack.prod.js && npm run --silent finished",
@@ -34,6 +34,7 @@
     "@types/react-router-dom": "^5.1.3",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.6.0",
+    "history": "^4.10.1",
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.1",
     "react": "^16.13.1",
