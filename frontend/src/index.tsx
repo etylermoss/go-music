@@ -64,7 +64,7 @@ const Root = (): JSX.Element => {
 		<StoreContext.Provider value={StoreInstance}>
 			<ApolloProvider client={client}>
 				<Router history={history}>
-					<Switch >
+					<Switch>
 						<Route exact path="/">
 							<Splash loginPath="/login"/>
 						</Route>

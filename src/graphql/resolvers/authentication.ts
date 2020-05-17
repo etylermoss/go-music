@@ -42,6 +42,7 @@ export default class AuthResolver {
 	@Mutation(_returns => User, {nullable: true})
 	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): User {
 		const user = this.authSvc.createUser(data);
+		// TODO: Check user doesn't exist
 		if (user) {
 			this.authUser(ctx, user.user_id);
 			return user;

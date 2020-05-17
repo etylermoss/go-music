@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { createContext } from 'react';
-import { observable, action } from 'mobx';
+import { observable, action, computed } from 'mobx';
 
 interface User {
 	user_id: string;
@@ -20,6 +20,11 @@ class Store {
 	@action
 	updateUser(user: User | null): void {
 		this.user = user;
+	}
+
+	@computed
+	get isLoggedIn(): boolean {
+		return this.user ? true : false;
 	}
 }
 

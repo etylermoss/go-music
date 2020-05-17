@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 
 /* 1st party imports */
-import SignIn from '@/scenes/Login/scenes/SignIn';
-import SignUp from '@/scenes/Login/scenes/SignUp';
+import SignIn from '@/scenes/Login/SignIn';
+import SignUp from '@/scenes/Login/SignUp';
 
 type Mode = 'signin' | 'signup';
 
