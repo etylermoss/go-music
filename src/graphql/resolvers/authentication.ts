@@ -11,9 +11,10 @@ import { LoggerService } from '@/services/logger';
 import { AuthenticationService } from '@/services/authentication';
 import { UserService } from '@/services/user';
 
-/* 1st party imports - GraphQL types */
-import { AuthResponse, SignUpInput, SignInInput } from '@/graphql/types/authentication';
+/* 1st party imports - GraphQL types & inputs */
+import { AuthResponse } from '@/graphql/types/authentication';
 import { User } from '@/graphql/types/user';
+import { SignUpInput, SignInInput } from '@/graphql/inputs/authentication';
 
 const authTokenCookie: CookieOptions = {
 	/* Prevent XSRF */

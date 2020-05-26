@@ -9,7 +9,7 @@ import { AccessControl, FieldAccessControl } from '@/graphql/access-control';
 import { LoggerService } from '@/services/logger';
 import { UserService } from '@/services/user';
 
-/* 1st party imports - GraphQL types */
+/* 1st party imports - GraphQL types & inputs */
 import { User, UserDetails } from '@/graphql/types/user';
 
 @Resolver(_of => User)

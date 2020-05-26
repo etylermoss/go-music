@@ -10,9 +10,9 @@ import { DatabaseService } from '@/database';
 import { LoggerService } from '@/services/logger';
 import { UserService } from '@/services/user';
 
-/* 1st party imports - GraphQL types */
-import { SignUpInput } from '@/graphql/types/authentication';
+/* 1st party imports - GraphQL types & inputs */
 import { User, UserDetails } from '@/graphql/types/user';
+import { SignUpInput } from '@/graphql/inputs/authentication';
 
 interface PasswordData {
 	salt: Buffer;

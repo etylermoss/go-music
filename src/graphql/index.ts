@@ -43,6 +43,7 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 			resolvers: [AuthResolver, UserResolver],
 			emitSchemaFile: config.private.genSchema ? path.resolve(__dirname, '../', 'schema.gql') : false,
 			container: Container,
+			validate: true,
 		});
 
 		if (config.private.genSchema) process.exit(0);

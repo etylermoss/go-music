@@ -1,8 +1,7 @@
 /* 3rd party imports */
-import { ObjectType, Field, ID, InputType } from 'type-graphql';
+import { ObjectType, Field, ID } from 'type-graphql';
 
 @ObjectType()
-@InputType('UserDetailsInput')
 export class UserDetails {
 	@Field()
 	email: string;

@@ -4,7 +4,7 @@ import { Service, Inject } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 
-/* 1st party imports - GraphQL types */
+/* 1st party imports - GraphQL types & inputs */
 import { User, UserDetails } from '@/graphql/types/user';
 
 @Service('user.service')
