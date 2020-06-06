@@ -43,7 +43,7 @@
     "@types/iarna__toml": "^2.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^13.13.5",
-    "apollo-server-express": "^2.13.0",
+    "apollo-server-express": "^2.14.2",
     "better-sqlite3": "^7.0.1",
     "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
