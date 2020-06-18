@@ -26,7 +26,7 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 		debug: !RELEASE,
 		uploads: false,
 		formatError: (error) => {
-			if ((error.extensions?.exception?.validationErrors as any[]).length > 0) {
+			if ((error.extensions?.exception?.validationErrors as any[])?.length > 0) {
 				error.extensions.code = 'ARGUMENT_VALIDATION_ERROR';
 			}
 			return error;
