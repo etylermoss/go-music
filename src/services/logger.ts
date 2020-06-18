@@ -78,8 +78,8 @@ export class LoggerService {
 		}
 	}
 
-	async logSql(unsafe: boolean, msg: string): Promise<void> {
-		if (!unsafe) this.log('EXTRA', StripIndent(msg));
+	async logSql(msg: string): Promise<void> {
+		this.log('EXTRA', StripIndent(msg));
 	}
 
 }

@@ -20,7 +20,9 @@ export class DatabaseService extends sqlite {
 		const logSvc: LoggerService = Container.get('logger.service');
 		const databaseOptions: sqlite.Options = {
 			verbose: (msg: string) => {
-				logSvc.logSql(msg.slice(0, 10) === '/*UNSAFE*/', msg);
+				if (msg.slice(0, 10) !== '/*UNSAFE*/') {
+					logSvc.logSql(msg);
+				}
 			},
 		};
 
