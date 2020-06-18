@@ -30,7 +30,7 @@ type Mutation {
   signOutAll(data: SignInInput!): AuthResponse!
 
   """
-  Sign up, creating a new user/account, and signing inthe user automatically.
+  Sign up, creating a new user/account, and signing inthe user automatically. The first account created is automaticallyset as an admin.
   """
   signUp(data: SignUpInput!): User
 
@@ -57,6 +57,7 @@ input SignUpInput {
 }
 
 type User {
+  adminPriority: Float
   details: UserDetails
   user_id: ID!
   username: String!

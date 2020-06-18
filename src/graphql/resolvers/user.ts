@@ -8,6 +8,7 @@ import { AccessControl, FieldAccessControl } from '@/graphql/access-control';
 /* 1st party imports - Services */
 import { LoggerService } from '@/services/logger';
 import { UserService } from '@/services/user';
+import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
 import { User, UserDetails } from '@/graphql/types/user';
@@ -15,11 +16,14 @@ import { User, UserDetails } from '@/graphql/types/user';
 @Resolver(_of => User)
 export default class UserResolver implements ResolverInterface<User> {
 
+	@Inject('logger.service')
+	logSvc: LoggerService;
+
 	@Inject('user.service')
 	userSvc: UserService;
 
-	@Inject('logger.service')
-	logSvc: LoggerService;
+	@Inject('admin.service')
+	adminSvc: AdminService;
 
 	/** @typegraphql Query a user, must be logged in.
 	 */
@@ -27,6 +31,14 @@ export default class UserResolver implements ResolverInterface<User> {
 	@Query(_returns => User, {nullable: true})
 	user(@Arg('user_id') user_id: string): User {
 		return this.userSvc.getUserByID(user_id);
+	}
+
+	/** @typegraphql If the user is an admin, this is their priority level
+	 *  over other admins, otherwise it is null.
+	 */
+	@FieldResolver({nullable: true})
+	adminPriority(@Root() root: User): number | null {
+		return this.adminSvc.getAdminUserPriority(root.user_id);
 	}
 
 	/** @typegraphql Query a user's details, checking if permitted.

@@ -10,6 +10,7 @@ import Context from '@/context';
 import { LoggerService } from '@/services/logger';
 import { AuthenticationService } from '@/services/authentication';
 import { UserService } from '@/services/user';
+import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
 import { AuthResponse } from '@/graphql/types/authentication';
@@ -27,6 +28,9 @@ const authTokenCookie: CookieOptions = {
 
 @Resolver()
 export default class AuthResolver {
+
+	@Inject('logger.service')
+	logSvc: LoggerService;
 	
 	@Inject('authentication.service')
 	authSvc: AuthenticationService;
@@ -34,17 +38,19 @@ export default class AuthResolver {
 	@Inject('user.service')
 	userSvc: UserService;
 
-	@Inject('logger.service')
-	logSvc: LoggerService;
+	@Inject('admin.service')
+	adminSvc: AdminService;
 
 	/** @typegraphql Sign up, creating a new user/account, and signing in
-	 *  the user automatically.
+	 *  the user automatically. The first account created is automatically
+	 *  set as an admin.
 	 */
 	@Mutation(_returns => User, {nullable: true})
 	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): User {
 		const user = this.authSvc.createUser(data);
-		// TODO: Check user doesn't exist
+		// TODO: Check user doesn't exist, maybe in SignUpInput validation.
 		if (user) {
+			if (this.adminSvc.getAdminCount() === 0) this.adminSvc.makeUserAdmin(user.user_id);
 			this.authUser(ctx, user.user_id);
 			return user;
 		}

@@ -24,7 +24,7 @@ export interface SignUp_signUp {
 
 export interface SignUp {
   /**
-   * Sign up, creating a new user/account, and signing inthe user automatically.
+   * Sign up, creating a new user/account, and signing inthe user automatically. The first account created is automaticallyset as an admin.
    */
   signUp: SignUp_signUp | null;
 }

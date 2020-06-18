@@ -17,6 +17,9 @@ export class User {
 
 	@Field()
 	username: string;
+
+	@Field({nullable: true})
+	adminPriority?: number;
 	
 	@Field(_type => UserDetails, {nullable: true})
 	details?: UserDetails;
