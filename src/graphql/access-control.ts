@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Container } from 'typedi';
-import { createMethodDecorator} from 'type-graphql';
+import { createMethodDecorator } from 'type-graphql';
 
 /* 1st party imports */
 import Context from '@/context';
