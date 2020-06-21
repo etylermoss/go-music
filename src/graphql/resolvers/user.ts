@@ -3,7 +3,7 @@ import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root 
 import { Inject } from 'typedi';
 
 /* 1st party imports */
-import { AccessControl, FieldAccessControl } from '@/graphql/access-control';
+import { AccessControl, FieldAccessControl } from '@/graphql/decorators/access-control';
 
 /* 1st party imports - Services */
 import { LoggerService } from '@/services/logger';
