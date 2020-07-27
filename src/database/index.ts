@@ -9,8 +9,16 @@ import { ConfigSchema } from '@/config';
 import { LoggerService } from '@/services/logger';
 
 /* 1st party imports - SQL */
-import Schema from '@/database/setup/schema.sql';
-import Pragma from '@/database/setup/pragma.sql';
+import Users from '@/database/tables/00-users.sql';
+import Authentication from '@/database/tables/01-authentication.sql';
+import Resources from '@/database/tables/02-resources.sql';
+import AccessControl from '@/database/tables/03-access-control.sql';
+import Sourcing from '@/database/tables/04-sourcing.sql';
+
+const Pragma = `
+PRAGMA foreign_keys = ON;
+PRAGMA journal_mode = WAL;
+`;
 
 @Service('database.service')
 export class DatabaseService extends sqlite {
@@ -31,6 +39,7 @@ export class DatabaseService extends sqlite {
 		super(path.join(config.dataDirectory, 'go-music.db'), databaseOptions);
 
 		this.exec(Pragma);
-		this.exec(Schema);
+		
+		[Users, Authentication, Resources, AccessControl, Sourcing].forEach(sql => this.exec(sql));
 	}
 }
