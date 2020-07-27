@@ -19,7 +19,7 @@ export class AdminService {
 	isUserAdmin(user_id: string): boolean {
 		return this.dbSvc.prepare(`
 		SELECT ( user_id )
-		FROM AdminUsers
+		FROM AdminUser
 		WHERE user_id = $user_id
 		`).get({user_id})?.user_id ? true : false;
 	}
@@ -33,7 +33,7 @@ export class AdminService {
 	getAdminUserPriority(user_id: string): number | null {
 		const adminUserPriority = this.dbSvc.prepare(`
 		SELECT ( priority )
-		FROM AdminUsers
+		FROM AdminUser
 		WHERE user_id = $user_id
 		`).get({user_id})?.priority;
 		return adminUserPriority ? adminUserPriority : null;
@@ -44,8 +44,8 @@ export class AdminService {
 	 */
 	makeUserAdmin(user_id: string): void {
 		const makeUserAdminChanges = this.dbSvc.prepare(`
-		INSERT INTO AdminUsers (user_id, priority)
-		VALUES ($user_id, ( SELECT COUNT(*) FROM AdminUsers ) + 1)
+		INSERT INTO AdminUser (user_id, priority)
+		VALUES ($user_id, ( SELECT COUNT(*) FROM AdminUser ) + 1)
 		`).run({user_id}).changes;
 		if (makeUserAdminChanges === 0) {
 			const msg = `Could not make user_id ${user_id} an admin, does the user exist?`;
@@ -59,7 +59,7 @@ export class AdminService {
 	getAdminCount(): number {
 		return this.dbSvc.prepare(`
 		SELECT COUNT(*) AS 'count'
-		FROM AdminUsers
+		FROM AdminUser
 		`).get().count;
 	}
 }

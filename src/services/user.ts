@@ -19,7 +19,7 @@ export class UserService {
 	getUserByID(user_id: string, includeDetails: boolean = false): User {
 		const user = this.dbSvc.prepare(`
 		SELECT user_id, username
-		FROM Users
+		FROM User
 		WHERE user_id = $user_id
 		`).get({user_id}) as User;
 		if (includeDetails && user) {
@@ -34,7 +34,7 @@ export class UserService {
 	getUserByUsername(username: string, includeDetails: boolean = false): User {
 		const user = this.dbSvc.prepare(`
 		SELECT user_id, username
-		FROM Users
+		FROM User
 		WHERE username = $username
 		`).get({username}) as User;
 		if (includeDetails && user) {
@@ -58,11 +58,10 @@ export class UserService {
 	/** Retrieves all users (user_id and username) from the database.
 	 */
 	getUsers(): User[] {
-		const statement = this.dbSvc.prepare(`
+		return this.dbSvc.prepare(`
 		SELECT user_id, username
-		FROM Users
-		`);
-		return statement.all() as User[];
+		FROM User
+		`).all() as User[];
 	}
 
 	/** Deletes a user, searching by the given user_id, returning success
@@ -70,7 +69,7 @@ export class UserService {
 	 */
 	deleteUser(user_id: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM Users
+		DELETE FROM User
 		WHERE user_id = $user_id
 		`).run({user_id}).changes > 0 ? true : false;
 	}

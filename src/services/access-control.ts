@@ -9,20 +9,19 @@ import { DatabaseService } from '@/database';
 export enum Operations { READ, WRITE, DELETE }
 export type OperationsStrings = keyof typeof Operations;
 
-interface AccessGroup {
+interface Group {
 	group_id: string;
-	user_id: string;
-	name: string;
+	owner_user_id: string;
+	name: string; // TODO: Add pretty_name
 	description: string;
 }
 
-interface UserAccessGroup {
+interface UserGroup {
 	user_id: string;
 	group_id: string;
-	allowed_operations: Operations;
 }
 
-interface ResourceAccessGroup {
+interface ResourceGroup {
 	resource_id: string;
 	group_id: string;
 	allowed_operations: Operations;
@@ -30,7 +29,7 @@ interface ResourceAccessGroup {
 
 interface Resource {
 	resource_id: string;
-	user_id: string;
+	owner_user_id: string;
 }
 
 @Service('access-control.service')
@@ -44,18 +43,18 @@ export class AccessControlService {
 
 	getResourceAccessLevelForUser(user_id: string, target_resource_id: string): Operations | null {
 		const resource = this.getResourceByID(target_resource_id);
-		if (user_id === resource.user_id) return Operations.DELETE;
+		if (user_id === resource.owner_user_id) return Operations.DELETE;
 
-		const sharedGroups: ResourceAccessGroup[] = this.dbSvc.prepare(`
+		const sharedGroups: ResourceGroup[] = this.dbSvc.prepare(`
 		SELECT
-			ResourceAccessGroups.resource_id,
-			ResourceAccessGroups.group_id,
-			ResourceAccessGroups.allowed_operations
-		FROM ResourceAccessGroups
-		INNER JOIN UserAccessGroups
-			ON UserAccessGroups.group_id = ResourceAccessGroups.group_id
-		WHERE ResourceAccessGroups.resource_id = $resource_id
-			AND UserAccessGroups.user_id = $user_id
+			ResourceGroup.resource_id,
+			ResourceGroup.group_id,
+			ResourceGroup.allowed_operations
+		FROM ResourceGroup
+		INNER JOIN UserGroup
+			ON UserGroup.group_id = ResourceGroup.group_id
+		WHERE ResourceGroup.resource_id = $resource_id
+			AND UserGroup.user_id = $user_id
 		`).all({
 			user_id,
 			resource_id: target_resource_id,
@@ -74,24 +73,24 @@ export class AccessControlService {
 	}
 
 	getGroupAccessLevelForUser(user_id: string, target_group_id: string): Operations | null {
-		if (user_id === this.getGroupByID(target_group_id).user_id) return Operations.DELETE;
+		if (user_id === this.getGroupByID(target_group_id).owner_user_id) return Operations.DELETE;
 		return Operations.READ;
 	}
 
-	getResourceByID(resource_id: string): Resource {
+	getResourceByID(resource_rid: string): Resource {
 		return this.dbSvc.prepare(`
 		SELECT resource_id, user_id
-		FROM Resources
+		FROM Resource
 		WHERE resource_id = $resource_id
-		`).get({resource_id}) as Resource;
+		`).get({resource_rid}) as Resource;
 	}
 
 	/** Creates a new access group. If a group already exists by the same
 	 *  name, then null is returned.
 	 */
-	createNewGroup(user_id: string, name: string, description: string): AccessGroup | null {
+	createNewGroup(user_id: string, name: string, description: string): Group | null {
 		const sqlCreateGroup = this.dbSvc.prepare(`
-		INSERT INTO AccessGroups (group_id, user_id, name, description)
+		INSERT INTO Group (group_id, user_id, name, description)
 		VALUES ($group_id, $user_id, $name, $description)
 		`);
 		const group_id = randomBytes(8).toString('base64');
@@ -111,21 +110,21 @@ export class AccessControlService {
 
 	/** Retrieves an Access Group, searching for it by ID.
 	 */
-	getGroupByID(group_id: string): AccessGroup | null {
+	getGroupByID(group_id: string): Group | null {
 		return this.dbSvc.prepare(`
 		SELECT ( group_id, user_id, name, description )
-		FROM AccessGroups
+		FROM Group
 		WHERE group_id = $group_id
-		`).get({group_id}) as AccessGroup;
+		`).get({group_id}) as Group;
 	}
 
 	/** Retrives an Access Group, searching for it by name.
 	 */
-	getGroupByName(name: string): AccessGroup | null {
+	getGroupByName(name: string): Group | null {
 		return this.dbSvc.prepare(`
 		SELECT group_id, user_id, name, description
-		FROM AccessGroups
+		FROM Group
 		WHERE name = $name
-		`).get({name}) as AccessGroup;
+		`).get({name}) as Group;
 	}
 }

@@ -30,7 +30,7 @@ export class DatabaseService extends sqlite {
 
 		super(path.join(config.dataDirectory, 'go-music.db'), databaseOptions);
 
-		this.exec(Schema);
 		this.exec(Pragma);
+		this.exec(Schema);
 	}
 }

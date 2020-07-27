@@ -38,7 +38,7 @@ export const AccessControl = (
 			throw new Error(`Field ${info.fieldName} was not supplied with ${targetTypeArg} argument.`);
 		}
 
-		/* Get the access level the user has for the specified resource */
+		/* Get the access level the user has for the specified resource / user / group */
 		let userLevel = null;
 		switch (targetTypeArg) {
 			case 'resource_id': userLevel = aclSvc.getResourceAccessLevelForUser(user_id, target_id); break;

@@ -48,7 +48,7 @@ export class AuthenticationService {
 	createUser({ username, password, details}: SignUpInput): User | null {
 		const user_id = randomBytes(8).toString('base64');
 		const createUserChanges = this.dbSvc.prepare(`
-		INSERT INTO Users (user_id, username)
+		INSERT INTO User (user_id, username)
 		VALUES ($user_id, $username)
 		`).run({ user_id, username }).changes;
 
@@ -82,7 +82,7 @@ export class AuthenticationService {
 	 */
 	updateUserPassword(user_id: string, password: string): boolean {
 		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
-		REPLACE INTO UserPasswords (user_id, salt, hash)
+		REPLACE INTO UserPassword (user_id, salt, hash)
 		VALUES ($user_id, $salt, $hash)
 		`);
 		const salt = randomBytes(16);
@@ -109,7 +109,7 @@ export class AuthenticationService {
 	getUserPasswordData(user_id: string): PasswordData {
 		return this.dbSvc.prepare(unsafe`
 		SELECT salt, hash
-		FROM UserPasswords
+		FROM UserPassword
 		WHERE user_id = $user_id
 		`).get({user_id});
 	}
@@ -120,21 +120,21 @@ export class AuthenticationService {
 	newAuthToken(user_id: string): string {
 		const sqlGetTokenCount = this.dbSvc.prepare(`
 		SELECT COUNT(*)
-		FROM UserAuthTokens
+		FROM UserAuthToken
 		WHERE user_id = $user_id
 		`);
 		const sqlDeleteOldestToken = this.dbSvc.prepare(`
-		DELETE FROM UserAuthTokens
+		DELETE FROM UserAuthToken
 		WHERE rowid =
 			(
 				SELECT rowid
-				FROM UserAuthTokens
+				FROM UserAuthToken
 				WHERE user_id = $user_id
 				ORDER BY creation_time ASC LIMIT 1
 			)
 		`);
 		const sqlInsertToken = this.dbSvc.prepare(`
-		INSERT INTO UserAuthTokens (user_id, token)
+		INSERT INTO UserAuthToken (user_id, token)
 		VALUES ($user_id, $token)
 		`);
 		
@@ -155,7 +155,7 @@ export class AuthenticationService {
 	checkAuthToken(token: string): string | null {
 		return this.dbSvc.prepare(`
 		SELECT user_id
-		FROM UserAuthTokens
+		FROM UserAuthToken
 		WHERE token = $token
 		`).get({token})?.user_id || null;
 	}
@@ -164,7 +164,7 @@ export class AuthenticationService {
 	 */
 	revokeAuthToken(token: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM UserAuthTokens
+		DELETE FROM UserAuthToken
 		WHERE token = $token
 		`).run({token}).changes === 1 ? true : false;
 	}
@@ -174,7 +174,7 @@ export class AuthenticationService {
 	 */
 	revokeAllAuthTokens(user_id: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM UserAuthTokens
+		DELETE FROM UserAuthToken
 		WHERE user_id = $user_id
 		`).run({user_id}).changes > 0 ? true : false;
 	}
