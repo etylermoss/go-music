@@ -14,7 +14,7 @@ I was a long time user of Plex for my media collection, however it's interface i
 
 That's my justification for starting this project, I may not finish it but we'll see.
 
-#### Tech Stack
+#### Stack
 
 The following is the current tech stack for the project, frontend unfinished comparatively thus will likely change / grow.
 
