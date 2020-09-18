@@ -4,21 +4,21 @@
 	</a>
 </h1>
 
-Personal music streaming server, built with modern technology, self-hostable, and fully FOSS.
+Personal music streaming server, built with a modern stack.
 
-Work in progress, approximately 1/2 way to initial working prototype (i.e actually able to stream music). Things that are already implemented include signing in/up/out, authentication, scanning for music files (+ a lot of backend groundwork).
+Work in progress, approximately 2/3rds the way to initial working prototype (i.e actually able to stream music). Things that are already implemented include signing in/up/out, authentication, scanning for music files (+ a lot of backend groundwork).
 
 #### Why?
 
-I was a long time user of Plex for my media collection, however it's interface is woeful for music, I'm not fond of the company direction, and Plex is proprietary. Jellyfin/Emby likewise is not really designed with music in mind, and comes with a lot of technological debt (though the Jellyfin guys are great!).
+I was a long time user of Plex for my media collection, however it's interface is woeful for music, proprietary, and the company has a poor direction. Jellyfin/Emby is not really designed with music in mind, and comes with a lot of tech debt (though the Jellyfin guys are great!).
 
-That's my justification for starting this project, I may not finish it but we'll see. If you feel like helping out / creating a PR please do so!
+That's my justification for starting this project, I may not finish it but we'll see.
 
 #### Tech Stack
 
 The following is the current tech stack for the project, frontend unfinished comparatively thus will likely change / grow.
 
-Backend: Node.js, Typedi (IoC), Type-GraphQL w/ Apollo, Express, Better-sqlite3, TypeScript, Webpack.
+Backend: Node.js, Typedi, Type-GraphQL w/ Apollo, Express, Better-sqlite3, TypeScript, Webpack.
 Frontend: React, MobX, Apollo, React-Router, TypeScript, Webpack.
 
 ## 🔨 [Building from source](#-building-from-source)
