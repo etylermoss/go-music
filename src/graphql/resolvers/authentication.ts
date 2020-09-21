@@ -7,7 +7,6 @@ import { CookieOptions } from 'express';
 import Context from '@/context';
 
 /* 1st party imports - Services */
-import { LoggerService } from '@/services/logger';
 import { AuthenticationService } from '@/services/authentication';
 import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
@@ -28,9 +27,6 @@ const authTokenCookie: CookieOptions = {
 
 @Resolver()
 export default class AuthResolver {
-
-	@Inject('logger.service')
-	logSvc: LoggerService;
 	
 	@Inject('authentication.service')
 	authSvc: AuthenticationService;
@@ -67,7 +63,7 @@ export default class AuthResolver {
 			this.authUser(ctx, user.user_id);
 			return user;
 		}
-		this.logSvc.log('WARN', `Incorrect sign-in attempt from ${ctx.req.ip}.`);
+		console.log(`Incorrect sign-in attempt from ${ctx.req.ip}.`);
 		return null;
 	}
 

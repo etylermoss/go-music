@@ -7,7 +7,6 @@ import { ConfigSchema } from '@/config';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-import { LoggerService } from '@/services/logger';
 import { UserService } from '@/services/user';
 
 /* 1st party imports - GraphQL types & inputs */
@@ -33,9 +32,6 @@ export class AuthenticationService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	@Inject('logger.service')
-	private logSvc: LoggerService;
-
 	@Inject('config')
 	private config: ConfigSchema;
 
@@ -46,20 +42,18 @@ export class AuthenticationService {
 	 *  Returns the user, including their personal details (email etc).
 	 */
 	createUser({ username, password, details}: SignUpInput): User | null {
-		const user_id = randomBytes(8).toString('base64');
+		const user_id = randomBytes(8).toString('base64'); // TODO: Move to imported function
 		const createUserChanges = this.dbSvc.prepare(`
 		INSERT INTO User (user_id, username)
 		VALUES ($user_id, $username)
 		`).run({ user_id, username }).changes;
 
-		if (createUserChanges === 1) {
-			this.createOrUpdateUserDetails(user_id, details);
-		} else {
-			this.logSvc.log('WARN', `Could not create user '${username}', likely already exists.`);
-			return null;
-		}
+		// Ensure that the user was inserted into the database
+		if (createUserChanges !== 1) return null;
 
+		this.createOrUpdateUserDetails(user_id, details);
 		this.updateUserPassword(user_id, password);
+
 		return this.userSvc.getUserByID(user_id, true);
 	}
 

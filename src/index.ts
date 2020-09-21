@@ -10,7 +10,6 @@ import 'reflect-metadata';
 /* 1st party imports */
 import GlobalConfig from '@G/config.json';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
-import { LoggerService } from '@/services/logger';
 import { launchGraphql } from '@/graphql';
 
 /** Print exit message and exit program execution.
@@ -78,14 +77,6 @@ const manageCliArgs = (config: ConfigSchema): ConfigSchema => {
 		case Boolean(args?.p || args?.port):
 			config.port = args.p ? args.p : args.port;
 			break;
-		// -l, --log-level: logging verbosity level (0-4)
-		case Boolean(args?.l || args['log-level']):
-			config.logLevel = args.l ? args.l : args['log-level'];
-			break;
-		// -L, --log-file: file path to output logs to
-		case Boolean(args?.L || args['log-file']):
-			config.logFile = args.L ? args.L : args['log-file'];
-			break;
 		// -a, --api-only: don't serve frontend
 		case Boolean(args?.a || args['api-only']):
 			config.private.apiOnly = true;
@@ -134,9 +125,6 @@ const main = async (): Promise<void> => {
 	/* Store configuration in Typedi container */
 	Container.set('config', config);
 
-	/* Load logger service */
-	const logSvc: LoggerService = Container.get('logger.service');
-
 	/* Initialize express server */
 	const app = express();
 
@@ -158,12 +146,8 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	logSvc.log('INFO',
-		`Now running at http://localhost:${config.port}.`,
-		(RELEASE ? undefined :
-		` Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`
-		),
-	);
+	console.log(`Now running at http://localhost:${config.port}.`);
+	console.log(`Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`);
 };
 
 main();
