@@ -6,7 +6,6 @@ import { Inject } from 'typedi';
 import { AccessControl, FieldAccessControl } from '@/graphql/decorators/access-control';
 
 /* 1st party imports - Services */
-import { LoggerService } from '@/services/logger';
 import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
 
@@ -15,9 +14,6 @@ import { User, UserDetails } from '@/graphql/types/user';
 
 @Resolver(_of => User)
 export default class UserResolver implements ResolverInterface<User> {
-
-	@Inject('logger.service')
-	logSvc: LoggerService;
 
 	@Inject('user.service')
 	userSvc: UserService;

@@ -9,7 +9,6 @@ import Context from '@/context';
 import { ConfigSchema } from '@/config';
 
 /* 1st party imports - Services */
-import { LoggerService } from '@/services/logger';
 import { AuthenticationService } from '@/services/authentication';
 
 /* 1st party imports - Resolvers */
@@ -19,7 +18,6 @@ import UserResolver from '@/graphql/resolvers/user';
 export const launchGraphql = async (): Promise<ApolloServer> => {
 
 	const config: ConfigSchema = Container.get('config');
-	const logSvc: LoggerService = Container.get('logger.service');
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,
@@ -50,12 +48,13 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 			emitSchemaFile: config.private.genSchema ? path.resolve(__dirname, '../', 'schema.gql') : false,
 			container: Container,
 			validate: true,
+			dateScalarMode: 'timestamp',
 		});
 
 		if (config.private.genSchema) process.exit(0);
 	
 		return new ApolloServer({ schema, ...apolloOptions });
 	} catch (err) {
-		logSvc.log('FATAL_ERROR', err);
+		console.error('[FATAL ERROR]: ', err);
 	}
 };

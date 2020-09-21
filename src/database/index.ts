@@ -6,7 +6,6 @@ import { Service, Container } from 'typedi';
 
 /* 1st party imports */
 import { ConfigSchema } from '@/config';
-import { LoggerService } from '@/services/logger';
 
 /* 1st party imports - SQL */
 import Users from '@/database/tables/00-users.sql';
@@ -25,18 +24,10 @@ export class DatabaseService extends sqlite {
 
 	constructor() {
 		const config: ConfigSchema = Container.get('config');
-		const logSvc: LoggerService = Container.get('logger.service');
-		const databaseOptions: sqlite.Options = {
-			verbose: (msg: string) => {
-				if (msg.slice(0, 10) !== '/*UNSAFE*/') {
-					logSvc.logSql(msg);
-				}
-			},
-		};
 
 		if (!fs.existsSync(config.dataDirectory)) fs.mkdirSync(config.dataDirectory, '0700');
 
-		super(path.join(config.dataDirectory, 'go-music.db'), databaseOptions);
+		super(path.join(config.dataDirectory, 'go-music.db'));
 
 		this.exec(Pragma);
 		

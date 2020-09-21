@@ -3,7 +3,6 @@ import { randomBytes } from 'crypto';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
-import { LoggerService } from '@/services/logger';
 import { DatabaseService } from '@/database';
 
 export enum Operations { READ, WRITE, DELETE }
@@ -38,18 +37,18 @@ export class AccessControlService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	@Inject('logger.service')
-	private logSvc: LoggerService;
-
 	getResourceAccessLevelForUser(user_id: string, target_resource_id: string): Operations | null {
 		const resource = this.getResourceByID(target_resource_id);
+
 		if (user_id === resource.owner_user_id) return Operations.DELETE;
 
 		const sharedGroups: ResourceGroup[] = this.dbSvc.prepare(`
 		SELECT
+		(
 			ResourceGroup.resource_id,
 			ResourceGroup.group_id,
 			ResourceGroup.allowed_operations
+		)
 		FROM ResourceGroup
 		INNER JOIN UserGroup
 			ON UserGroup.group_id = ResourceGroup.group_id
@@ -59,12 +58,14 @@ export class AccessControlService {
 			user_id,
 			resource_id: target_resource_id,
 		});
+
 		if (!sharedGroups.length) return null;
+
 		return sharedGroups.reduce<Operations>((prev, current) => {
 			return (current.allowed_operations > prev)
 				? current.allowed_operations
 				: prev;
-		}, 0);
+		}, Operations.READ);
 	}
 
 	getUserAccessLevelForUser(user_id: string, target_user_id: string): Operations | null {
@@ -79,7 +80,11 @@ export class AccessControlService {
 
 	getResourceByID(resource_rid: string): Resource {
 		return this.dbSvc.prepare(`
-		SELECT resource_id, user_id
+		SELECT 
+		(
+			resource_id,
+			user_id
+		)
 		FROM Resource
 		WHERE resource_id = $resource_id
 		`).get({resource_rid}) as Resource;
@@ -89,22 +94,31 @@ export class AccessControlService {
 	 *  name, then null is returned.
 	 */
 	createNewGroup(user_id: string, name: string, description: string): Group | null {
-		const sqlCreateGroup = this.dbSvc.prepare(`
-		INSERT INTO Group (group_id, user_id, name, description)
-		VALUES ($group_id, $user_id, $name, $description)
-		`);
 		const group_id = randomBytes(8).toString('base64');
-		try {
-			sqlCreateGroup.run({
-				group_id,
-				user_id,
-				name,
-				description,
-			});
-		} catch {
-			this.logSvc.log('WARN', `Could not create group '${name}', likely already exists.`);
-			return null;
-		}
+		const result = this.dbSvc.prepare(`
+		INSERT INTO Group
+		(
+			group_id,
+			user_id,
+			name,
+			description
+		)
+		VALUES
+		(
+			$group_id,
+			$user_id,
+			$name,
+			$description
+		)
+		`).run({
+			group_id,
+			user_id,
+			name,
+			description,
+		});
+		
+		if (result.changes === 0) return null;
+		
 		return this.getGroupByID(group_id);
 	}
 
@@ -112,7 +126,13 @@ export class AccessControlService {
 	 */
 	getGroupByID(group_id: string): Group | null {
 		return this.dbSvc.prepare(`
-		SELECT ( group_id, user_id, name, description )
+		SELECT
+		(
+			group_id,
+			user_id,
+			name,
+			description
+		)
 		FROM Group
 		WHERE group_id = $group_id
 		`).get({group_id}) as Group;
@@ -122,7 +142,13 @@ export class AccessControlService {
 	 */
 	getGroupByName(name: string): Group | null {
 		return this.dbSvc.prepare(`
-		SELECT group_id, user_id, name, description
+		SELECT
+		(
+			group_id,
+			user_id,
+			name,
+			description
+		)
 		FROM Group
 		WHERE name = $name
 		`).get({name}) as Group;
