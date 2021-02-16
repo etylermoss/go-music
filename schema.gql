@@ -67,6 +67,11 @@ type Query {
   """
   sources: [SourceGQL!]
 
+  """
+  Query all users, must be logged in.
+  """
+  users: [UserGQL!]
+
   """Query a user, must be logged in."""
   user(user_id: String!): UserGQL
 }

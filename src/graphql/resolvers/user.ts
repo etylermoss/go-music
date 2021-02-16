@@ -1,13 +1,15 @@
 /* 3rd party imports */
-import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root } from 'type-graphql';
+import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Ctx, Root } from 'type-graphql';
 import { Inject } from 'typedi';
 
 /* 1st party imports */
+import Context from '@/context';
 import { AccessControl, FieldAccessControl } from '@/graphql/decorators/access-control';
 
 /* 1st party imports - Services */
 import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
+import { AccessControlService, Operations } from '@/services/access-control';
 
 /* 1st party imports - GraphQL types & inputs */
 import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
@@ -24,12 +26,37 @@ export default class UserResolver implements ResolverInterface<UserGQL> {
 	@Inject('admin.service')
 	adminSvc: AdminService;
 
+	@Inject('access-control.service')
+	aclSvc: AccessControlService;
+
 	/** @typegraphql Query a user, must be logged in.
 	 */
 	@AccessControl()
 	@Query(_returns => UserGQL, {nullable: true})
 	user(@Arg('user_id') user_id: string): UserGQL | null {
 		return user_to_gql(this.userSvc.getUserByID(user_id));
+	}
+
+	/** @typegraphql Query all users, must be logged in.
+	 */
+	@AccessControl()
+	@Query(_returns => [UserGQL], {nullable: true})
+	users(@Ctx() ctx: Context): UserGQL[] | null {
+		const users_sql = this.userSvc.getAllUsers();
+		let allowedUsers: UserGQL[] = [];
+
+		if (users_sql)
+		{
+			allowedUsers = users_sql.reduce<UserGQL[]>((acc, user) => {
+				const level = this.aclSvc.getUserAccessLevelForUser(ctx.user_id, user.user_id);
+				if (level && level >= Operations.READ) {
+					acc.push(user_to_gql(user));
+				}
+				return acc;
+			}, []);
+		}
+
+		return allowedUsers;
 	}
 
 	/** @typegraphql If the user is an admin, this is their priority level

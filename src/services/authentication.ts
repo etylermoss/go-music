@@ -6,10 +6,10 @@ import { Service, Inject } from 'typedi';
 import { DatabaseService } from '@/database';
 import { UserService } from '@/services/user';
 
-/* 1st party imports - Object types / classes */
+/* 1st party imports - SQL types */
 import { UserSQL, UserDetailsSQL } from '@/services/user';
 
-/* 1st party imports - GraphQL types & inputs */
+/* 1st party imports - GraphQL inputs */
 import { SignUpInput } from '@/graphql/inputs/authentication';
 
 /* 1st party imports */

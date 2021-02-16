@@ -61,7 +61,7 @@ export class UserService {
 	
 	/** Retrieves all users (user_id and username) from the database.
 	 */
-	getUsers(): UserSQL[] {
+	getAllUsers(): UserSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT user_id, username
 		FROM User
