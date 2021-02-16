@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "strictNullChecks": true,
     "lib": ["es2018", "esnext.asynciterable"],
     "baseUrl": ".",
     "paths": {

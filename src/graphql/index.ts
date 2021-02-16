@@ -14,8 +14,9 @@ import { AuthenticationService } from '@/services/authentication';
 /* 1st party imports - Resolvers */
 import AuthResolver from '@/graphql/resolvers/authentication';
 import UserResolver from '@/graphql/resolvers/user';
+import SourceResolver from '@/graphql/resolvers/source';
 
-export const launchGraphql = async (): Promise<ApolloServer> => {
+export const launchGraphql = async (): Promise<ApolloServer | null> => {
 
 	const config: ConfigSchema = Container.get('config');
 
@@ -24,7 +25,10 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 		debug: !RELEASE,
 		uploads: false,
 		formatError: (error) => {
-			if ((error.extensions?.exception?.validationErrors as any[])?.length > 0) {
+			if (
+				(error.extensions?.exception?.validationErrors as any[])?.length > 0
+				&& error?.extensions?.code
+			) {
 				error.extensions.code = 'ARGUMENT_VALIDATION_ERROR';
 			}
 			return error;
@@ -44,7 +48,7 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 
 	try {
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, UserResolver],
+			resolvers: [AuthResolver, UserResolver, SourceResolver],
 			emitSchemaFile: config.private.genSchema ? path.resolve(__dirname, '../', 'schema.gql') : false,
 			container: Container,
 			validate: true,
@@ -57,4 +61,6 @@ export const launchGraphql = async (): Promise<ApolloServer> => {
 	} catch (err) {
 		console.error('[FATAL ERROR]: ', err);
 	}
+
+	return null;
 };

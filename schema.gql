@@ -3,23 +3,41 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+input AddSourceInput {
+  name: String!
+  path: String!
+}
+
 type AuthResponse {
   success: Boolean!
 }
 
 type Mutation {
-  """Delete a user from the application."""
-  deleteUser(user_id: String!): User
+  """
+  Add a new source, must be an admin.The source is not scanned automatically.
+  """
+  addSource(data: AddSourceInput!): SourceGQL
+
+  """Delete a user, returns success."""
+  deleteUser(user_id: String!): Boolean
 
   """
   Check whether the client is signed in, ensures theauthToken cookie (httpOnly) is present in the database andassociated with a user.
   """
-  isSignedIn: User
+  isSignedIn: UserGQL
+
+  """
+  Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
+  """
+  removeSource(resource_id: String!): Boolean!
+
+  """Scans the given source, returns success.Must be admin."""
+  scanSource(resource_id: String!): Boolean!
 
   """
   Sign into the application, if the supplied credentialsare correct, the authToken httpOnly cookie is set.
   """
-  signIn(data: SignInInput!): User
+  signIn(data: SignInInput!): UserGQL
 
   """Sign out of the application, revoking authToken."""
   signOut: AuthResponse!
@@ -32,7 +50,7 @@ type Mutation {
   """
   Sign up, creating a new user/account, and signing inthe user automatically. The first account created is automaticallyset as an admin.
   """
-  signUp(data: SignUpInput!): User
+  signUp(data: SignUpInput!): UserGQL
 
   """
   Update the users password. Requires the client tosign-in again (i.e provide username & password).
@@ -41,8 +59,16 @@ type Mutation {
 }
 
 type Query {
+  """Query a source, must have permissions to access to it."""
+  source(resource_id: String!): SourceGQL
+
+  """
+  Query all sources, returns those which the user haspermission to access.
+  """
+  sources: [SourceGQL!]
+
   """Query a user, must be logged in."""
-  user(user_id: String!): User
+  user(user_id: String!): UserGQL
 }
 
 input SignInInput {
@@ -56,14 +82,14 @@ input SignUpInput {
   username: String!
 }
 
-type User {
-  adminPriority: Float
-  details: UserDetails
-  user_id: ID!
-  username: String!
+type SourceGQL {
+  name: String!
+  path: String!
+  resource_id: ID!
+  xml_tree: String
 }
 
-type UserDetails {
+type UserDetailsGQL {
   email: String!
   real_name: String!
 }
@@ -71,4 +97,11 @@ type UserDetails {
 input UserDetailsInput {
   email: String!
   real_name: String!
+}
+
+type UserGQL {
+  adminPriority: Float
+  details: UserDetailsGQL
+  user_id: ID!
+  username: String!
 }

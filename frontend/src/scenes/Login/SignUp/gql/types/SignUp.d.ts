@@ -10,13 +10,13 @@ import { SignUpInput } from "./../../../../../globalTypes";
 // ====================================================
 
 export interface SignUp_signUp_details {
-  __typename: "UserDetails";
+  __typename: "UserDetailsGQL";
   email: string;
   real_name: string;
 }
 
 export interface SignUp_signUp {
-  __typename: "User";
+  __typename: "UserGQL";
   user_id: string;
   username: string;
   details: SignUp_signUp_details | null;

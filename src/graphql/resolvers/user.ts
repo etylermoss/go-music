@@ -10,10 +10,13 @@ import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
-import { User, UserDetails } from '@/graphql/types/user';
+import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
 
-@Resolver(_of => User)
-export default class UserResolver implements ResolverInterface<User> {
+/* 1st party imports - SQL object to GQL object converters */
+import { user_to_gql, user_details_to_gql } from '@/graphql/sql_to_gql/user';
+
+@Resolver(_of => UserGQL)
+export default class UserResolver implements ResolverInterface<UserGQL> {
 
 	@Inject('user.service')
 	userSvc: UserService;
@@ -24,34 +27,32 @@ export default class UserResolver implements ResolverInterface<User> {
 	/** @typegraphql Query a user, must be logged in.
 	 */
 	@AccessControl()
-	@Query(_returns => User, {nullable: true})
-	user(@Arg('user_id') user_id: string): User {
-		return this.userSvc.getUserByID(user_id);
+	@Query(_returns => UserGQL, {nullable: true})
+	user(@Arg('user_id') user_id: string): UserGQL | null {
+		return user_to_gql(this.userSvc.getUserByID(user_id));
 	}
 
 	/** @typegraphql If the user is an admin, this is their priority level
 	 *  over other admins, otherwise it is null.
 	 */
 	@FieldResolver({nullable: true})
-	adminPriority(@Root() root: User): number | null {
+	adminPriority(@Root() root: UserGQL): number | null {
 		return this.adminSvc.getAdminUserPriority(root.user_id);
 	}
 
 	/** @typegraphql Query a user's details, checking if permitted.
 	 */
 	@FieldAccessControl('READ', 'user_id')
-	@FieldResolver(_returns => UserDetails, {nullable: true})
-	details(@Root() root: User): UserDetails {
-		return this.userSvc.getUserDetails(root.user_id);
+	@FieldResolver(_returns => UserDetailsGQL, {nullable: true})
+	details(@Root() root: UserGQL): UserDetailsGQL | null {
+		return user_details_to_gql(this.userSvc.getUserDetails(root.user_id));
 	}
 
-	/** @typegraphql Delete a user from the application.
+	/** @typegraphql Delete a user, returns success.
 	 */
 	@AccessControl('DELETE', 'user_id')
-	@Mutation(_returns => User, {nullable: true})
-	deleteUser(@Arg('user_id') user_id: string): User {
-		const user = this.userSvc.getUserByID(user_id);
-		return this.userSvc.deleteUser(user_id) ? user : null;
+	@Mutation({nullable: true})
+	deleteUser(@Arg('user_id') user_id: string): boolean {
+		return this.userSvc.deleteUser(user_id);
 	}
-
 }

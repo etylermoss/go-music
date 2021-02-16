@@ -2,16 +2,19 @@
 import { scryptSync, randomBytes } from 'crypto';
 import { Service, Inject } from 'typedi';
 
-/* 1st party imports */
-import { ConfigSchema } from '@/config';
-
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { UserService } from '@/services/user';
 
+/* 1st party imports - Object types / classes */
+import { UserSQL, UserDetailsSQL } from '@/services/user';
+
 /* 1st party imports - GraphQL types & inputs */
-import { User, UserDetails } from '@/graphql/types/user';
 import { SignUpInput } from '@/graphql/inputs/authentication';
+
+/* 1st party imports */
+import { generateRandomID } from '@/common';
+import { ConfigSchema } from '@/config';
 
 interface PasswordData {
 	salt: Buffer;
@@ -41,26 +44,33 @@ export class AuthenticationService {
 	/** Creates a new user along with related data such as their password.
 	 *  Returns the user, including their personal details (email etc).
 	 */
-	createUser({ username, password, details}: SignUpInput): User | null {
-		const user_id = randomBytes(8).toString('base64'); // TODO: Move to imported function
+	createUser({ username, password, details}: SignUpInput): UserSQL | null {
+		const user_id = generateRandomID();
 		const createUserChanges = this.dbSvc.prepare(`
 		INSERT INTO User (user_id, username)
 		VALUES ($user_id, $username)
 		`).run({ user_id, username }).changes;
 
-		// Ensure that the user was inserted into the database
-		if (createUserChanges !== 1) return null;
+		/* Ensure that the user was inserted into the database */
+		if (createUserChanges !== 1)
+			return null;
 
-		this.createOrUpdateUserDetails(user_id, details);
+		const user_details: UserDetailsSQL = {
+			user_id,
+			email: details.email,
+			real_name: details.real_name,
+		};
+
+		this.createOrUpdateUserDetails(user_id, user_details);
 		this.updateUserPassword(user_id, password);
 
-		return this.userSvc.getUserByID(user_id, true);
+		return this.userSvc.getUserByID(user_id);
 	}
 
 	/** Updates a users personal information (email etc.), returning
 	 *  success as a boolean.
 	 */
-	createOrUpdateUserDetails(user_id: string, details: UserDetails): boolean {
+	createOrUpdateUserDetails(user_id: string, details: UserDetailsSQL): boolean {
 		return this.dbSvc.prepare(`
 		REPLACE INTO UserDetails (user_id, email, real_name)
 		VALUES ($user_id, $email, $real_name)
@@ -68,7 +78,7 @@ export class AuthenticationService {
 			user_id: user_id,
 			email: details.email,
 			real_name: details.real_name,
-		}).changes === 1 ? true : false; 
+		}).changes > 0;
 	}
 
 	/** Updates the users password in the database, creating it if it (and

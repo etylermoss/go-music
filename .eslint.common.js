@@ -23,7 +23,7 @@ module.exports = {
 	"rules": {
 		/* General */
 		"comma-dangle": ["warn", "always-multiline"],
-		"no-duplicate-imports": "warn",
+		"no-duplicate-imports": "off",
 		"linebreak-style": ["error", "unix"],
 		"no-cond-assign": ["error", "always"],
 		"no-console": "off",
@@ -39,7 +39,7 @@ module.exports = {
 			"allowTemplateLiterals": true
 		}],
 		"max-len": ["warn", {
-			"code": 110,
+			"code": 140,
 			"comments": 75,
 			"ignorePattern": "^\\s*//",
 			"ignoreComments": true,
@@ -61,6 +61,7 @@ module.exports = {
 		"@typescript-eslint/no-var-requires": "off",
 		"@typescript-eslint/camelcase": "off",
 		"@typescript-eslint/class-name-casing": "off",
+		"@typescript-eslint/no-non-null-assertion": "off",
 		"@typescript-eslint/explicit-function-return-type": ["error", {
 			"allowExpressions": true
 		}],

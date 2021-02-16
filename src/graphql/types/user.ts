@@ -2,7 +2,7 @@
 import { ObjectType, Field, ID } from 'type-graphql';
 
 @ObjectType()
-export class UserDetails {
+export class UserDetailsGQL {
 	@Field()
 	email: string;
 
@@ -11,16 +11,16 @@ export class UserDetails {
 }
 
 @ObjectType()
-export class User {
+export class UserGQL {
 	@Field(_type => ID)
 	user_id: string;
 
 	@Field()
 	username: string;
 
-	@Field({nullable: true})
-	adminPriority?: number;
+	@Field(_type => Number, {nullable: true})
+	adminPriority: number | null;
 	
-	@Field(_type => UserDetails, {nullable: true})
-	details?: UserDetails;
+	@Field(_type => UserDetailsGQL, {nullable: true})
+	details: UserDetailsGQL | null;
 }

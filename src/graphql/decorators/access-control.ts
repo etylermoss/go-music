@@ -32,6 +32,11 @@ export const AccessControl = (
 		if (!user_id) return null;
 		if (!requiredLevel && !targetTypeArg) return next();
 
+		/* Check that targetTypeArg was given to the decorator */
+		if (!requiredLevel || !targetTypeArg) {
+			throw new Error(`Parameters were not supplied to AccessControl decorator`);
+		}
+
 		/* Check that a resource id was passed to the decorator */
 		const target_id = (fieldResolver ? root : args)[targetTypeArg];
 		if (!target_id) {

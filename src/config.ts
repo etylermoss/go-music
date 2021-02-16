@@ -49,13 +49,13 @@ export const defaultConfig: ConfigSchema = {
 		: path.join(__dirname, './runtime/go-music.log'),
 	maxClients: 8,
 	dataDirectory: RELEASE
-		? path.join(xdgBasedir.data, '/go-music')
+		? path.join(xdgBasedir?.data || '/', '/go-music')
 		: path.join(__dirname, './runtime/data'),
 	private: {
 		apiOnly: false,
 		genSchema: false,
 		configDirectory: RELEASE
-			? path.join(xdgBasedir.config, '/go-music')
+			? path.join(xdgBasedir?.config || '/', '/go-music')
 			: path.join(__dirname, './runtime/config'),
 		frontendDirectory: RELEASE
 			? path.join(__dirname, './frontend')

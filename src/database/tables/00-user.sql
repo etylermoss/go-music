@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS 'User' (
-	'user_id' TEXT NOT NULL UNIQUE,
+	'user_id' TEXT NOT NULL PRIMARY KEY,
 	'username' TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS 'UserDetails' (
-	'user_id' TEXT NOT NULL UNIQUE,
+	'user_id' TEXT NOT NULL PRIMARY KEY,
 	'email' TEXT NOT NULL,
 	'real_name' TEXT NOT NULL,
 	FOREIGN KEY ("user_id") REFERENCES "User" ("user_id") ON DELETE CASCADE

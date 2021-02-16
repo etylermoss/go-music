@@ -8,13 +8,13 @@
 // ====================================================
 
 export interface IsSignedIn_isSignedIn_details {
-  __typename: "UserDetails";
+  __typename: "UserDetailsGQL";
   email: string;
   real_name: string;
 }
 
 export interface IsSignedIn_isSignedIn {
-  __typename: "User";
+  __typename: "UserGQL";
   user_id: string;
   username: string;
   details: IsSignedIn_isSignedIn_details | null;

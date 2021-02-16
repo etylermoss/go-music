@@ -8,11 +8,11 @@ import { Service, Container } from 'typedi';
 import { ConfigSchema } from '@/config';
 
 /* 1st party imports - SQL */
-import Users from '@/database/tables/00-users.sql';
+import User from '@/database/tables/00-user.sql';
 import Authentication from '@/database/tables/01-authentication.sql';
-import Resources from '@/database/tables/02-resources.sql';
+import Resource from '@/database/tables/02-resource.sql';
 import AccessControl from '@/database/tables/03-access-control.sql';
-import Sourcing from '@/database/tables/04-sourcing.sql';
+import Source from '@/database/tables/04-source.sql';
 
 const Pragma = `
 PRAGMA foreign_keys = ON;
@@ -31,6 +31,6 @@ export class DatabaseService extends sqlite {
 
 		this.exec(Pragma);
 		
-		[Users, Authentication, Resources, AccessControl, Sourcing].forEach(sql => this.exec(sql));
+		[User, Authentication, Resource, AccessControl, Source].forEach(sql => this.exec(sql));
 	}
 }

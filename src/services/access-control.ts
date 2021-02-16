@@ -4,6 +4,7 @@ import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
+import { ResourceService } from '@/services/resource';
 
 export enum Operations { READ, WRITE, DELETE }
 export type OperationsStrings = keyof typeof Operations;
@@ -26,19 +27,19 @@ interface ResourceGroup {
 	allowed_operations: Operations;
 }
 
-interface Resource {
-	resource_id: string;
-	owner_user_id: string;
-}
-
 @Service('access-control.service')
 export class AccessControlService {
 
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	getResourceAccessLevelForUser(user_id: string, target_resource_id: string): Operations | null {
-		const resource = this.getResourceByID(target_resource_id);
+	@Inject('resource.service')
+	private rsrcSvc: ResourceService;
+
+	getResourceAccessLevelForUser(user_id: string | null, target_resource_id: string): Operations | null {
+		if (!user_id) return null;
+
+		const resource = this.rsrcSvc.getResourceByID(target_resource_id);
 
 		if (user_id === resource.owner_user_id) return Operations.DELETE;
 
@@ -69,25 +70,16 @@ export class AccessControlService {
 	}
 
 	getUserAccessLevelForUser(user_id: string, target_user_id: string): Operations | null {
-		if (user_id === target_user_id) return Operations.DELETE;
-		return null;
+		return user_id === target_user_id ? Operations.DELETE : null;
 	}
 
 	getGroupAccessLevelForUser(user_id: string, target_group_id: string): Operations | null {
-		if (user_id === this.getGroupByID(target_group_id).owner_user_id) return Operations.DELETE;
-		return Operations.READ;
-	}
+		const group = this.getGroupByID(target_group_id);
 
-	getResourceByID(resource_rid: string): Resource {
-		return this.dbSvc.prepare(`
-		SELECT 
-		(
-			resource_id,
-			user_id
-		)
-		FROM Resource
-		WHERE resource_id = $resource_id
-		`).get({resource_rid}) as Resource;
+		if (group && user_id === group.owner_user_id)
+			return Operations.DELETE;
+
+		return Operations.READ;
 	}
 
 	/** Creates a new access group. If a group already exists by the same

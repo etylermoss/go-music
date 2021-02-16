@@ -13,8 +13,11 @@ import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
 import { AuthResponse } from '@/graphql/types/authentication';
-import { User } from '@/graphql/types/user';
+import { UserGQL } from '@/graphql/types/user';
 import { SignUpInput, SignInInput } from '@/graphql/inputs/authentication';
+
+/* 1st party imports - SQL object to GQL object converters */
+import { user_to_gql } from '@/graphql/sql_to_gql/user';
 
 const authTokenCookie: CookieOptions = {
 	/* Prevent XSRF */
@@ -41,28 +44,36 @@ export default class AuthResolver {
 	 *  the user automatically. The first account created is automatically
 	 *  set as an admin.
 	 */
-	@Mutation(_returns => User, {nullable: true})
-	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): User {
+	@Mutation(_returns => UserGQL, {nullable: true})
+	signUp(@Arg('data') data: SignUpInput, @Ctx() ctx: Context): UserGQL | null {
+		if (this.userSvc.getUserByUsername(data.username))
+			return null;
+
 		const user = this.authSvc.createUser(data);
-		// TODO: Check user doesn't exist, maybe in SignUpInput validation.
-		if (user) {
-			if (this.adminSvc.getAdminCount() === 0) this.adminSvc.makeUserAdmin(user.user_id);
+
+		if (user)
+		{
+			if (this.adminSvc.getAdminCount() === 0)
+				this.adminSvc.makeUserAdmin(user.user_id);
+			
 			this.authUser(ctx, user.user_id);
-			return user;
+			return user_to_gql(user);
 		}
+
 		return null;
 	}
 
 	/** @typegraphql Sign into the application, if the supplied credentials
 	 *  are correct, the authToken httpOnly cookie is set.
 	 */
-	@Mutation(_returns => User, {nullable: true})
-	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): User {
-		const user = this.userSvc.getUserByUsername(data.username, true);
+	@Mutation(_returns => UserGQL, {nullable: true})
+	signIn(@Arg('data') data: SignInInput, @Ctx() ctx: Context): UserGQL | null {
+		const user = this.userSvc.getUserByUsername(data.username);
 		if (user && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
 			this.authUser(ctx, user.user_id);
-			return user;
+			return user_to_gql(user);
 		}
+		// TODO: Logging service here
 		console.log(`Incorrect sign-in attempt from ${ctx.req.ip}.`);
 		return null;
 	}
@@ -71,9 +82,9 @@ export default class AuthResolver {
 	 *  authToken cookie (httpOnly) is present in the database and
 	 *  associated with a user.
 	 */
-	@Mutation(_returns => User, {nullable: true})
-	isSignedIn(@Ctx() ctx: Context): User {
-		return ctx.user_id ? this.userSvc.getUserByID(ctx.user_id, true) : null;
+	@Mutation(_returns => UserGQL, {nullable: true})
+	isSignedIn(@Ctx() ctx: Context): UserGQL | null {
+		return ctx.user_id ? user_to_gql(this.userSvc.getUserByID(ctx.user_id)) : null;
 	}
 
 	/** @typegraphql Update the users password. Requires the client to
@@ -81,15 +92,17 @@ export default class AuthResolver {
 	 */
 	@Mutation(_returns => AuthResponse)
 	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
-		const user = this.userSvc.getUserByUsername(data.username, true);
+		const user = this.userSvc.getUserByUsername(data.username);
 		if (!user || !ctx.user_id) return { success: false };
 		
-		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password))
+		{
 			this.authSvc.revokeAllAuthTokens(ctx.user_id);
 			this.authSvc.updateUserPassword(ctx.user_id, data.password);
 			this.authUser(ctx, user.user_id);
 			return { success: true };
 		}
+
 		return { success: false };
 	}
 
@@ -106,11 +119,14 @@ export default class AuthResolver {
 	 */
 	@Mutation(_returns => AuthResponse)
 	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
-		const user = this.userSvc.getUserByUsername(data.username, true);
-		if (!user || !ctx.user_id) return { success: false };
-		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password)) {
+		const user = this.userSvc.getUserByUsername(data.username);
+
+		if (!user || !ctx.user_id)
+			return { success: false };
+
+		if (ctx.user_id === user.user_id && this.authSvc.comparePasswordToUser(user.user_id, data.password))
 			return { success: this.unAuthUser(ctx, ctx.user_id) };
-		}
+		
 		return { success: false };
 	}
 
@@ -120,8 +136,10 @@ export default class AuthResolver {
 	private unAuthUser(ctx: Context, user_id?: string): boolean {
 		ctx.user_id = null;
 		ctx.res.clearCookie('authToken');
-		if (user_id) return this.authSvc.revokeAllAuthTokens(user_id);
-		else return this.authSvc.revokeAuthToken(ctx.req.cookies['authToken']);
+		if (user_id)
+			return this.authSvc.revokeAllAuthTokens(user_id);
+		else
+			return this.authSvc.revokeAuthToken(ctx.req.cookies['authToken']);
 	}
 
 	/** Set context.user_id, and generate a new authToken which is then

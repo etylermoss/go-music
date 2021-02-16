@@ -133,6 +133,7 @@ const main = async (): Promise<void> => {
 
 	/* Serve Graphql */
 	const graphql = await launchGraphql();
+	if (!graphql) return; // FatalError('Could not launch GraphQL.'); // Should be FatalError but not found by tsc
 	app.use(`/${GlobalConfig.gqlPath}`, graphql.getMiddleware({path: '/', cors: false}));
 
 	/* Serve Frontend */

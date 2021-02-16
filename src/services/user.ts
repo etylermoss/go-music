@@ -4,8 +4,16 @@ import { Service, Inject } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 
-/* 1st party imports - GraphQL types & inputs */
-import { User, UserDetails } from '@/graphql/types/user';
+export interface UserSQL {
+	user_id: string;
+    username: string;
+}
+
+export interface UserDetailsSQL {
+	user_id: string;
+	email: string;
+	real_name: string;
+}
 
 @Service('user.service')
 export class UserService {
@@ -16,56 +24,51 @@ export class UserService {
 	/** Retrieves a users basic data (user_id, username), searching for
 	 *  them by user_id.
 	 */
-	getUserByID(user_id: string, includeDetails: boolean = false): User {
+	getUserByID(user_id: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
 		SELECT user_id, username
 		FROM User
 		WHERE user_id = $user_id
-		`).get({user_id}) as User;
-		if (includeDetails && user) {
-			user.details = this.getUserDetails(user_id);
-		}
-		return user;
+		`).get({user_id}) as UserSQL | undefined;
+
+		return user || null;
 	}
 
 	/** Retrieves a users basic data (user_id, username), searching for
 	 *  them by username.
 	 */
-	getUserByUsername(username: string, includeDetails: boolean = false): User {
+	getUserByUsername(username: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
 		SELECT user_id, username
 		FROM User
 		WHERE username = $username
-		`).get({username}) as User;
-		if (includeDetails && user) {
-			user.details = this.getUserDetails(user.user_id);
-			return user;
-		} else {
-			return user;
-		}
+		`).get({username}) as UserSQL | undefined;
+
+		return user || null;
 	}
 	
 	/** Retrives a given user's personal information.
 	 */
-	getUserDetails(user_id: string): UserDetails {
-		return this.dbSvc.prepare(`
-		SELECT email, real_name
+	getUserDetails(user_id: string): UserDetailsSQL | null {
+		const details = this.dbSvc.prepare(`
+		SELECT user_id, email, real_name
 		FROM UserDetails
 		WHERE user_id = $user_id
-		`).get({user_id}) as UserDetails;
+		`).get({user_id}) as UserDetailsSQL | undefined;
+
+		return details || null;
 	}
 	
 	/** Retrieves all users (user_id and username) from the database.
 	 */
-	getUsers(): User[] {
+	getUsers(): UserSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT user_id, username
 		FROM User
-		`).all() as User[];
+		`).all() as UserSQL[];
 	}
 
-	/** Deletes a user, searching by the given user_id, returning success
-	 *  as boolean.
+	/** Deletes a user, searching by the given user_id, returns success.
 	 */
 	deleteUser(user_id: string): boolean {
 		return this.dbSvc.prepare(`

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS 'ResourceGroup' (
 );
 
 CREATE TABLE IF NOT EXISTS 'AdminUser' (
-	'user_id' TEXT NOT NULL UNIQUE,
+	'user_id' TEXT NOT NULL PRIMARY KEY,
 	'priority' INTEGER NOT NULL, /* TODO: turn into UNIX timestamp */
 	FOREIGN KEY ("user_id") REFERENCES "User" ("user_id") ON DELETE CASCADE
 );
