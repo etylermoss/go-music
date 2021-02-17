@@ -48,7 +48,7 @@ export default class UserResolver implements ResolverInterface<UserGQL> {
 		if (users_sql)
 		{
 			allowedUsers = users_sql.reduce<UserGQL[]>((acc, user) => {
-				const level = this.aclSvc.getUserAccessLevelForUser(ctx.user_id, user.user_id);
+				const level = this.aclSvc.getUserAccessLevelForUser(ctx.user_id!, user.user_id);
 				if (level && level >= Operations.READ) {
 					acc.push(user_to_gql(user));
 				}
