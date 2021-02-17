@@ -1,4 +1,5 @@
 /* 3rd party imports */
+import path from 'path';
 import fs from 'fs';
 import { Service, Inject } from 'typedi';
 
@@ -8,10 +9,16 @@ import { ResourceService } from '@/services/resource';
 
 export interface SourceSQL {
 	resource_id: string;
-    name: string;
-    path: string;
-    xml_tree: string | null;
+	name: string;
+	path: string;
 }
+
+const arePathsRelated = (path_lhs: string, path_rhs: string): boolean => {
+	const left = path.relative(path_lhs, path_rhs).startsWith('..');
+	const right = path.relative(path_rhs, path_lhs).startsWith('..');
+	
+	return !(left && right);
+};
 
 @Service('source.service')
 export class SourceService {
@@ -26,7 +33,7 @@ export class SourceService {
 	 */
 	getSourceByID(resource_id: string): SourceSQL | null {
 		const source = this.dbSvc.prepare(`
-		SELECT resource_id, name, path, xml_tree
+		SELECT resource_id, name, path
 		FROM Source
 		WHERE resource_id = $resource_id
 		`).get({resource_id}) as SourceSQL | undefined;
@@ -36,20 +43,29 @@ export class SourceService {
 
 	/** Retrieve all Sources.
 	 */
-	getAllSources(): SourceSQL[] | null {
+	getAllSources(): SourceSQL[] {
 		const sources = this.dbSvc.prepare(`
-		SELECT resource_id, name, path, xml_tree
+		SELECT resource_id, name, path
 		FROM Source
 		`).all() as SourceSQL[];
 
-		return sources.length > 0 ? sources : null;
+		return sources;
 	}
 
 	/** Add a new source, returns the source if successful.
 	 *  Does not automatically scan.
 	 */
-	// TODO: check source in not sub/superdirectory of existing source
 	async addSource(name: string, path: string, owner_user_id: string): Promise<SourceSQL | null> {
+		path = fs.realpathSync(path);
+
+		const existing_sources = this.getAllSources();
+
+		for (const existing_source of existing_sources)
+		{
+			if (arePathsRelated(path, existing_source.path))
+				return null;
+		}
+
 		try {
 			await fs.promises.access(path, fs.constants.R_OK);
 		} catch (err) {
@@ -66,13 +82,18 @@ export class SourceService {
 			resource_id: resource.resource_id,
 			name,
 			path,
-			xml_tree: null,
 		};
 
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Source (resource_id, name, path)
-		VALUES ($resource_id, $name, $path);
+		VALUES ($resource_id, $name, $path)
 		`).run(source).changes > 0;
+
+		if (!success)
+		{
+			this.rsrcSvc.removeResource(resource.resource_id);
+			return null;
+		}
 		
 		return success ? this.getSourceByID(source.resource_id) : null;
 	}

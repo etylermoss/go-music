@@ -14,9 +14,6 @@ export class SourceGQL {
     
     @Field()
     path: string;
-
-    @Field(_type => String, {nullable: true})
-    xml_tree: string | null;
 }
 
 @ObjectType()

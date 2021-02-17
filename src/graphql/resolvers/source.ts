@@ -43,7 +43,7 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 
 	@FieldResolver(_returns => [ScanGQL])
 	scans(@Root() root: SourceGQL): ScanGQL[] {
-		const scans_sql = this.scanSvc.getScans(root.resource_id);
+		const scans_sql = this.scanSvc.getAllScans(root.resource_id);
 		return scans_sql ? scans_sql.map<ScanGQL>(scan => scan_to_gql(scan)) : [];
 	}
 
@@ -109,9 +109,7 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 	 */
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
-	async scanSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
-		await this.scanSvc.scanSource(resource_id);
-
-		return true;
+	async refreshSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
+		return await this.scanSvc.refreshSource(resource_id);
 	}
 }

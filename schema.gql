@@ -91,7 +91,6 @@ type SourceGQL {
   name: String!
   path: String!
   resource_id: ID!
-  xml_tree: String
 }
 
 type UserDetailsGQL {

@@ -169,9 +169,6 @@
 <row name="path" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
-<row name="xml_tree" null="1" autoincrement="0">
-<datatype>TEXT</datatype>
-</row>
 <key type="PRIMARY" name="">
 <part>resource_id</part>
 </key>
@@ -199,6 +196,22 @@
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>scan_id</part>
+</key>
+</table>
+<table x="900" y="300" name="Media">
+<row name="resource_id" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Resource" row="resource_id" />
+</row>
+<row name="source_resource_id" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Source" row="resource_id" />
+</row>
+<row name="file_full_path" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+</row>
+<key type="PRIMARY" name="">
+<part>resource_id</part>
 </key>
 </table>
 </sql>

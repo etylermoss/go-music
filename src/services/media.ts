@@ -1,31 +1,103 @@
 /* 3rd party imports */
-import { Service } from 'typedi';
+import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
-/* import { DatabaseService } from '@/database';
-import { SourceService } from '@/services/source'; */
+import { DatabaseService } from '@/database';
+import { ResourceService } from '@/services/resource';
 
-/* 1st party imports - Object types / classes */
-import { SourceSQL } from '@/services/source';
-
-/* 1st party imports */
-/* import { extension_whitelist } from '@/common';
- */
+export interface MediaSQL {
+	resource_id: string;
+	source_resource_id: string;
+	file_full_path: string;
+}
 
 @Service('media.service')
 export class MediaService {
 
-	/* 	@Inject('database.service')
+	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	@Inject('source.service')
-	private srcSvc: SourceService; */
+	@Inject('resource.service')
+	private rsrcSvc: ResourceService;
 
-	addMedia(name: string, path: string, source: SourceSQL): void {
-		console.info(`addMedia(${name}, ${path}, ${source.name}): Adding media`);
+	getMediaByID(resource_id: string): MediaSQL | null {
+		const media = this.dbSvc.prepare(`
+		SELECT
+			resource_id,
+			source_resource_id,
+			file_full_path
+		FROM
+			Media
+		WHERE
+			resource_id = $resource_id
+		`).get({resource_id}) as MediaSQL | undefined;
+
+		return media || null;
 	}
 
-	removeMedia(name: string, path: string, source: SourceSQL): void {
-		console.info(`removeMedia(${name}, ${path}, ${source.name}): Removing media`);
+	getMediaByPath(file_full_path: string): MediaSQL | null {
+		const media = this.dbSvc.prepare(`
+		SELECT
+			resource_id,
+			source_resource_id,
+			file_full_path
+		FROM
+			Media
+		WHERE
+			file_full_path = $file_full_path
+		`).get({file_full_path}) as MediaSQL | undefined;
+
+		return media || null;
+	}
+
+	// TODO: add comment explaining optional argument
+	getAllMedia(source_resource_id?: string): MediaSQL[] {
+		return this.dbSvc.prepare(`
+		SELECT
+			resource_id,
+			source_resource_id,
+			file_full_path
+		FROM
+			Media
+		WHERE
+			(
+				($source_resource_id IS null)
+				OR (source_resource_id = $source_resource_id)
+			)
+		`).all({source_resource_id: source_resource_id || null}) as MediaSQL[];
+	}
+
+	addMedia(file_full_path: string, owner_user_id: string, source_resource_id: string): MediaSQL | null {
+		const resource = this.rsrcSvc.createResource(owner_user_id);
+
+		if (!resource)
+			return null;
+
+		const media: MediaSQL = {
+			resource_id: resource.resource_id,
+			source_resource_id: source_resource_id,
+			file_full_path,
+		};
+
+		const success = this.dbSvc.prepare(`
+		INSERT INTO Media
+		(
+			resource_id,
+			source_resource_id,
+			file_full_path
+		)
+		VALUES
+		(
+			$resource_id,
+			$source_resource_id,
+			$file_full_path
+		)
+		`).run(media).changes > 0;
+
+		return success ? this.getMediaByID(media.resource_id) : null;
+	}
+
+	removeMedia(resource_id: string): boolean {
+		return this.rsrcSvc.removeResource(resource_id);
 	}
 }
