@@ -174,7 +174,7 @@ export class ScanService {
 	/** Add any new media files from the source directory, returns success.
 	 *  New media files are owned by the owner of the source.
 	 */
-	private populateSource(source: SourceSQL, extension_whitelist: string[]): boolean {
+	private async populateSource(source: SourceSQL, extension_whitelist: string[]): Promise<boolean> {
 		const flat_dir_opts: FlatDirOpts =
 		{
 			skip_hidden: true,
@@ -188,10 +188,9 @@ export class ScanService {
 		if (!source_rsrc || !files)
 			return false;
 
-		files.forEach(file => {
+		for (const file of files)
 			if (!this.mediaSvc.getMediaByPath(file))
-				this.mediaSvc.addMedia(file, source_rsrc.owner_user_id, source.resource_id);
-		});
+				await this.mediaSvc.addMedia(file, source_rsrc.owner_user_id, source.resource_id);
 
 		return true;
 	}
@@ -202,7 +201,7 @@ export class ScanService {
 	/** Refreshes the media files associated with the source, returns
 	 *  success.
 	 */
-	refreshSource(source_resource_id: string): boolean {
+	async refreshSource(source_resource_id: string): Promise<boolean> {
 		const source = this.srcSvc.getSourceByID(source_resource_id);
 
 		if (!source)
@@ -211,6 +210,6 @@ export class ScanService {
 		this.pruneSource(source);
 		const populate = this.populateSource(source, extension_whitelist);
 
-		return populate;
+		return await populate;
 	}
 }

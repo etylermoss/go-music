@@ -85,7 +85,7 @@ export class MediaService {
 		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
 	}
 
-	mediaParser({file_full_path, resource_id}: MediaSQL): void {
+	async mediaParser({file_full_path, resource_id}: MediaSQL): Promise<void> {
 		const file_extension = path.extname(file_full_path).toLowerCase();
 
 		// TODO: Serve error to log service if matching extension not found (should be)
@@ -97,19 +97,19 @@ export class MediaService {
 			case '.flac':
 			case '.m4a':
 			case '.aac':
-				this.songSvc.addSong(resource_id);
+				await this.songSvc.addSong(resource_id);
 				break;
 			case '.png':
 			case '.jpg':
 			case '.jpeg':
 			case '.bmp':
 			case '.gif':
-				this.artSvc.addArtwork(resource_id);
+				await this.artSvc.addArtwork(resource_id);
 				break;
 		}
 	}
 
-	addMedia(file_full_path: string, owner_user_id: string, source_resource_id: string): MediaSQL | null {
+	async addMedia(file_full_path: string, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
 		const resource = this.rsrcSvc.createResource(owner_user_id);
 
 		if (!resource)

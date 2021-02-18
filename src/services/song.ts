@@ -1,5 +1,6 @@
 /* 3rd party imports */
 import { Service, Inject, Container } from 'typedi';
+import mm from 'music-metadata';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -51,7 +52,7 @@ export class SongService {
 		`).all({source_resource_id: source_resource_id ?? null}) as SongSQL[];
 	}
 
-	addSong(media_resource_id: string): SongSQL | null {
+	async addSong(media_resource_id: string): Promise<SongSQL | null> {
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Song
 		(
@@ -63,7 +64,29 @@ export class SongService {
 		)
 		`).run({media_resource_id}).changes > 0;
 
-		return success ? this.getSongByID(media_resource_id) : null;
+		if (!success)
+			return null;
+
+		const media = this.mediaSvc.getMediaByID(media_resource_id)!;
+		const parseFileOpts: mm.IOptions = {
+			duration: true,
+		};
+
+		let metadata: mm.IAudioMetadata;
+
+		try {
+			metadata = await mm.parseFile(media.file_full_path, parseFileOpts);
+		}
+		catch {
+			/* could not access or parse file */
+			// TODO: Log here
+			this.removeSong(media_resource_id);
+			return null;
+		}
+
+		metadata; // not used yet
+
+		return this.getSongByID(media_resource_id);
 	}
 
 	removeSong(media_resource_id: string): boolean {
