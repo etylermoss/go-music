@@ -50,7 +50,7 @@ const Root = (): JSX.Element => {
 	useEffect(() => {
 		isSignedIn().then(result => {
 			if (result.data?.isSignedIn?.details) {
-				const { user_id, username, details } = result.data?.isSignedIn;
+				const { user_id, username, details } = result?.data?.isSignedIn; // TODO: fix undefined error
 				StoreInstance.updateUser({ user_id, username, details });
 				history.push('/dashboard');
 			} else {

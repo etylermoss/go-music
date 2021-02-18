@@ -7,6 +7,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export interface SignInInput {
+  password: string;
+  username: string;
+}
+
 export interface SignUpInput {
   details: UserDetailsInput;
   password: string;

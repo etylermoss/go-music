@@ -16,12 +16,10 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 	const history = useHistory();
 
 	const [user, setUser] = useState({
+		real_name: '',
 		username: '',
 		password: '',
-		details: {
-			email: 'ajjy@email.io',
-			real_name: 'notme',
-		},
+		email: '',
 	});
 
 	const updateUser = (evt: React.ChangeEvent<HTMLInputElement>): void => setUser({
@@ -33,7 +31,17 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 
 	const submit = (event: React.FormEvent<HTMLFormElement>): void => {
 		event.preventDefault();
-		signUp({variables: { data: user }})
+		const signUpVars: signUpTypes.SignUpVariables = {
+			data: {
+				username: user.username,
+				password: user.password,
+				details: {
+					real_name: user.real_name,
+					email: user.email,
+				},
+			},
+		};
+		signUp({variables: { data: signUpVars.data }})
 			.then(({data}) => {
 				if (data?.signUp?.details) {
 					const { user_id, username, details } = data?.signUp;
@@ -49,6 +57,13 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 			<>
 				<h2>Register</h2>
 				<form onSubmit={submit}>
+					<input name="real_name" type="text" placeholder="Your name"
+						value={user.real_name}
+						onChange={evt => updateUser(evt)}
+					/>
+					<p>
+						Must contain only latin characters, apostrophes, hyphens, and spaces.
+					</p>
 					<input name="username" type="text" placeholder="Username"
 						value={user.username}
 						onChange={evt => updateUser(evt)}
@@ -64,6 +79,13 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 					<p>
 						Must be at least 8 characters long.
 						You can use letters, numbers, and common symbols.
+					</p>
+					<input name="email" type="email" placeholder="Email"
+						value={user.email}
+						onChange={evt => updateUser(evt)}
+					/>
+					<p>
+						Must be a valid email address.
 					</p>
 					<input type="submit" value="Submit"/>
 				</form>
