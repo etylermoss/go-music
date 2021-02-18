@@ -32,7 +32,7 @@ export class MediaService {
 			resource_id = $resource_id
 		`).get({resource_id}) as MediaSQL | undefined;
 
-		return media || null;
+		return media ?? null;
 	}
 
 	getMediaByPath(file_full_path: string): MediaSQL | null {
@@ -47,7 +47,7 @@ export class MediaService {
 			file_full_path = $file_full_path
 		`).get({file_full_path}) as MediaSQL | undefined;
 
-		return media || null;
+		return media ?? null;
 	}
 
 	// TODO: add comment explaining optional argument
@@ -64,7 +64,7 @@ export class MediaService {
 				($source_resource_id IS null)
 				OR (source_resource_id = $source_resource_id)
 			)
-		`).all({source_resource_id: source_resource_id || null}) as MediaSQL[];
+		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
 	}
 
 	addMedia(file_full_path: string, owner_user_id: string, source_resource_id: string): MediaSQL | null {

@@ -38,7 +38,7 @@ export class SourceService {
 		WHERE resource_id = $resource_id
 		`).get({resource_id}) as SourceSQL | undefined;
 
-		return source || null;
+		return source ?? null;
 	}
 
 	/** Retrieve all Sources.

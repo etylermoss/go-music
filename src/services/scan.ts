@@ -6,8 +6,11 @@ import { Service, Inject } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
-import { SourceService, SourceSQL } from '@/services/source';
+import { SourceService } from '@/services/source';
 import { MediaService } from '@/services/media';
+
+/* 1st party imports - SQL types */
+import { SourceSQL } from '@/services/source';
 
 /* 1st party imports */
 import { extension_whitelist } from '@/common';
@@ -93,7 +96,7 @@ export class ScanService {
 		WHERE scan_id = $scan_id
 		`).get({scan_id}) as ScanSQL | undefined;
 
-		return scan || null;
+		return scan ?? null;
 	}
 
 	getAllScans(source_resource_id: string): ScanSQL[] | null {
@@ -115,7 +118,7 @@ export class ScanService {
 		LIMIT 1
 		`).get({source_resource_id}) as ScanSQL | undefined;
 
-		return scan || null;
+		return scan ?? null;
 	}
 
 	scanUnderway(source_resource_id: string): boolean {

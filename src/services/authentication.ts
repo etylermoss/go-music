@@ -161,7 +161,7 @@ export class AuthenticationService {
 		SELECT user_id
 		FROM UserAuthToken
 		WHERE token = $token
-		`).get({token})?.user_id || null;
+		`).get({token})?.user_id ?? null;
 	}
 
 	/** Removes the authToken from the database, returning boolean success.
