@@ -28,7 +28,7 @@ import IsSignedInTypes from '@/gql/types/IsSignedIn';
 let port = Number.parseInt(window.location.port);
 if (!port && window.location.protocol === 'https:') port = 443;
 if (!port && window.location.protocol === 'http:') port = 80;
-if (DEVSERVER) port = port - GlobalConfig.devServerPortOffset;
+if (DEVSERVER) port = GlobalConfig.port + GlobalConfig.devServerPortOffset;
 const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 
 /* Launch Apollo Client */

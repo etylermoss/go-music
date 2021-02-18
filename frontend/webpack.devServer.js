@@ -12,6 +12,9 @@ module.exports = (env) => {
 			historyApiFallback: true,
 			proxy: {
 				'/graphql': `http://localhost:${GlobalConfig.port}`,
+				secure: false,
+				changeOrigin: true,
+				withCredentials: true,
 			},
 		}
 	});
