@@ -36,7 +36,7 @@ const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => 
 	try {
 		/* get array of dirents for current directory path */
 		files = fs.readdirSync(curr_path, {withFileTypes: true});
-	} catch (err) {
+	} catch {
 		/* could not access files in directory, e.g permissions, not a dir etc. */
 		return null;
 	}
@@ -55,7 +55,7 @@ const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => 
 		{
 			try {
 				fs.accessSync(file_path, options?.access_constant);
-			} catch (err) {
+			} catch {
 				continue;
 			}
 		}
@@ -161,7 +161,7 @@ export class ScanService {
 				stat = fs.statSync(media_item.file_full_path);
 				if (!stat.isFile())
 					throw new Error(`Media not a valid file: ${media_item.file_full_path}`);
-			} catch (err) {
+			} catch {
 				/* can't access file / doesn't exist */
 				this.mediaSvc.removeMedia(media_item.resource_id);
 				prune_count++;
