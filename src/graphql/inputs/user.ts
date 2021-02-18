@@ -12,7 +12,7 @@ export class UserDetailsInput {
 	email: string;
 
 	@Field()
-	@Length(1, 50)
+	@Length(2, 50)
 	@Matches(SingularSpace, {
 		message: `Name cannot contain spaces on either end, or multiple in a row.`,
 	})
