@@ -70,6 +70,7 @@ export class AuthenticationService {
 	/** Updates a users personal information (email etc.), returning
 	 *  success as a boolean.
 	 */
+	// TODO: Move to user service, check other methods here
 	createOrUpdateUserDetails(user_id: string, details: UserDetailsSQL): boolean {
 		return this.dbSvc.prepare(`
 		REPLACE INTO UserDetails (user_id, email, real_name)
