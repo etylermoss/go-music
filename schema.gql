@@ -26,13 +26,13 @@ type Mutation {
   """
   isSignedIn: UserGQL
 
+  """Scans the given source, returns success.Must be admin."""
+  refreshSource(resource_id: String!): Boolean!
+
   """
   Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
   """
   removeSource(resource_id: String!): Boolean!
-
-  """Scans the given source, returns success.Must be admin."""
-  scanSource(resource_id: String!): Boolean!
 
   """
   Sign into the application, if the supplied credentialsare correct, the authToken httpOnly cookie is set.
@@ -67,13 +67,11 @@ type Query {
   """
   sources: [SourceGQL!]
 
-  """
-  Query all users, must be logged in.
-  """
-  users: [UserGQL!]
-
   """Query a user, must be logged in."""
   user(user_id: String!): UserGQL
+
+  """Query all users, must be logged in."""
+  users: [UserGQL!]
 }
 
 input SignInInput {
