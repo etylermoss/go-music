@@ -50,12 +50,11 @@ const Root = (): JSX.Element => {
 	
 	useEffect(() => {
 		isSignedIn().then(result => {
-			if (result.data?.isSignedIn?.details) {
+			if (result.data?.isSignedIn) {
 				StoreInstance.updateUser(result.data.isSignedIn);
-				history.push('/dashboard');
 			} else {
 				StoreInstance.updateUser(null);
-				history.replace('/'); // get store.user from localstorage
+				history.replace('/');
 			}
 		});
 	}, []);
