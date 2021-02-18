@@ -144,9 +144,8 @@ export class ScanService {
 
 	/** Remove any deleted media files from the database.
 	 */
-	private pruneSource(source: SourceSQL): boolean {
+	private pruneSource(source: SourceSQL): void {
 		const media = this.mediaSvc.getAllMedia(source.resource_id);
-		let success = true;
 
 		media.forEach(media_item => {
 			let stat: fs.Stats;
@@ -160,11 +159,9 @@ export class ScanService {
 					throw new Error(`Media not a valid file: ${media_item.file_full_path}`);
 			} catch (err) {
 				/* can't access file / doesn't exist */
-				success = this.mediaSvc.removeMedia(media_item.resource_id);
+				this.mediaSvc.removeMedia(media_item.resource_id);
 			}
 		});
-
-		return success;
 	}
 
 	/** Add any new media files from the source directory, returns success.
@@ -180,8 +177,6 @@ export class ScanService {
 
 		const files = flat_dir(source.path, flat_dir_opts);
 		const source_rsrc = this.rsrcSvc.getResourceByID(source.resource_id);
-
-		console.log('files:', files);
 
 		if (!source_rsrc || !files)
 			return false;
@@ -200,15 +195,15 @@ export class ScanService {
 	/** Refreshes the media files associated with the source, returns
 	 *  success.
 	 */
-	async refreshSource(source_resource_id: string): Promise<boolean> {
+	refreshSource(source_resource_id: string): boolean {
 		const source = this.srcSvc.getSourceByID(source_resource_id);
 
 		if (!source)
 			return false;
 
-		const prune = this.pruneSource(source);
+		this.pruneSource(source);
 		const populate = this.populateSource(source, extension_whitelist);
 
-		return prune && populate;
+		return populate;
 	}
 }
