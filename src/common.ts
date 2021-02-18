@@ -1,4 +1,3 @@
-/* File for commonly used functions and constants. */
 /* 3rd party imports */
 import { randomBytes } from 'crypto';
 
