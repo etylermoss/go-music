@@ -144,8 +144,9 @@ export class ScanService {
 
 	/** Remove any deleted media files from the database.
 	 */
-	private pruneSource(source: SourceSQL): void {
+	private pruneSource(source: SourceSQL): number {
 		const media = this.mediaSvc.getAllMedia(source.resource_id);
+		let prune_count = 0;
 
 		media.forEach(media_item => {
 			let stat: fs.Stats;
@@ -160,8 +161,11 @@ export class ScanService {
 			} catch (err) {
 				/* can't access file / doesn't exist */
 				this.mediaSvc.removeMedia(media_item.resource_id);
+				prune_count++;
 			}
 		});
+
+		return prune_count;
 	}
 
 	/** Add any new media files from the source directory, returns success.
