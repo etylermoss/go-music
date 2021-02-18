@@ -6,11 +6,14 @@ import { Service, Inject } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
-import { SourceService, SourceSQL } from '@/services/source';
+import { SourceService } from '@/services/source';
 import { MediaService } from '@/services/media';
 
+/* 1st party imports - SQL types */
+import { SourceSQL } from '@/services/source';
+
 /* 1st party imports */
-import { extension_whitelist } from '@/common';
+import { extension_whitelist } from '@/services/media';
 
 export interface ScanSQL {
 	scan_id: string;
@@ -33,7 +36,7 @@ const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => 
 	try {
 		/* get array of dirents for current directory path */
 		files = fs.readdirSync(curr_path, {withFileTypes: true});
-	} catch (err) {
+	} catch {
 		/* could not access files in directory, e.g permissions, not a dir etc. */
 		return null;
 	}
@@ -52,7 +55,7 @@ const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => 
 		{
 			try {
 				fs.accessSync(file_path, options?.access_constant);
-			} catch (err) {
+			} catch {
 				continue;
 			}
 		}
@@ -93,7 +96,7 @@ export class ScanService {
 		WHERE scan_id = $scan_id
 		`).get({scan_id}) as ScanSQL | undefined;
 
-		return scan || null;
+		return scan ?? null;
 	}
 
 	getAllScans(source_resource_id: string): ScanSQL[] | null {
@@ -115,7 +118,7 @@ export class ScanService {
 		LIMIT 1
 		`).get({source_resource_id}) as ScanSQL | undefined;
 
-		return scan || null;
+		return scan ?? null;
 	}
 
 	scanUnderway(source_resource_id: string): boolean {
@@ -144,9 +147,9 @@ export class ScanService {
 
 	/** Remove any deleted media files from the database.
 	 */
-	private pruneSource(source: SourceSQL): boolean {
+	private pruneSource(source: SourceSQL): number {
 		const media = this.mediaSvc.getAllMedia(source.resource_id);
-		let success = true;
+		let prune_count = 0;
 
 		media.forEach(media_item => {
 			let stat: fs.Stats;
@@ -158,19 +161,20 @@ export class ScanService {
 				stat = fs.statSync(media_item.file_full_path);
 				if (!stat.isFile())
 					throw new Error(`Media not a valid file: ${media_item.file_full_path}`);
-			} catch (err) {
+			} catch {
 				/* can't access file / doesn't exist */
-				success = this.mediaSvc.removeMedia(media_item.resource_id);
+				this.mediaSvc.removeMedia(media_item.resource_id);
+				prune_count++;
 			}
 		});
 
-		return success;
+		return prune_count;
 	}
 
 	/** Add any new media files from the source directory, returns success.
 	 *  New media files are owned by the owner of the source.
 	 */
-	private populateSource(source: SourceSQL, extension_whitelist: string[]): boolean {
+	private async populateSource(source: SourceSQL, extension_whitelist: string[]): Promise<boolean> {
 		const flat_dir_opts: FlatDirOpts =
 		{
 			skip_hidden: true,
@@ -181,15 +185,12 @@ export class ScanService {
 		const files = flat_dir(source.path, flat_dir_opts);
 		const source_rsrc = this.rsrcSvc.getResourceByID(source.resource_id);
 
-		console.log('files:', files);
-
 		if (!source_rsrc || !files)
 			return false;
 
-		files.forEach(file => {
+		for (const file of files)
 			if (!this.mediaSvc.getMediaByPath(file))
-				this.mediaSvc.addMedia(file, source_rsrc.owner_user_id, source.resource_id);
-		});
+				await this.mediaSvc.addMedia(file, source_rsrc.owner_user_id, source.resource_id);
 
 		return true;
 	}
@@ -206,9 +207,9 @@ export class ScanService {
 		if (!source)
 			return false;
 
-		const prune = this.pruneSource(source);
+		this.pruneSource(source);
 		const populate = this.populateSource(source, extension_whitelist);
 
-		return prune && populate;
+		return await populate;
 	}
 }

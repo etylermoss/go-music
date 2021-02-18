@@ -12,7 +12,7 @@ export type OperationsStrings = keyof typeof Operations;
 interface Group {
 	group_id: string;
 	owner_user_id: string;
-	name: string; // TODO: Add pretty_name
+	name: string;
 	description: string;
 }
 

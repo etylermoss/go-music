@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root, Ctx } from 'type-graphql';
-import { Inject } from 'typedi';
+import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
 import Context from '@/context';
@@ -23,6 +23,7 @@ import { AddSourceInput } from '@/graphql/inputs/source';
 import { source_to_gql } from '@/graphql/sql_to_gql/source';
 import { scan_to_gql } from '@/graphql/sql_to_gql/scan';
 
+@Service()
 @Resolver(_of => SourceWithScansGQL)
 export default class SourceResolver implements ResolverInterface<SourceWithScansGQL> {
 

@@ -9,7 +9,10 @@ module.exports = (env) => {
 			contentBase: path.join(__dirname, 'build'),
 			compress: true,
 			port: GlobalConfig.port + GlobalConfig.devServerPortOffset,
-			historyApiFallback: true
+			historyApiFallback: true,
+			proxy: {
+				'/graphql': `http://localhost:${GlobalConfig.port}`,
+			},
 		}
 	});
 };

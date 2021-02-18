@@ -1,0 +1,10 @@
+1: Add Song/Artwork Resolver // Done!
+2: Parse and add metadata to tables
+    (inherant metadata: title, year, track #, disk #)
+3: Create tables & resolvers for computed properties
+    (albums, artists, composers, labels, genres, )
+4: Create REST API to serve audio and artwork
+5: Use frontend to create first working prototype!
+6: Make API able to transcode
+7: Ensure audio and artwork are actually what they say they are
+... lots more

@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Ctx, Mutation } from 'type-graphql';
-import { Inject } from 'typedi';
+import { Service, Inject } from 'typedi';
 import { CookieOptions } from 'express';
 
 /* 1st party imports */
@@ -28,6 +28,7 @@ const authTokenCookie: CookieOptions = {
 	httpOnly: true,
 };
 
+@Service()
 @Resolver()
 export default class AuthResolver {
 	

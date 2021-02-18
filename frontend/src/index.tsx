@@ -34,7 +34,7 @@ const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 const client = new ApolloClient({
 	uri: `${url}/${GlobalConfig.gqlPath}`,
 	cache: new InMemoryCache(),
-	credentials: 'same-origin',
+	credentials: DEVSERVER ? 'include' : 'same-origin',
 });
 
 /* Browser history object to use low-level Router */

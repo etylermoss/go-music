@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Ctx, Root } from 'type-graphql';
-import { Inject } from 'typedi';
+import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
 import Context from '@/context';
@@ -17,6 +17,7 @@ import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
 /* 1st party imports - SQL object to GQL object converters */
 import { user_to_gql, user_details_to_gql } from '@/graphql/sql_to_gql/user';
 
+@Service()
 @Resolver(_of => UserGQL)
 export default class UserResolver implements ResolverInterface<UserGQL> {
 

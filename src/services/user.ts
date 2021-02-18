@@ -31,7 +31,7 @@ export class UserService {
 		WHERE user_id = $user_id
 		`).get({user_id}) as UserSQL | undefined;
 
-		return user || null;
+		return user ?? null;
 	}
 
 	/** Retrieves a users basic data (user_id, username), searching for
@@ -44,7 +44,7 @@ export class UserService {
 		WHERE username = $username
 		`).get({username}) as UserSQL | undefined;
 
-		return user || null;
+		return user ?? null;
 	}
 	
 	/** Retrives a given user's personal information.
@@ -56,7 +56,7 @@ export class UserService {
 		WHERE user_id = $user_id
 		`).get({user_id}) as UserDetailsSQL | undefined;
 
-		return details || null;
+		return details ?? null;
 	}
 	
 	/** Retrieves all users (user_id and username) from the database.
