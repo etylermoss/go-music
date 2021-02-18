@@ -165,9 +165,11 @@
 </row>
 <row name="name" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
+<comment>UNIQUE</comment>
 </row>
 <row name="path" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
+<comment>UNIQUE</comment>
 </row>
 <key type="PRIMARY" name="">
 <part>resource_id</part>
@@ -209,9 +211,28 @@
 </row>
 <row name="file_full_path" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
+<comment>UNIQUE</comment>
 </row>
 <key type="PRIMARY" name="">
 <part>resource_id</part>
+</key>
+</table>
+<table x="1100" y="300" name="Song">
+<row name="media_resource_id" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Media" row="resource_id" />
+</row>
+<key type="PRIMARY" name="">
+<part>media_resource_id</part>
+</key>
+</table>
+<table x="1100" y="500" name="Artwork">
+<row name="media_resource_id" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Media" row="resource_id" />
+</row>
+<key type="PRIMARY" name="">
+<part>media_resource_id</part>
 </key>
 </table>
 </sql>

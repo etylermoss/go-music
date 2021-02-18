@@ -14,6 +14,8 @@ import Resource from '@/database/tables/02-resource.sql';
 import AccessControl from '@/database/tables/03-access-control.sql';
 import Source from '@/database/tables/04-source.sql';
 import Media from '@/database/tables/05-media.sql';
+import Song from '@/database/tables/06-song.sql';
+import Artwork from '@/database/tables/07-artwork.sql';
 
 const Pragma = `
 PRAGMA foreign_keys = ON;
@@ -32,6 +34,6 @@ export class DatabaseService extends sqlite {
 
 		this.exec(Pragma);
 		
-		[User, Authentication, Resource, AccessControl, Source, Media].forEach(sql => this.exec(sql));
+		[User, Authentication, Resource, AccessControl, Source, Media, Song, Artwork].forEach(sql => this.exec(sql));
 	}
 }

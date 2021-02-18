@@ -1,0 +1,8 @@
+1: Add Song/Artwork Resolver
+2: Use metadata parser to parse audio metadata
+3: Add metadata to tables
+4: Create REST API to serve audio and artwork
+5: Use frontend to create first working prototype!
+6: Make API able to transcode
+7: Ensure audio and artwork are actually what they say they are
+... lots more

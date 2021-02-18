@@ -13,7 +13,7 @@ import { MediaService } from '@/services/media';
 import { SourceSQL } from '@/services/source';
 
 /* 1st party imports */
-import { extension_whitelist } from '@/common';
+import { extension_whitelist } from '@/services/media';
 
 export interface ScanSQL {
 	scan_id: string;
