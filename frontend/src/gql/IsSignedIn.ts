@@ -6,6 +6,7 @@ mutation IsSignedIn {
 	isSignedIn {
 		user_id
 		username
+		adminPriority
 		details {
 			email
 			real_name

@@ -19,6 +19,7 @@ export interface SignUp_signUp {
   __typename: "UserGQL";
   user_id: string;
   username: string;
+  adminPriority: number | null;
   details: SignUp_signUp_details | null;
 }
 

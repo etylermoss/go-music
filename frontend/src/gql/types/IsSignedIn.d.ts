@@ -17,6 +17,7 @@ export interface IsSignedIn_isSignedIn {
   __typename: "UserGQL";
   user_id: string;
   username: string;
+  adminPriority: number | null;
   details: IsSignedIn_isSignedIn_details | null;
 }
 

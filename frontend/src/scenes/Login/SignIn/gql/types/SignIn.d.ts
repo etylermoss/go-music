@@ -19,6 +19,7 @@ export interface SignIn_signIn {
   __typename: "UserGQL";
   user_id: string;
   username: string;
+  adminPriority: number | null;
   details: SignIn_signIn_details | null;
 }
 

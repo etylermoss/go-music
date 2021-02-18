@@ -5,7 +5,8 @@ import { observable, action, computed } from 'mobx';
 interface User {
 	user_id: string;
 	username: string;
-	details: UserDetails;
+	adminPriority: number | null;
+	details: UserDetails | null;
 }
 
 interface UserDetails {

@@ -6,6 +6,7 @@ export default gql`
 		signIn(data: $data) {
 			user_id
 			username
+			adminPriority
 			details {
 				real_name
 				email

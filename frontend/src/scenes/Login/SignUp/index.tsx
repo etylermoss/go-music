@@ -44,8 +44,7 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 		signUp({variables: { data: signUpVars.data }})
 			.then(({data}) => {
 				if (data?.signUp?.details) {
-					const { user_id, username, details } = data?.signUp;
-					store.updateUser({ user_id, username, details });
+					store.updateUser(data.signUp);
 					history.push('/dashboard');
 				}
 			});

@@ -1,17 +1,24 @@
 /* 3rd party imports */
 import React, { useContext } from 'react';
 import { useObserver } from 'mobx-react';
+import { useHistory } from 'react-router-dom';
 
 /* 1st party imports */
 import { StoreContext } from '@/store';
 
 const Scene = (): JSX.Element => {
 	const store = useContext(StoreContext);
+	const history = useHistory();
 
 	return useObserver(() => (
 		<>
-			<h1>You are logged in!</h1>
-			<h2>You are: <b>{store.user?.username}</b></h2>
+			<nav>
+				<ul>
+					<li><button onClick={() => history.push('/dashboard')}>Home</button></li>
+					{store.user?.adminPriority && <li><button onClick={() => history.push('/admin')}>Admin</button></li>}
+				</ul>
+			</nav>
+			<h2>Hello <b>{store.user?.username}!</b></h2>
 		</>
 	));
 };

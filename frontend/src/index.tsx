@@ -14,8 +14,9 @@ import StoreInstance, { StoreContext } from '@/store';
 /* 1st party imports - Scenes */
 import Splash from '@/scenes/Splash';
 import Login from '@/scenes/Login';
-import Dashboard from '@/scenes/Dashboard';
 import NotFound from '@/scenes/NotFound';
+import Dashboard from '@/scenes/Dashboard';
+import Admin from '@/scenes/Admin';
 
 /* 1st part imports - GraphQL */
 import IsSignedInTag from '@/gql/IsSignedIn';
@@ -34,7 +35,7 @@ const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 const client = new ApolloClient({
 	uri: `${url}/${GlobalConfig.gqlPath}`,
 	cache: new InMemoryCache(),
-	credentials: DEVSERVER ? 'include' : 'same-origin',
+	credentials: 'same-origin',
 });
 
 /* Browser history object to use low-level Router */
@@ -50,8 +51,7 @@ const Root = (): JSX.Element => {
 	useEffect(() => {
 		isSignedIn().then(result => {
 			if (result.data?.isSignedIn?.details) {
-				const { user_id, username, details } = result?.data?.isSignedIn; // TODO: fix undefined error
-				StoreInstance.updateUser({ user_id, username, details });
+				StoreInstance.updateUser(result.data.isSignedIn);
 				history.push('/dashboard');
 			} else {
 				StoreInstance.updateUser(null);
@@ -73,6 +73,9 @@ const Root = (): JSX.Element => {
 						</Route>
 						<Route path="/dashboard">
 							<Dashboard/>
+						</Route>
+						<Route path="/admin">
+							<Admin/>
 						</Route>
 						<Route path="*">
 							<NotFound/>

@@ -6,6 +6,7 @@ export default gql`
 		signUp(data: $data) {
 			user_id
 			username
+			adminPriority
 			details {
 				email
 				real_name

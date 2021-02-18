@@ -32,8 +32,7 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 		signIn({variables: { data: user }})
 			.then(({data}) => {
 				if (data?.signIn?.details) {
-					const { user_id, username, details } = data?.signIn;
-					store.updateUser({ user_id, username, details });
+					store.updateUser(data.signIn);
 					history.push('/dashboard');
 				}
 			});
