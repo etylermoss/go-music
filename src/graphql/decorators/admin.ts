@@ -17,10 +17,9 @@ export const IsAdmin = (): MethodDecorator => {
 		const adminSvc: AdminService = Container.get('admin.service');
 		const user_id = context.user_id;
 
-		if (user_id) {
+		if (user_id)
 			return adminSvc.isUserAdmin(user_id) ? next() : null;
-		} else {
+		else
 			return null;
-		}
 	});
 };

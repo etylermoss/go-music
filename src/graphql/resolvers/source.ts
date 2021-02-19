@@ -108,6 +108,8 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 	/** @typegraphql Scans the given source, returns success.
 	 *  Must be admin.
 	 */
+	// TODO: Allow clients to subscribe to a field containing latest scan end time so they can
+	// requery data
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
 	async refreshSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
