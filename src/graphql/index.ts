@@ -15,6 +15,7 @@ import { AuthenticationService } from '@/services/authentication';
 import AuthResolver from '@/graphql/resolvers/authentication';
 import UserResolver from '@/graphql/resolvers/user';
 import SourceResolver from '@/graphql/resolvers/source';
+import SongResolver from '@/graphql/resolvers/song';
 
 export const launchGraphql = async (): Promise<ApolloServer | null> => {
 
@@ -48,7 +49,7 @@ export const launchGraphql = async (): Promise<ApolloServer | null> => {
 
 	try {
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, UserResolver, SourceResolver],
+			resolvers: [AuthResolver, UserResolver, SourceResolver, SongResolver],
 			emitSchemaFile: config.private.genSchema ? path.resolve(__dirname, '../', 'schema.gql') : false,
 			container: Container,
 			validate: true,

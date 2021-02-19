@@ -59,6 +59,14 @@ type Mutation {
 }
 
 type Query {
+  """Query a user, must be logged in."""
+  song(resource_id: String!): SongGQL
+
+  """
+  Query all songs the user has access to.Can optionally limit results to songs in a specific source.
+  """
+  songs(source_resource_id: String): [SongGQL!]
+
   """Query a source, must have permissions to access to it."""
   source(resource_id: String!): SourceGQL
 
@@ -70,7 +78,7 @@ type Query {
   """Query a user, must be logged in."""
   user(user_id: String!): UserGQL
 
-  """Query all users, must be logged in."""
+  """Query all users, must be an admin."""
   users: [UserGQL!]
 }
 
@@ -83,6 +91,12 @@ input SignUpInput {
   details: UserDetailsInput!
   password: String!
   username: String!
+}
+
+type SongGQL {
+  file_full_path: String!
+  media_resource_id: ID!
+  source_resource_id: ID!
 }
 
 type SourceGQL {

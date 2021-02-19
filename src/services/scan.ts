@@ -74,6 +74,8 @@ const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => 
 	return acc;
 };
 
+// TODO: Clean this service up
+// TODO: If scan timestamps mismatch, prune media first, then populate (i.e start new scan)
 @Service('scan.service')
 export class ScanService {
 

@@ -64,25 +64,20 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 	/** @typegraphql Query all sources, returns those which the user has
 	 *  permission to access.
 	 */
+	@AccessControl()
 	@Query(_returns => [SourceGQL], {nullable: true})
-	sources(@Ctx() ctx: Context): SourceGQL[] | null {
-		if (!ctx.user_id) return null;
-
+	sources(@Ctx() ctx: Context): SourceGQL[] {
 		const sources_sql = this.srcSvc.getAllSources();
-		let allowedSources: SourceGQL[] = [];
 
 		if (sources_sql)
-		{
-			allowedSources = sources_sql.reduce<SourceGQL[]>((acc, source) => {
-				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.user_id, source.resource_id);
-				if (level && level >= Operations.READ) {
+			return sources_sql.reduce<SourceGQL[]>((acc, source) => {
+				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.user_id!, source.resource_id);
+				if (level && level >= Operations.READ)
 					acc.push(source_to_gql(source));
-				}
 				return acc;
 			}, []);
-		}
 
-		return allowedSources;
+		return [];
 	}
 
 	/** @typegraphql Add a new source, must be an admin.
