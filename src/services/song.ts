@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Service, Inject, Container } from 'typedi';
-import mm from 'music-metadata';
+import * as mm from 'music-metadata';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -37,7 +37,7 @@ export class SongService {
 	getAllSongs(source_resource_id?: string): SongSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
-			Song.media_resource_id,
+			Song.media_resource_id
 		FROM
 			Song
 		INNER JOIN
@@ -76,8 +76,7 @@ export class SongService {
 
 		try {
 			metadata = await mm.parseFile(media.file_full_path, parseFileOpts);
-		}
-		catch {
+		} catch {
 			/* could not access or parse file */
 			// TODO: Log here
 			this.removeSong(media_resource_id);
