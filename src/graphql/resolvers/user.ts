@@ -1,16 +1,14 @@
 /* 3rd party imports */
-import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Ctx, Root } from 'type-graphql';
+import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root } from 'type-graphql';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
-import Context from '@/context';
 import { AccessControl, FieldAccessControl } from '@/graphql/decorators/access-control';
 import { IsAdmin } from '@/graphql/decorators/admin';
 
 /* 1st party imports - Services */
 import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
-import { AccessControlService, Operations } from '@/services/access-control';
 
 /* 1st party imports - GraphQL types & inputs */
 import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
@@ -27,9 +25,6 @@ export default class UserResolver implements ResolverInterface<UserGQL> {
 
 	@Inject('admin.service')
 	adminSvc: AdminService;
-
-	@Inject('access-control.service')
-	aclSvc: AccessControlService;
 
 	/** @typegraphql Query a user, must be logged in.
 	 */
