@@ -22,14 +22,16 @@ export class ResourceService {
 	@Inject('user.service')
 	private userSvc: UserService;
 	
-	getResourceByID(resource_id: string): ResourceSQL {
-		return this.dbSvc.prepare(`
+	getResourceByID(resource_id: string): ResourceSQL | null {
+		const resource = this.dbSvc.prepare(`
 		SELECT 
 			resource_id,
 			owner_user_id
 		FROM Resource
 		WHERE resource_id = $resource_id
-		`).get({resource_id}) as ResourceSQL;
+		`).get({resource_id}) as ResourceSQL | undefined;
+
+		return resource ?? null;
 	}
 
 	/** Create a new resource. Returns null if the owner user_id does

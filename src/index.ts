@@ -11,6 +11,7 @@ import 'reflect-metadata';
 import GlobalConfig from '@G/config.json';
 import { defaultConfig, openConfig, ConfigSchema } from '@/config';
 import { launchGraphql } from '@/graphql';
+import { mediaAPIRouter } from '@/media';
 
 /** Print exit message and exit program execution.
  *  Accepts process exit code, defaults to 0.
@@ -116,8 +117,6 @@ const retrieveConfig = async (): Promise<ConfigSchema> => {
 	return config;
 };
 
-/** Entrypoint into the application
- */
 const main = async (): Promise<void> => {
 
 	const config = await retrieveConfig();
@@ -136,6 +135,9 @@ const main = async (): Promise<void> => {
 	if (!graphql) return; // FatalError('Could not launch GraphQL.'); // TODO: Should be FatalError but not found by tsc
 	app.use(`/${GlobalConfig.gqlPath}`, graphql.getMiddleware({path: '/', cors: !RELEASE}));
 
+	/* Serve Media API */
+	app.use(`/${GlobalConfig.mediaPath}`, mediaAPIRouter);
+
 	/* Serve Frontend */
 	if (!config.private.apiOnly) {
 		const staticServe = express.static(path.resolve(config.private.frontendDirectory));
@@ -147,8 +149,9 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	console.log(`Now running at http://localhost:${config.port}.`);
-	console.log(`Audio API at /${GlobalConfig.audioApiPath}, GraphQL Endpoint at /${GlobalConfig.gqlPath}.`);
+	console.log(`Now running at http://localhost:${config.port}/`);
+	console.log(`GraphQL Endpoint at /${GlobalConfig.gqlPath}`);
+	console.log(`Media API at /${GlobalConfig.mediaPath}`);
 };
 
 main();

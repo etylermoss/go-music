@@ -45,6 +45,8 @@ export class AccessControlService {
 
 		const resource = this.rsrcSvc.getResourceByID(target_resource_id);
 
+		if (!resource) return null;
+
 		if (user_id === resource.owner_user_id) return Operations.DELETE;
 
 		const sharedGroups: ResourceGroup[] = this.dbSvc.prepare(`

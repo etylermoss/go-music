@@ -1,5 +1,5 @@
 {
-	"audioApiPath": "api",
+	"mediaPath": "media",
 	"gqlPath": "graphql",
 	"port": 5000,
 	"devServerPortOffset": 50
