@@ -5,6 +5,7 @@ import { Service, Inject } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
+import { AdminService } from '@/services/admin';
 
 export enum Operations { READ, WRITE, DELETE }
 export type OperationsStrings = keyof typeof Operations;
@@ -35,6 +36,9 @@ export class AccessControlService {
 
 	@Inject('resource.service')
 	private rsrcSvc: ResourceService;
+
+	@Inject('admin.service')
+	private adminSvc: AdminService;
 
 	getResourceAccessLevelForUser(user_id: string | null, target_resource_id: string): Operations | null {
 		if (!user_id) return null;
@@ -70,6 +74,12 @@ export class AccessControlService {
 	}
 
 	getUserAccessLevelForUser(user_id: string, target_user_id: string): Operations | null {
+		const user_admin = this.adminSvc.getAdminUserPriority(user_id);
+		const tuser_admin = this.adminSvc.getAdminUserPriority(target_user_id);
+	
+		if (user_admin && (tuser_admin && user_admin > tuser_admin) || !tuser_admin)
+			return Operations.DELETE;
+
 		return user_id === target_user_id ? Operations.DELETE : null;
 	}
 
