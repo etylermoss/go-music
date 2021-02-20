@@ -1,16 +1,16 @@
 <h1 align="center">
-	<a href="https://github.com/ajmar/go-music">
+	<a href="https://github.com/etylermoss/go-music">
 		Go Music
 	</a>
 </h1>
 
-Personal music streaming server, built with a modern stack.
+Personal music streaming server, built with Node.js and GraphQL.
 
-Work in progress, approximately 2/3rds the way to initial working prototype (i.e actually able to stream music). Things that are already implemented include signing in/up/out, authentication, scanning for music files (+ a lot of backend groundwork).
+Work in progress, nearing initial working prototype (i.e currently can stream music, though metadata is not parsed). Things that are already implemented include signing in/up/out, authentication, scanning for music files (+ a lot of backend groundwork).
 
 #### Why?
 
-I was a long time user of Plex for my media collection, however it's interface is woeful for music, proprietary, and the company has a poor direction. Jellyfin/Emby is not really designed with music in mind, and comes with a lot of tech debt (though the Jellyfin guys are great!).
+I was a long time user of Plex for my media collection, however the interface is woeful for music in my opinion, it is proprietary, and the company has a poor direction. Jellyfin/Emby is not really designed with music in mind as well.
 
 That's my justification for starting this project, I may not finish it but we'll see.
 
