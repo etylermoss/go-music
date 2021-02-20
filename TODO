@@ -1,4 +1,12 @@
-1: Add Song/Artwork Resolver // Done!
+1: Make Media Path relative from Source path not absolute
+   (otherwise we're leaking the full directory path to the client not ideal)
+   OR, should this even be a queryable field? perhaps the media API should
+   just use the song ID
+   Revised thoughts:
+      1. The path relative from the source should be queryable to all
+      2. Admins / Permissioned users can see the full path by combining
+         this with the source path
+      3. The media API should accept files based on the Song ID
 2: Parse and add metadata to tables
     (inherant metadata: title, year, track #, disk #)
 3: Create tables & resolvers for computed properties
@@ -6,5 +14,5 @@
 4: Create REST API to serve audio and artwork
 5: Use frontend to create first working prototype!
 6: Make API able to transcode
-7: Ensure audio and artwork are actually what they say they are
+7: Ensure song and artwork are actually what they say they are
 ... lots more
