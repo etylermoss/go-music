@@ -22,7 +22,7 @@ mediaAPIRouter.get('/:resource_id', (req, res) => {
 		/* serve file */
 		const file = mediaSvc.getMediaByID(req.params.resource_id)!;
 		res.setHeader('content-type', 'audio/unknown'); // TODO: audio type should be in database
-		res.sendFile(file.file_full_path);
+		res.sendFile(file.path);
 	}
 	else
 	{

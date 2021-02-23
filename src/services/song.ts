@@ -75,7 +75,7 @@ export class SongService {
 		let metadata: mm.IAudioMetadata;
 
 		try {
-			metadata = await mm.parseFile(media.file_full_path, parseFileOpts);
+			metadata = await mm.parseFile(media.path, parseFileOpts);
 		} catch {
 			/* could not access or parse file */
 			// TODO: Log here

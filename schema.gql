@@ -94,7 +94,7 @@ input SignUpInput {
 }
 
 type SongGQL {
-  file_full_path: String!
+  path: String!
   media_resource_id: ID!
   source_resource_id: ID!
 }

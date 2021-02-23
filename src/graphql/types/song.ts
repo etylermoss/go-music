@@ -10,5 +10,5 @@ export class SongGQL {
     source_resource_id: string;
 
     @Field(_type => String)
-    file_full_path: string;
+    path: string;
 }

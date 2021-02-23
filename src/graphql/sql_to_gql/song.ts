@@ -11,6 +11,6 @@ export const song_to_gql = <T extends SongSQL | null>(song: T, media: MediaSQL):
 	return song ? {
 		media_resource_id: song.media_resource_id,
 		source_resource_id: media.source_resource_id,
-		file_full_path: media.file_full_path,
+		path: media.path,
 	} as any : null;
 };

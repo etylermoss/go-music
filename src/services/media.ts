@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import path from 'path';
+import * as pathlib from 'path';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
@@ -11,7 +11,7 @@ import { ArtworkService } from '@/services/artwork';
 export interface MediaSQL {
 	resource_id: string;
 	source_resource_id: string;
-	file_full_path: string;
+	path: string;
 }
 
 /** Extensions seen by the server, used when
@@ -44,7 +44,7 @@ export class MediaService {
 		SELECT
 			resource_id,
 			source_resource_id,
-			file_full_path
+			path
 		FROM
 			Media
 		WHERE
@@ -54,17 +54,17 @@ export class MediaService {
 		return media ?? null;
 	}
 
-	getMediaByPath(file_full_path: string): MediaSQL | null {
+	getMediaByPath(path: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
 			resource_id,
 			source_resource_id,
-			file_full_path
+			path
 		FROM
 			Media
 		WHERE
-			file_full_path = $file_full_path
-		`).get({file_full_path}) as MediaSQL | undefined;
+			path = $path
+		`).get({path}) as MediaSQL | undefined;
 
 		return media ?? null;
 	}
@@ -74,7 +74,7 @@ export class MediaService {
 		SELECT
 			resource_id,
 			source_resource_id,
-			file_full_path
+			path
 		FROM
 			Media
 		WHERE
@@ -85,8 +85,8 @@ export class MediaService {
 		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
 	}
 
-	async mediaParser({file_full_path, resource_id}: MediaSQL): Promise<void> {
-		const file_extension = path.extname(file_full_path).toLowerCase();
+	async mediaParser({path, resource_id}: MediaSQL): Promise<void> {
+		const file_extension = pathlib.extname(path).toLowerCase();
 
 		// TODO: Serve error to log service if matching extension not found (should be)
 		switch (file_extension) {
@@ -109,7 +109,7 @@ export class MediaService {
 		}
 	}
 
-	async addMedia(file_full_path: string, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
+	async addMedia(path: string, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
 		const resource = this.rsrcSvc.createResource(owner_user_id);
 
 		if (!resource)
@@ -120,7 +120,7 @@ export class MediaService {
 		const media: MediaSQL = {
 			resource_id: resource.resource_id,
 			source_resource_id: source_resource_id,
-			file_full_path,
+			path,
 		};
 
 		const success = this.dbSvc.prepare(`
@@ -128,13 +128,13 @@ export class MediaService {
 		(
 			resource_id,
 			source_resource_id,
-			file_full_path
+			path
 		)
 		VALUES
 		(
 			$resource_id,
 			$source_resource_id,
-			$file_full_path
+			$path
 		)
 		`).run(media).changes > 0;
 

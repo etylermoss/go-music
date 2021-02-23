@@ -158,11 +158,11 @@ export class ScanService {
 
 			try {
 				/* check file exists and can access it */
-				fs.accessSync(media_item.file_full_path, fs.constants.R_OK);
+				fs.accessSync(media_item.path, fs.constants.R_OK);
 
-				stat = fs.statSync(media_item.file_full_path);
+				stat = fs.statSync(media_item.path);
 				if (!stat.isFile())
-					throw new Error(`Media not a valid file: ${media_item.file_full_path}`);
+					throw new Error(`Media not a valid file: ${media_item.path}`);
 			} catch {
 				/* can't access file / doesn't exist */
 				this.mediaSvc.removeMedia(media_item.resource_id);
