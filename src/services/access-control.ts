@@ -40,6 +40,7 @@ export class AccessControlService {
 	@Inject('admin.service')
 	private adminSvc: AdminService;
 
+	// TODO: add exception for admin users
 	getResourceAccessLevelForUser(user_id: string | null, target_resource_id: string): Operations | null {
 		if (!user_id) return null;
 
@@ -79,6 +80,7 @@ export class AccessControlService {
 		const user_admin = this.adminSvc.getAdminUserPriority(user_id);
 		const tuser_admin = this.adminSvc.getAdminUserPriority(target_user_id);
 	
+		// TODO: check below is correct
 		if (user_admin && (tuser_admin && user_admin > tuser_admin) || !tuser_admin)
 			return Operations.DELETE;
 

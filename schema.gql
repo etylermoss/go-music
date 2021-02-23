@@ -27,7 +27,7 @@ type Mutation {
   isSignedIn: UserGQL
 
   """Scans the given source, returns success.Must be admin."""
-  refreshSource(resource_id: String!): Boolean!
+  scanSource(resource_id: String!): Boolean!
 
   """
   Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.

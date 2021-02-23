@@ -182,14 +182,14 @@ export class ScanService {
 			extension_whitelist,
 			access_constant: fs.constants.R_OK,
 		});
-		const source_rsrc = this.rsrcSvc.getResourceByID(source.resource_id);
+		const source_resource = this.rsrcSvc.getResourceByID(source.resource_id)!;
 
-		if (!source_rsrc || !files)
+		if (!files)
 			return false;
 
 		for (const file of files)
 			if (!this.mediaSvc.getMediaByPath(file))
-				await this.mediaSvc.addMedia(file, source_rsrc.owner_user_id, source.resource_id);
+				await this.mediaSvc.addMedia(file, source_resource.owner_user_id, source.resource_id);
 
 		return true;
 	}
@@ -197,18 +197,18 @@ export class ScanService {
 	// TODO: Use inotify to watch for deleted files and run at least
 	// pruneSource upon event.
 	
-	/** Refreshes the media files associated with the source, returns
-	 *  success.
+	/** Scans for media files associated with the source, returns false
+	 *  if the source directory cannot be opened & read, else true.
 	 */
-	async refreshSource(source_resource_id: string): Promise<boolean> {
+	async scanSource(source_resource_id: string): Promise<boolean> {
 		const source = this.srcSvc.getSourceByID(source_resource_id);
 
 		if (!source)
 			return false;
 
 		this.pruneSource(source);
-		const populate = this.populateSource(source, extension_whitelist);
+		const populate = await this.populateSource(source, extension_whitelist);
 
-		return await populate;
+		return populate;
 	}
 }
