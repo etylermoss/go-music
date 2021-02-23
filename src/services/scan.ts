@@ -177,14 +177,11 @@ export class ScanService {
 	 *  New media files are owned by the owner of the source.
 	 */
 	private async populateSource(source: SourceSQL, extension_whitelist: string[]): Promise<boolean> {
-		const flat_dir_opts: FlatDirOpts =
-		{
+		const files = flat_dir(source.path, {
 			skip_hidden: true,
-			extension_whitelist: extension_whitelist,
+			extension_whitelist,
 			access_constant: fs.constants.R_OK,
-		};
-
-		const files = flat_dir(source.path, flat_dir_opts);
+		});
 		const source_rsrc = this.rsrcSvc.getResourceByID(source.resource_id);
 
 		if (!source_rsrc || !files)
