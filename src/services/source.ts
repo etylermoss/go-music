@@ -102,7 +102,6 @@ export class SourceService {
 	 *  Also removes all resources associated with the source.
 	 */
 	removeSource(resource_id: string): boolean {
-		// TODO: Are associated resources removed? Unsure of cascade effectiveness
 		return this.rsrcSvc.removeResource(resource_id);
 	}
 }

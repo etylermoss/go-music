@@ -1,5 +1,22 @@
-*) Parse and add metadata to tables
-    (inherant metadata: title, year, track #, disk #, format)
+*) Cleanup
+    *) Remove all snake case symbols
+    *) Add JSDoc comments to service and resolver methods
+    *) Inject services using constructor not @Inject
+    *) Move createOrUpdateUserDetails to UserService
+    *) Change Admin Priority to simple AdminDate
+    *) Clean up sql_to_gql converter type
+    *) sort out scan service / checkLatestScanValidity
+    *) Add Admin User exception in services/access-control
+       *) Change to AccessControl in graphql/scanSource
+*) Speedup walk-async-fd, maybe remove fd
+*) Add Log service
+    *) Use unsafe and strip indent functions and print SQL
+       https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+*) Parse metadata
+    *) Use switch statement, select mime_type based on metadata container,
+       insert into database Media tables
+    *) Add inherant metadata to tables
+       (title, year, track #, disk #, format)
 *) Create tables & resolvers for computed properties
     (albums, artists, composers, labels, genres )
 *) Create REST API to serve audio and artwork

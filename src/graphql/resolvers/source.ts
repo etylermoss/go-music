@@ -103,8 +103,6 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	/** @typegraphql Scans the given source, returns success.
 	 *  Must be admin.
 	 */
-	// TODO: Allow clients to subscribe to a field containing latest scan end time so they can
-	// requery data
 	// TODO: change to @AccessControl
 	@IsAdmin()
 	@Mutation(_returns => Boolean)

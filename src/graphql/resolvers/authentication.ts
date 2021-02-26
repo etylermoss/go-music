@@ -74,7 +74,7 @@ export default class AuthResolver {
 			this.authUser(ctx, user.user_id);
 			return user_to_gql(user);
 		}
-		// TODO: Logging service here
+		// TODO: Log
 		console.log(`Incorrect sign-in attempt from ${ctx.req.ip}.`);
 		return null;
 	}

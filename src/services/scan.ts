@@ -28,8 +28,8 @@ export interface ScanSQL {
 
 export type UpdateScanSQL = Pick<ScanSQL, 'scan_id' | 'end_timestamp' | 'changes_add' | 'changes_remove'>;
 
-// TODO: Clean this service up
-// TODO: If scan timestamps mismatch, prune media first, then populate (i.e start new scan)
+// TODO: convert checkLatestScanValidity to checkAllScanValidity, return array of
+//       invalid scans, and run scanSource on each
 @Service('scan.service')
 export class ScanService {
 
@@ -212,8 +212,6 @@ export class ScanService {
 
 		return counter;
 	}
-
-	// TODO: reformat and add all comments to below standard
 	
 	/**
 	 * Add new media files contained within the source directory (recursive).
@@ -240,7 +238,7 @@ export class ScanService {
 				}
 			}, {skipHidden: true});
 		} catch (err) {
-			// TODO: log
+			// TODO: Log
 			return null;
 		}
 

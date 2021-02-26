@@ -96,7 +96,7 @@ export class MediaService {
 			case 'M4A/mp42/isom':
 				mimeType = 'audio/mp4'; break;
 		}
-		// TODO: Log if none
+		// TODO: Log - if no match
 
 		if (mimeType !== null)
 		{
@@ -116,7 +116,8 @@ export class MediaService {
 	async mediaParser({path, resource_id}: MediaSQL): Promise<void> {
 		const fileExt = extname(path).toLowerCase();
 
-		// TODO: Serve error to log service if matching extension not found (should be)
+		// TODO: return song / artwork or success?
+		// TODO: Log - if no match
 		switch (fileExt) {
 			case '.mp3':
 			case '.opus':
@@ -124,7 +125,7 @@ export class MediaService {
 			case '.wav':
 			case '.flac':
 			case '.m4a':
-				await this.songSvc.addSong(resource_id); // TODO: assign to variable so can return it from this function
+				await this.songSvc.addSong(resource_id);
 				break;
 			case '.png':
 			case '.jpg':

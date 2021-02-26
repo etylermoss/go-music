@@ -42,7 +42,6 @@ export default class UserResolver implements ResolverInterface<UserGQL> {
 		return this.userSvc.getAllUsers().map<UserGQL>(user => user_to_gql(user));
 	}
 
-	// TODO: Tidy adminPriority?
 	/** @typegraphql If the user is an admin, this is their priority level
 	 *  over other admins, otherwise it is null.
 	 */

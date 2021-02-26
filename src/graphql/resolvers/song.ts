@@ -17,6 +17,7 @@ import { MediaGQL } from '@/graphql/types/media';
 
 /* 1st party imports - SQL object to GQL object converters */
 import { song_to_gql } from '@/graphql/sql_to_gql/song';
+import { media_to_gql } from '@/graphql/sql_to_gql/media';
 
 @Service()
 @Resolver(_of => SongGQL)
@@ -33,8 +34,7 @@ export default class SongResolver {
 
 	@FieldResolver(_type => MediaGQL)
 	media(@Root() root: SongGQL): MediaGQL {
-		const media = this.mediaSvc.getMediaByID(root.media_resource_id);
-		return media!;
+		return media_to_gql(this.mediaSvc.getMediaByID(root.media_resource_id)!);
 	}
 
 	/** @typegraphql Query a user, must be logged in.
@@ -44,7 +44,7 @@ export default class SongResolver {
 	song(@Arg('resource_id') media_resource_id: string): SongGQL | null {
 		const song_sql = this.songSvc.getSongByID(media_resource_id);
 		if (song_sql)
-			return song_to_gql(song_sql, this.mediaSvc.getMediaByID(media_resource_id)!);
+			return song_to_gql(song_sql);
 		else
 			return null;
 	}
@@ -63,7 +63,7 @@ export default class SongResolver {
 			return songs_sql.reduce<SongGQL[]>((acc, song) => {
 				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.user_id!, song.media_resource_id);
 				if (level && level >= Operations.READ)
-					acc.push(song_to_gql(song, this.mediaSvc.getMediaByID(song.media_resource_id)!));
+					acc.push(song_to_gql(song));
 				return acc;
 			}, []);
 

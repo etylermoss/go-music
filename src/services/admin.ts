@@ -14,25 +14,27 @@ export class AdminService {
 	 */
 	isUserAdmin(user_id: string): boolean {
 		return this.dbSvc.prepare(`
-		SELECT ( user_id )
-		FROM AdminUser
-		WHERE user_id = $user_id
+		SELECT
+			user_id
+		FROM
+			AdminUser
+		WHERE
+			user_id = $user_id
 		`).get({user_id})?.user_id ? true : false;
 	}
-
-	// TODO: If more admin user properties are added, this should be
-	// turned into 'getAdminUserDetails/Properties'.
 	
 	/** If the given user is an admin, returns their admin priority,
 	 *  otherwise null is returned.
 	 */
 	getAdminUserPriority(user_id: string): number | null {
-		const adminUserPriority = this.dbSvc.prepare(`
-		SELECT ( priority )
-		FROM AdminUser
-		WHERE user_id = $user_id
-		`).get({user_id})?.priority;
-		return adminUserPriority ? adminUserPriority : null;
+		return this.dbSvc.prepare(`
+		SELECT 
+			priority
+		FROM
+			AdminUser
+		WHERE
+			user_id = $user_id
+		`).get({user_id})?.priority as number | undefined ?? null;
 	}
 
 	/** Makes the given user an admin. Their admin priority is set as the
@@ -40,8 +42,16 @@ export class AdminService {
 	 */
 	makeUserAdmin(user_id: string): boolean {
 		const result = this.dbSvc.prepare(`
-		INSERT INTO AdminUser (user_id, priority)
-		VALUES ($user_id, ( SELECT COUNT(*) FROM AdminUser ) + 1)
+		INSERT INTO AdminUser
+		(
+			user_id,
+			priority
+		)
+		VALUES
+		(
+			$user_id,
+			( SELECT COUNT(*) FROM AdminUser ) + 1
+		)
 		`).run({user_id});
 		if (result.changes === 0) {
 			console.log(`Could not make user_id ${user_id} an admin, does the user exist?`);

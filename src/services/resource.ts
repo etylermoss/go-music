@@ -59,7 +59,6 @@ export class ResourceService {
 	 *  Associated resources are removed.
 	 */
 	removeResource(resource_id: string): boolean {
-		// TODO: Are associated resources removed? Unsure of cascade effectiveness
 		return this.dbSvc.prepare(`
 		DELETE FROM Resource
 		WHERE resource_id = $resource_id
