@@ -12,6 +12,14 @@ type AuthResponse {
   success: Boolean!
 }
 
+type MediaGQL {
+  mime_type: String
+  path: String!
+  resource_id: ID!
+  size: Int!
+  source_resource_id: ID!
+}
+
 type Mutation {
   """
   Add a new source, must be an admin.The source is not scanned automatically.
@@ -26,13 +34,13 @@ type Mutation {
   """
   isSignedIn: UserGQL
 
-  """Scans the given source, returns success.Must be admin."""
-  scanSource(resource_id: String!): Boolean!
-
   """
   Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
   """
   removeSource(resource_id: String!): Boolean!
+
+  """Scans the given source, returns success.Must be admin."""
+  scanSource(resource_id: String!): Boolean!
 
   """
   Sign into the application, if the supplied credentialsare correct, the authToken httpOnly cookie is set.
@@ -82,6 +90,14 @@ type Query {
   users: [UserGQL!]
 }
 
+type ScanGQL {
+  changes_add: Int
+  changes_remove: Int
+  end_timestamp: Timestamp
+  scan_id: ID!
+  start_timestamp: Timestamp!
+}
+
 input SignInInput {
   password: String!
   username: String!
@@ -94,16 +110,22 @@ input SignUpInput {
 }
 
 type SongGQL {
-  path: String!
+  media: MediaGQL!
   media_resource_id: ID!
-  source_resource_id: ID!
 }
 
 type SourceGQL {
   name: String!
   path: String!
   resource_id: ID!
+  scan_underway: Boolean!
+  scans: [ScanGQL!]!
 }
+
+"""
+The javascript `Date` as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
 
 type UserDetailsGQL {
   email: String!

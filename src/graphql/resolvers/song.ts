@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Resolver, Arg, Query, Ctx } from 'type-graphql';
+import { Resolver, Arg, Query, Ctx, FieldResolver, Root } from 'type-graphql';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports */
@@ -13,6 +13,7 @@ import { AccessControlService, Operations } from '@/services/access-control';
 
 /* 1st party imports - GraphQL types & inputs */
 import { SongGQL } from '@/graphql/types/song';
+import { MediaGQL } from '@/graphql/types/media';
 
 /* 1st party imports - SQL object to GQL object converters */
 import { song_to_gql } from '@/graphql/sql_to_gql/song';
@@ -29,6 +30,12 @@ export default class SongResolver {
 
 	@Inject('access-control.service')
 	aclSvc: AccessControlService;
+
+	@FieldResolver(_type => MediaGQL)
+	media(@Root() root: SongGQL): MediaGQL {
+		const media = this.mediaSvc.getMediaByID(root.media_resource_id);
+		return media!;
+	}
 
 	/** @typegraphql Query a user, must be logged in.
 	 */

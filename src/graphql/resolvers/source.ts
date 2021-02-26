@@ -15,7 +15,7 @@ import { AccessControlService, Operations } from '@/services/access-control';
 import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
-import { SourceGQL, SourceWithScansGQL } from '@/graphql/types/source';
+import { SourceGQL } from '@/graphql/types/source';
 import { ScanGQL } from '@/graphql/types/scan';
 import { AddSourceInput } from '@/graphql/inputs/source';
 
@@ -24,8 +24,8 @@ import { source_to_gql } from '@/graphql/sql_to_gql/source';
 import { scan_to_gql } from '@/graphql/sql_to_gql/scan';
 
 @Service()
-@Resolver(_of => SourceWithScansGQL)
-export default class SourceResolver implements ResolverInterface<SourceWithScansGQL> {
+@Resolver(_of => SourceGQL)
+export default class SourceResolver implements ResolverInterface<SourceGQL> {
 
 	@Inject('user.service')
 	userSvc: UserService;
@@ -50,7 +50,7 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 
 	@FieldResolver()
 	scan_underway(@Root() root: SourceGQL): boolean {
-		return this.scanSvc.scanUnderway(root.resource_id);
+		return this.scanSvc.scanUnderway(root.resource_id) ? true : false;
 	}
 
 	/** @typegraphql Query a source, must have permissions to access to it.
@@ -109,6 +109,8 @@ export default class SourceResolver implements ResolverInterface<SourceWithScans
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
 	async scanSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
-		return await this.scanSvc.scanSource(resource_id);
+		const scan = await this.scanSvc.scanSource(resource_id);
+
+		return scan ? true : false;
 	}
 }

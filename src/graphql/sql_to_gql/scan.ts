@@ -8,9 +8,9 @@ export const scan_to_gql = <T extends ScanSQL | null>(scan: T): T extends ScanSQ
 {
 	return scan ? {
 		scan_id: scan.scan_id,
-		source_resource_id: scan.source_resource_id,
 		start_timestamp: new Date(scan.start_timestamp * 1000),
 		end_timestamp: scan.end_timestamp ? new Date(scan.end_timestamp * 1000) : null,
-		changes: scan.changes,
+		changes_add: scan.changes_add,
+		changes_remove: scan.changes_remove,
 	} as any : null;
 };

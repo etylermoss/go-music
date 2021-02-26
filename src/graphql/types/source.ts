@@ -14,10 +14,7 @@ export class SourceGQL {
     
     @Field()
     path: string;
-}
 
-@ObjectType()
-export class SourceWithScansGQL extends SourceGQL {
     @Field(_type => [ScanGQL])
     scans: ScanGQL[];
 

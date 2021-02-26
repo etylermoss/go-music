@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS 'Scan' (
 	'source_resource_id' TEXT NOT NULL,
 	'start_timestamp' INTEGER NOT NULL,
 	'end_timestamp' INTEGER,
-	'changes' INTEGER,
+	'changes_add' INTEGER,
+	'changes_remove' INTEGER,
 	FOREIGN KEY ("source_resource_id") REFERENCES "Source" ("resource_id") ON DELETE CASCADE
 );

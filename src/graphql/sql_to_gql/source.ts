@@ -10,5 +10,7 @@ export const source_to_gql = <T extends SourceSQL | null>(source: T): T extends 
 		resource_id: source.resource_id,
 		name: source.name,
 		path: source.path,
+		scans: null,
+		scan_underway: null,
 	} as any : null;
 };

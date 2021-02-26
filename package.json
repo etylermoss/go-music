@@ -54,6 +54,7 @@
     "strip-indent": "^3.0.0",
     "type-graphql": "^1.0.0-rc.1",
     "typedi": "^0.10.0",
+    "walk-async-fd": "^1.0.1",
     "xdg-basedir": "^4.0.0"
   }
 }

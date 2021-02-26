@@ -1,5 +1,6 @@
 /* 3rd party imports */
-import * as pathlib from 'path';
+import fs from 'fs';
+import { extname } from 'path';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
@@ -12,6 +13,8 @@ export interface MediaSQL {
 	resource_id: string;
 	source_resource_id: string;
 	path: string;
+	size: number;
+	mime_type: string | null;
 }
 
 /** Extensions seen by the server, used when
@@ -85,11 +88,12 @@ export class MediaService {
 		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
 	}
 
+	// TODO: export extension whitelist from here
 	async mediaParser({path, resource_id}: MediaSQL): Promise<void> {
-		const file_extension = pathlib.extname(path).toLowerCase();
+		const fileExt = extname(path).toLowerCase();
 
 		// TODO: Serve error to log service if matching extension not found (should be)
-		switch (file_extension) {
+		switch (fileExt) {
 			case '.mp3':
 			case '.opus':
 			case '.ogg':
@@ -97,7 +101,7 @@ export class MediaService {
 			case '.flac':
 			case '.m4a':
 			case '.aac':
-				await this.songSvc.addSong(resource_id);
+				await this.songSvc.addSong(resource_id); // TODO: assign to variable so can return it from this function
 				break;
 			case '.png':
 			case '.jpg':
@@ -109,7 +113,7 @@ export class MediaService {
 		}
 	}
 
-	async addMedia(path: string, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
+	async addMedia(path: string, fh: fs.promises.FileHandle, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
 		const resource = this.rsrcSvc.createResource(owner_user_id);
 
 		if (!resource)
@@ -121,6 +125,8 @@ export class MediaService {
 			resource_id: resource.resource_id,
 			source_resource_id: source_resource_id,
 			path,
+			size: (await fh.stat()).size,
+			mime_type: null,
 		};
 
 		const success = this.dbSvc.prepare(`
@@ -128,19 +134,23 @@ export class MediaService {
 		(
 			resource_id,
 			source_resource_id,
-			path
+			path,
+			size,
+			mime_type
 		)
 		VALUES
 		(
 			$resource_id,
 			$source_resource_id,
-			$path
+			$path,
+			$size,
+			$mime_type
 		)
 		`).run(media).changes > 0;
 
 		if (success)
 		{
-			this.mediaParser(media);
+			await this.mediaParser(media);
 			
 			return this.getMediaByID(media.resource_id);
 		}

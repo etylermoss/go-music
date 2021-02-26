@@ -193,7 +193,10 @@
 <row name="end_timestamp" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="changes" null="1" autoincrement="0">
+<row name="changes_add" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="changes_remove" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
@@ -213,6 +216,12 @@
 <datatype>TEXT</datatype>
 <comment>UNIQUE</comment>
 </row>
+<row name="size" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+</row>
+<row name="mime_type" null="1" autoincrement="0">
+<datatype>TEXT</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>resource_id</part>
 </key>

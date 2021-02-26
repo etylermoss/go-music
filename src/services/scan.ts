@@ -1,7 +1,8 @@
 /* 3rd party imports */
 import fs from 'fs';
-import path from 'path';
+import { join, extname } from 'path';
 import { Service, Inject } from 'typedi';
+import { walkAsync } from 'walk-async-fd';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -13,6 +14,7 @@ import { MediaService } from '@/services/media';
 import { SourceSQL } from '@/services/source';
 
 /* 1st party imports */
+import { generateRandomID } from '@/common';
 import { extension_whitelist } from '@/services/media';
 
 export interface ScanSQL {
@@ -20,59 +22,11 @@ export interface ScanSQL {
 	source_resource_id: string;
 	start_timestamp: number;
 	end_timestamp: number | null;
-	changes: number | null;
+	changes_add: number | null;
+	changes_remove: number | null;
 }
 
-interface FlatDirOpts {
-	skip_hidden?: boolean;
-	extension_whitelist?: string[];
-	access_constant?: number;
-}
-
-const flat_dir = (curr_path: string, options?: FlatDirOpts): string[] | null => {
-	let files: fs.Dirent[];
-	let acc: string[] = [];
-
-	try {
-		/* get array of dirents for current directory path */
-		files = fs.readdirSync(curr_path, {withFileTypes: true});
-	} catch {
-		/* could not access files in directory, e.g permissions, not a dir etc. */
-		return null;
-	}
-
-	for (const file of files)
-	{
-		const file_path = path.join(curr_path, file.name);
-		const file_ext = path.extname(file_path).toLowerCase();
-
-		/* ignore hidden files if specified */
-		if (options?.skip_hidden && file.name.charAt(0) === '.')
-			continue;
-
-		/* check can access file with specified permission level */
-		if (options?.access_constant)
-		{
-			try {
-				fs.accessSync(file_path, options?.access_constant);
-			} catch {
-				continue;
-			}
-		}
-
-		/* ignore non-whitelisted file extensions if specified */
-		if (file.isFile() && extension_whitelist && !extension_whitelist.includes(file_ext))
-			continue;
-
-		/* finally push file to accumulator / recurse into dir */
-		if (file.isFile())
-			acc.push(file_path);
-		else if (file.isDirectory())
-			acc = acc.concat(flat_dir(file_path, options) ?? []);
-	}
-
-	return acc;
-};
+export type UpdateScanSQL = Pick<ScanSQL, 'scan_id' | 'end_timestamp' | 'changes_add' | 'changes_remove'>;
 
 // TODO: Clean this service up
 // TODO: If scan timestamps mismatch, prune media first, then populate (i.e start new scan)
@@ -93,53 +47,91 @@ export class ScanService {
 
 	getScan(scan_id: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
-		SELECT scan_id source_resource_id start_timestamp end_timestamp changes
-		FROM Scan
-		WHERE scan_id = $scan_id
+		SELECT
+			*
+		FROM
+			Scan
+		WHERE
+			scan_id = $scan_id
 		`).get({scan_id}) as ScanSQL | undefined;
 
 		return scan ?? null;
 	}
 
-	getAllScans(source_resource_id: string): ScanSQL[] | null {
+	getAllScans(source_resource_id?: string): ScanSQL[] | null {
 		const scans = this.dbSvc.prepare(`
-		SELECT scan_id source_resource_id start_timestamp end_timestamp changes
-		FROM Scan
-		WHERE source_resource_id = $source_resource_id
-		`).all({source_resource_id}) as ScanSQL[];
+		SELECT
+			*
+		FROM
+			Scan
+		WHERE
+			(
+				($source_resource_id IS null)
+				OR (source_resource_id = $source_resource_id)
+			)
+		ORDER BY
+			start_timestamp DESC
+		`).all({source_resource_id: source_resource_id ?? null}) as ScanSQL[];
 
 		return scans.length > 0 ? scans : null;
 	}
 
-	getLatestScan(source_resource_id: string): ScanSQL | null {
+	getLatestScan(source_resource_id?: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
-		SELECT scan_id source_resource_id start_timestamp end_timestamp changes
-		FROM Scan
-		WHERE source_resource_id = $source_resource_id
-		ORDER BY start_timestamp DESC
-		LIMIT 1
-		`).get({source_resource_id}) as ScanSQL | undefined;
+		SELECT
+			*
+		FROM
+			Scan
+		WHERE
+			(
+				($source_resource_id IS null)
+				OR (source_resource_id = $source_resource_id)
+			)
+		ORDER BY
+			start_timestamp DESC
+		LIMIT
+			1
+		`).get({source_resource_id: source_resource_id ?? null}) as ScanSQL | undefined;
 
 		return scan ?? null;
 	}
 
-	scanUnderway(source_resource_id: string): boolean {
-		const latest_scan = this.getLatestScan(source_resource_id);
+	/**
+	 * Find if a scan is currently underway globally or for a specific
+	 * source.
+	 * @param source_resource_id Limit search to a specific source
+	 * @returns Source resource_id of the underway scan, or null if no scan underway
+	 */
+	scanUnderway(source_resource_id?: string): string | null {
+		if (source_resource_id)
+		{
+			const latest_scan = this.getLatestScan(source_resource_id);
 
-		if (!latest_scan || !latest_scan.end_timestamp)
-			return true;
-		
-		return false;
+			if (!latest_scan || !latest_scan.end_timestamp)
+				return null;
+
+			return source_resource_id;
+		}
+		else
+		{
+			const scans = this.getAllScans();
+			const activeScan = scans?.find(scan => !scan.end_timestamp) ?? null;
+
+			if (activeScan?.source_resource_id)
+				return activeScan.source_resource_id;
+
+			return null;
+		}
 	}
 
-	checkLatestScanValidity(source_resource_id: string): boolean {
+	checkLatestScanValidity(source_resource_id?: string): boolean {
 		const latest_scan = this.getLatestScan(source_resource_id);
 
 		if (!latest_scan)
 			return true;
 
 		const process_start: Date = new Date();
-		process_start.setTime(process_start.getTime() - process.uptime() * 1000);
+		process_start.setTime(process_start.getTime() - (process.uptime() * 1000));
 
 		if (!latest_scan.end_timestamp && latest_scan.start_timestamp < process_start.getTime() / 1000)
 			return false;
@@ -147,11 +139,59 @@ export class ScanService {
 		return true;
 	}
 
+	createScan(source_resource_id: string): ScanSQL | null {
+		const scan: ScanSQL = {
+			scan_id: generateRandomID(),
+			source_resource_id: source_resource_id,
+			start_timestamp: Date.now() / 1000,
+			end_timestamp: null,
+			changes_add: null,
+			changes_remove: null,
+		};
+
+		const success = this.dbSvc.prepare(`
+		INSERT INTO
+			Scan
+		VALUES
+		(
+			$scan_id,
+			$source_resource_id,
+			$start_timestamp,
+			$end_timestamp,
+			$changes_add,
+			$changes_remove
+		)
+		`).run(scan).changes > 0;
+
+		return success ? this.getScan(scan.scan_id) : null;
+	}
+
+	updateScan(updateScan: UpdateScanSQL): ScanSQL | null {
+		const scan = this.getScan(updateScan.scan_id);
+		let success = false;
+
+		if (scan)
+		{
+			success = this.dbSvc.prepare(`
+			UPDATE
+				Scan
+			SET
+				end_timestamp = $end_timestamp,
+				changes_add = $changes_add,
+				changes_remove = $changes_remove
+			WHERE
+				scan_id = $scan_id
+			`).run(updateScan).changes > 0;
+		}
+
+		return success ? this.getScan(updateScan.scan_id) : null;
+	}
+
 	/** Remove any deleted media files from the database.
 	 */
 	private pruneSource(source: SourceSQL): number {
 		const media = this.mediaSvc.getAllMedia(source.resource_id);
-		let prune_count = 0;
+		let counter = 0;
 
 		media.forEach(media_item => {
 			let stat: fs.Stats;
@@ -166,32 +206,45 @@ export class ScanService {
 			} catch {
 				/* can't access file / doesn't exist */
 				this.mediaSvc.removeMedia(media_item.resource_id);
-				prune_count++;
+				counter++;
 			}
 		});
 
-		return prune_count;
+		return counter;
 	}
 
-	/** Add any new media files from the source directory, returns success.
-	 *  New media files are owned by the owner of the source.
+	// TODO: reformat and add all comments to below standard
+	
+	/**
+	 * Add new media files contained within the source directory (recursive).
+	 * New media files are owned by the owner of the source.
+	 * @param source target source to populate (i.e. scan source.path)
+	 * @param extensionWhitelist supported file extensions
+	 * @returns number of new files added
 	 */
-	private async populateSource(source: SourceSQL, extension_whitelist: string[]): Promise<boolean> {
-		const files = flat_dir(source.path, {
-			skip_hidden: true,
-			extension_whitelist,
-			access_constant: fs.constants.R_OK,
-		});
+	private async populateSource(source: SourceSQL, extensionWhitelist: string[]): Promise<number | null> {
 		const source_resource = this.rsrcSvc.getResourceByID(source.resource_id)!;
+		let counter = 0;
+		
+		try {
+			await walkAsync(source.path, async (fh, root, name) => {
+				const fullPath = join(root, name);
+				const validExt = extensionWhitelist.includes(extname(name).toLowerCase());
+				const foundMedia = this.mediaSvc.getMediaByPath(fullPath);
 
-		if (!files)
-			return false;
+				if (validExt && !foundMedia)
+				{
+					const media = await this.mediaSvc.addMedia(fullPath, fh, source_resource.owner_user_id, source.resource_id);
+					if (media)
+						counter++;
+				}
+			}, {skipHidden: true});
+		} catch (err) {
+			// TODO: log
+			return null;
+		}
 
-		for (const file of files)
-			if (!this.mediaSvc.getMediaByPath(file))
-				await this.mediaSvc.addMedia(file, source_resource.owner_user_id, source.resource_id);
-
-		return true;
+		return counter;
 	}
 	
 	// TODO: Use inotify to watch for deleted files and run at least
@@ -200,15 +253,20 @@ export class ScanService {
 	/** Scans for media files associated with the source, returns false
 	 *  if the source directory cannot be opened & read, else true.
 	 */
-	async scanSource(source_resource_id: string): Promise<boolean> {
+	async scanSource(source_resource_id: string): Promise<ScanSQL | null> {
 		const source = this.srcSvc.getSourceByID(source_resource_id);
+		if (!source) return null;
+		const scan = this.createScan(source.resource_id);
+		if (!scan) return null;
 
-		if (!source)
-			return false;
-
-		this.pruneSource(source);
+		const prune = this.pruneSource(source);
 		const populate = await this.populateSource(source, extension_whitelist);
 
-		return populate;
+		return this.updateScan({
+			scan_id: scan.scan_id,
+			end_timestamp: Date.now() / 1000,
+			changes_remove: prune,
+			changes_add: populate,
+		});
 	}
 }
