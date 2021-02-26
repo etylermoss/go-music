@@ -3,5 +3,5 @@ import { randomBytes } from 'crypto';
 
 export const generateRandomID = (): string =>
 {
-	return randomBytes(8).toString('base64');
+	return randomBytes(8).toString('base64url');
 };

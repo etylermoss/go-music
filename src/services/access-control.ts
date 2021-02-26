@@ -1,11 +1,13 @@
 /* 3rd party imports */
-import { randomBytes } from 'crypto';
 import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
 import { AdminService } from '@/services/admin';
+
+/* 1st party imports */
+import { generateRandomID } from '@/common';
 
 export enum Operations { READ, WRITE, DELETE }
 export type OperationsStrings = keyof typeof Operations;
@@ -100,7 +102,7 @@ export class AccessControlService {
 	 *  name, then null is returned.
 	 */
 	createNewGroup(user_id: string, name: string, description: string): Group | null {
-		const group_id = randomBytes(8).toString('base64');
+		const group_id = generateRandomID();
 		const result = this.dbSvc.prepare(`
 		INSERT INTO Group
 		(

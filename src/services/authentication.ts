@@ -143,7 +143,7 @@ export class AuthenticationService {
 		VALUES ($user_id, $token)
 		`);
 		
-		const token = randomBytes(16).toString('base64');
+		const token = randomBytes(16).toString('base64url');
 		const tokenCount = sqlGetTokenCount.get({user_id});
 
 		if (tokenCount > this.config.maxClients) {
