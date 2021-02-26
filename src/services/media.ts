@@ -44,9 +44,7 @@ export class MediaService {
 	getMediaByID(resource_id: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
-			resource_id,
-			source_resource_id,
-			path
+			*
 		FROM
 			Media
 		WHERE
@@ -59,9 +57,7 @@ export class MediaService {
 	getMediaByPath(path: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
-			resource_id,
-			source_resource_id,
-			path
+			*
 		FROM
 			Media
 		WHERE
@@ -74,9 +70,7 @@ export class MediaService {
 	getAllMedia(source_resource_id?: string): MediaSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
-			resource_id,
-			source_resource_id,
-			path
+			*
 		FROM
 			Media
 		WHERE
@@ -87,7 +81,38 @@ export class MediaService {
 		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
 	}
 
-	// TODO: export extension whitelist from here
+	setMimeType(media_resource_id: string, metadataContainer: string): boolean {
+		let mimeType: string | null = null;
+
+		switch (metadataContainer) {
+			case 'FLAC':
+				mimeType = 'audio/flac'; break;
+			case 'WAVE':
+				mimeType = 'audio/wav'; break;
+			case 'MPEG':
+				mimeType = 'audio/mp3'; break;
+			case 'Ogg':
+				mimeType = 'audio/ogg'; break;
+			case 'M4A/mp42/isom':
+				mimeType = 'audio/mp4'; break;
+		}
+		// TODO: Log if none
+
+		if (mimeType !== null)
+		{
+			return this.dbSvc.prepare(`
+			UPDATE
+				Media
+			SET
+				mime_type = ?
+			WHERE
+				resource_id = ?
+			`).run(mimeType, media_resource_id).changes === 1;
+		}
+
+		return false;
+	}
+
 	async mediaParser({path, resource_id}: MediaSQL): Promise<void> {
 		const fileExt = extname(path).toLowerCase();
 

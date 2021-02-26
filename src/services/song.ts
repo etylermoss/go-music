@@ -83,7 +83,10 @@ export class SongService {
 			return null;
 		}
 
-		metadata; // not used yet
+		/* add mimeType to Media object */
+		const container = metadata?.format?.container;
+		if (!(container && this.mediaSvc.setMimeType(media_resource_id, container)))
+			this.removeSong(media_resource_id);
 
 		return this.getSongByID(media_resource_id);
 	}

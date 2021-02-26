@@ -20,13 +20,13 @@ mediaAPIRouter.get('/:resource_id', (req, res) => {
 	if (level && level >= Operations.READ)
 	{
 		/* serve file */
-		const file = mediaSvc.getMediaByID(req.params.resource_id)!;
-		res.setHeader('content-type', 'audio/unknown'); // TODO: audio type should be in database
-		res.sendFile(file.path);
+		const media = mediaSvc.getMediaByID(req.params.resource_id)!;
+		res.setHeader('content-type', media.mime_type ?? 'audio/unknown');
+		res.sendFile(media.path);
 	}
 	else
 	{
 		/* forbidden */
-		res.status(403).send('You are not permitted to access this file (or it may not exist).');
+		res.status(403).send('You cannot access this file.');
 	}
 });
