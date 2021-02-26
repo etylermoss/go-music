@@ -22,9 +22,8 @@ export interface MediaSQL {
  */
 export const extension_whitelist =
 [
-	'.mp3', '.opus', '.ogg', '.wav',
-	'.flac', '.m4a', '.aac', '.png',
-	'.jpg', '.jpeg', '.bmp', '.gif',
+	'.mp3', '.opus', '.ogg', '.wav', '.flac', '.m4a',
+	'.png', '.jpg', '.jpeg', '.bmp', '.gif',
 ];
 
 @Service('media.service')
@@ -100,7 +99,6 @@ export class MediaService {
 			case '.wav':
 			case '.flac':
 			case '.m4a':
-			case '.aac':
 				await this.songSvc.addSong(resource_id); // TODO: assign to variable so can return it from this function
 				break;
 			case '.png':
