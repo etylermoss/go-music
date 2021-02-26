@@ -9,8 +9,8 @@ import { UserService } from '@/services/user';
 import { generateRandomID } from '@/common';
 
 export interface ResourceSQL {
-	resource_id: string;
-	owner_user_id: string;
+	resourceID: string;
+	ownerUserID: string;
 }
 
 @Service('resource.service')
@@ -22,33 +22,43 @@ export class ResourceService {
 	@Inject('user.service')
 	private userSvc: UserService;
 	
-	getResourceByID(resource_id: string): ResourceSQL | null {
+	getResourceByID(resourceID: string): ResourceSQL | null {
 		const resource = this.dbSvc.prepare(`
 		SELECT 
-			resource_id,
-			owner_user_id
-		FROM Resource
-		WHERE resource_id = $resource_id
-		`).get({resource_id}) as ResourceSQL | undefined;
+			resourceID,
+			ownerUserID
+		FROM
+			Resource
+		WHERE
+			resourceID = ?
+		`).get(resourceID) as ResourceSQL | undefined;
 
 		return resource ?? null;
 	}
 
-	/** Create a new resource. Returns null if the owner user_id does
+	/** Create a new resource. Returns null if the owner userID does
 	 *  not exist.
 	 */
-	createResource(owner_user_id: string): ResourceSQL | null {
-		if (!this.userSvc.getUserByID(owner_user_id))
+	createResource(ownerUserID: string): ResourceSQL | null {
+		if (!this.userSvc.getUserByID(ownerUserID))
 			return null;
 
 		const resource: ResourceSQL = {
-			resource_id: generateRandomID(),
-			owner_user_id,
+			resourceID: generateRandomID(),
+			ownerUserID,
 		};
 
 		this.dbSvc.prepare(`
-		INSERT INTO Resource (resource_id, owner_user_id)
-		VALUES ($resource_id, $owner_user_id)
+		INSERT INTO Resource
+		(
+			resourceID,
+			ownerUserID
+		)
+		VALUES
+		(
+			$resourceID,
+			$ownerUserID
+		)
 		`).run(resource);
 
 		return resource;
@@ -58,10 +68,12 @@ export class ResourceService {
 	/** Remove a resource, returns success.
 	 *  Associated resources are removed.
 	 */
-	removeResource(resource_id: string): boolean {
+	removeResource(resourceID: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM Resource
-		WHERE resource_id = $resource_id
-		`).run({resource_id}).changes > 0;
+		DELETE FROM
+			Resource
+		WHERE
+			resourceID = ?
+		`).run(resourceID).changes > 0;
 	}
 }

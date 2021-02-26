@@ -15,10 +15,10 @@ import { AdminService } from '@/services/admin';
 export const IsAdmin = (): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({context}, next) => {
 		const adminSvc: AdminService = Container.get('admin.service');
-		const user_id = context.user_id;
+		const userID = context.userID;
 
-		if (user_id)
-			return adminSvc.isUserAdmin(user_id) ? next() : null;
+		if (userID)
+			return adminSvc.isUserAdmin(userID) ? next() : null;
 		else
 			return null;
 	});

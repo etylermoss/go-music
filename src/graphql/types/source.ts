@@ -7,7 +7,7 @@ import { ScanGQL } from '@/graphql/types/scan';
 @ObjectType()
 export class SourceGQL {
 	@Field(_type => ID)
-	resource_id: string;
+	resourceID: string;
 
 	@Field()
     name: string;
@@ -19,5 +19,5 @@ export class SourceGQL {
     scans: ScanGQL[];
 
     @Field()
-    scan_underway: boolean;
+    scanUnderway: boolean;
 }

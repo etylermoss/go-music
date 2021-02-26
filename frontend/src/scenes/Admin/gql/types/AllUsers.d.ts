@@ -4,26 +4,26 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: IsSignedIn
+// GraphQL query operation: AllUsers
 // ====================================================
 
-export interface IsSignedIn_isSignedIn_details {
+export interface AllUsers_users_details {
   __typename: "UserDetailsGQL";
   email: string;
   realName: string;
 }
 
-export interface IsSignedIn_isSignedIn {
+export interface AllUsers_users {
   __typename: "UserGQL";
   userID: string;
   username: string;
   adminPriority: number | null;
-  details: IsSignedIn_isSignedIn_details | null;
+  details: AllUsers_users_details | null;
 }
 
-export interface IsSignedIn {
+export interface AllUsers {
   /**
-   * Check whether the client is signed in, ensures theauthToken cookie (httpOnly) is present in the database andassociated with a user.
+   * Query all users, must be an admin.
    */
-  isSignedIn: IsSignedIn_isSignedIn | null;
+  users: AllUsers_users[] | null;
 }

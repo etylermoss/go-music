@@ -4,12 +4,12 @@ import gql from 'graphql-tag';
 export default gql`
 mutation IsSignedIn {
 	isSignedIn {
-		user_id
+		userID
 		username
 		adminPriority
 		details {
 			email
-			real_name
+			realName
 		}
 	}
 }

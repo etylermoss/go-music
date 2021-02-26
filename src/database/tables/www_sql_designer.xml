@@ -11,38 +11,38 @@
 		<type label="None" default="" length="0" sql="NONE" quote="" color="rgb(200,255,200)"/>
 	</group>
 </datatypes><table x="100" y="100" name="User">
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
 <row name="username" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
 <key type="PRIMARY" name="">
-<part>user_id</part>
+<part>userID</part>
 </key>
 <key type="UNIQUE" name="">
 <part>username</part>
 </key>
 </table>
 <table x="300" y="100" name="UserDetails">
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <row name="email" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
-<row name="real_name" null="0" autoincrement="0">
+<row name="realName" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
 <key type="PRIMARY" name="">
-<part>user_id</part>
+<part>userID</part>
 </key>
 </table>
 <table x="100" y="300" name="UserPassword">
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <row name="salt" null="0" autoincrement="0">
 <datatype>NONE</datatype>
@@ -53,7 +53,7 @@
 <comment>BLOB</comment>
 </row>
 <key type="PRIMARY" name="">
-<part>user_id</part>
+<part>userID</part>
 </key>
 <key type="UNIQUE" name="">
 <part>salt</part>
@@ -64,15 +64,15 @@
 <row name="_rowid" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <row name="token" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 <comment>UNIQUE</comment>
 </row>
-<row name="creation_time" null="0" autoincrement="0">
+<row name="creationTime" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>strftime('%s', 'now')</default></row>
 <key type="PRIMARY" name="">
@@ -83,24 +83,24 @@
 </key>
 </table>
 <table x="300" y="500" name="Resource">
-<row name="resource_id" null="0" autoincrement="0">
+<row name="resourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
-<row name="owner_user_id" null="0" autoincrement="0">
+<row name="ownerUserID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <key type="PRIMARY" name="">
-<part>resource_id</part>
+<part>resourceID</part>
 </key>
 </table>
 <table x="600" y="100" name="Group">
-<row name="group_id" null="0" autoincrement="0">
+<row name="groupID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 </row>
-<row name="owner_user_id" null="0" autoincrement="0">
+<row name="ownerUserID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <row name="name" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
@@ -109,59 +109,59 @@
 <datatype>TEXT</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>group_id</part>
+<part>groupID</part>
 </key>
 <key type="UNIQUE" name="">
 <part>name</part>
 </key>
 </table>
 <table x="600" y="300" name="UserGroup">
-<row name="group_id" null="0" autoincrement="0">
+<row name="groupID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Group" row="group_id" />
+<relation table="Group" row="groupID" />
 </row>
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <key type="PRIMARY" name="">
-<part>group_id</part>
+<part>groupID</part>
 </key>
 <comment>Defines what groups a user belongs to.</comment>
 </table>
 <table x="600" y="400" name="ResourceGroup">
-<row name="group_id" null="0" autoincrement="0">
+<row name="groupID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Group" row="group_id" />
+<relation table="Group" row="groupID" />
 </row>
-<row name="resource_id" null="0" autoincrement="0">
+<row name="resourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Resource" row="resource_id" />
+<relation table="Resource" row="resourceID" />
 </row>
-<row name="allowed_operations" null="0" autoincrement="0">
+<row name="allowedOperations" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
 <key type="PRIMARY" name="">
-<part>group_id</part>
+<part>groupID</part>
 </key>
 <comment>Defines what operations a specific group is allowed to perform on a resource.</comment>
 </table>
 <table x="100" y="500" name="AdminUser">
-<row name="user_id" null="0" autoincrement="0">
+<row name="userID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="User" row="user_id" />
+<relation table="User" row="userID" />
 </row>
 <row name="priority" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
 <key type="PRIMARY" name="">
-<part>user_id</part>
+<part>userID</part>
 </key>
 </table>
 <table x="900" y="100" name="Source">
-<row name="resource_id" null="0" autoincrement="0">
+<row name="resourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Resource" row="resource_id" />
+<relation table="Resource" row="resourceID" />
 </row>
 <row name="name" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
@@ -172,7 +172,7 @@
 <comment>UNIQUE</comment>
 </row>
 <key type="PRIMARY" name="">
-<part>resource_id</part>
+<part>resourceID</part>
 </key>
 <key type="UNIQUE" name="">
 <part>name</part>
@@ -180,37 +180,37 @@
 </key>
 </table>
 <table x="1100" y="100" name="Scan">
-<row name="scan_id" null="0" autoincrement="0">
+<row name="scanID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 <default>'NULL'</default></row>
-<row name="source_resource_id" null="0" autoincrement="0">
+<row name="sourceResourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Source" row="resource_id" />
+<relation table="Source" row="resourceID" />
 </row>
-<row name="start_timestamp" null="0" autoincrement="0">
+<row name="startTime" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
-<row name="end_timestamp" null="1" autoincrement="0">
+<row name="endTime" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="changes_add" null="1" autoincrement="0">
+<row name="changesAdd" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
-<row name="changes_remove" null="1" autoincrement="0">
+<row name="changesRemove" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>scan_id</part>
+<part>scanID</part>
 </key>
 </table>
 <table x="900" y="300" name="Media">
-<row name="resource_id" null="0" autoincrement="0">
+<row name="resourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Resource" row="resource_id" />
+<relation table="Resource" row="resourceID" />
 </row>
-<row name="source_resource_id" null="0" autoincrement="0">
+<row name="sourceResourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Source" row="resource_id" />
+<relation table="Source" row="resourceID" />
 </row>
 <row name="path" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
@@ -219,29 +219,29 @@
 <row name="size" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
-<row name="mime_type" null="1" autoincrement="0">
+<row name="mimeType" null="1" autoincrement="0">
 <datatype>TEXT</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
-<part>resource_id</part>
+<part>resourceID</part>
 </key>
 </table>
 <table x="1100" y="300" name="Song">
-<row name="media_resource_id" null="0" autoincrement="0">
+<row name="mediaResourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Media" row="resource_id" />
+<relation table="Media" row="resourceID" />
 </row>
 <key type="PRIMARY" name="">
-<part>media_resource_id</part>
+<part>mediaResourceID</part>
 </key>
 </table>
 <table x="1100" y="500" name="Artwork">
-<row name="media_resource_id" null="0" autoincrement="0">
+<row name="mediaResourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
-<relation table="Media" row="resource_id" />
+<relation table="Media" row="resourceID" />
 </row>
 <key type="PRIMARY" name="">
-<part>media_resource_id</part>
+<part>mediaResourceID</part>
 </key>
 </table>
 </sql>

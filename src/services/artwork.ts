@@ -6,7 +6,7 @@ import { DatabaseService } from '@/database';
 import { MediaService } from '@/services/media';
 
 export interface ArtworkSQL {
-	media_resource_id: string;
+	mediaResourceID: string;
 }
 
 @Service('artwork.service')
@@ -20,53 +20,53 @@ export class ArtworkService {
 		return Container.get('media.service');
 	}
 
-	getArtworkByID(media_resource_id: string): ArtworkSQL | null {
+	getArtworkByID(mediaResourceID: string): ArtworkSQL | null {
 		const artwork = this.dbSvc.prepare(`
 		SELECT
-			media_resource_id
+			mediaResourceID
 		FROM
 			Artwork
 		WHERE
-			media_resource_id = $media_resource_id
-		`).get({media_resource_id}) as ArtworkSQL | undefined;
+			mediaResourceID = $mediaResourceID
+		`).get({mediaResourceID}) as ArtworkSQL | undefined;
 
 		return artwork ?? null;
 	}
 
-	getAllArtwork(source_resource_id?: string): ArtworkSQL[] {
+	getAllArtwork(sourceResourceID?: string): ArtworkSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
-			Artwork.media_resource_id,
+			Artwork.mediaResourceID,
 		FROM
 			Artwork
 		INNER JOIN
 			Media
 		ON
-			Media.resource_id = Artwork.media_resource_id
+			Media.resourceID = Artwork.mediaResourceID
 		WHERE
 			(
-				($source_resource_id IS null)
-				OR (Media.source_resource_id = $source_resource_id)
+				($sourceResourceID IS null)
+				OR (Media.sourceResourceID = $sourceResourceID)
 			)
-		`).all({source_resource_id: source_resource_id ?? null}) as ArtworkSQL[];
+		`).all({sourceResourceID: sourceResourceID ?? null}) as ArtworkSQL[];
 	}
 
-	addArtwork(media_resource_id: string): ArtworkSQL | null {
+	addArtwork(mediaResourceID: string): ArtworkSQL | null {
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Artwork
 		(
-			media_resource_id
+			mediaResourceID
 		)
 		VALUES
 		(
-			$media_resource_id
+			$mediaResourceID
 		)
-		`).run({media_resource_id}).changes > 0;
+		`).run({mediaResourceID}).changes > 0;
 
-		return success ? this.getArtworkByID(media_resource_id) : null;
+		return success ? this.getArtworkByID(mediaResourceID) : null;
 	}
 
-	removeArtwork(media_resource_id: string): boolean {
-		return this.mediaSvc.removeMedia(media_resource_id);
+	removeArtwork(mediaResourceID: string): boolean {
+		return this.mediaSvc.removeMedia(mediaResourceID);
 	}
 }

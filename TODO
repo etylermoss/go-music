@@ -1,5 +1,4 @@
 *) Cleanup
-    *) Remove all snake case symbols
     *) Add JSDoc comments to service and resolver methods
     *) Inject services using constructor not @Inject
     *) Move createOrUpdateUserDetails to UserService
@@ -13,7 +12,7 @@
     *) Use unsafe and strip indent functions and print SQL
        https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
 *) Parse metadata
-    *) Use switch statement, select mime_type based on metadata container,
+    *) Use switch statement, select mimeType based on metadata container,
        insert into database Media tables
     *) Add inherant metadata to tables
        (title, year, track #, disk #, format)

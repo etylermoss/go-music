@@ -3,7 +3,7 @@ import { createContext } from 'react';
 import { observable, action, computed } from 'mobx';
 
 interface User {
-	user_id: string;
+	userID: string;
 	username: string;
 	adminPriority: number | null;
 	details: UserDetails | null;
@@ -11,7 +11,7 @@ interface User {
 
 interface UserDetails {
 	email: string;
-	real_name: string;
+	realName: string;
 }
 
 class Store {

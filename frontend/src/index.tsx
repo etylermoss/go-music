@@ -48,6 +48,7 @@ const Root = (): JSX.Element => {
 		{client: client as ApolloClient<object>},
 	);
 	
+	// TODO: below happens after routing, so scenes may think user is not logged in when they are
 	useEffect(() => {
 		isSignedIn().then(result => {
 			if (result.data?.isSignedIn) {
@@ -71,7 +72,7 @@ const Root = (): JSX.Element => {
 							<Login/>
 						</Route>
 						<Route path="/dashboard">
-							<Dashboard/>
+							<Dashboard url={url}/>
 						</Route>
 						<Route path="/admin">
 							<Admin/>

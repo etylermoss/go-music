@@ -12,12 +12,12 @@ import { SignUpInput } from "./../../../../../globalTypes";
 export interface SignUp_signUp_details {
   __typename: "UserDetailsGQL";
   email: string;
-  real_name: string;
+  realName: string;
 }
 
 export interface SignUp_signUp {
   __typename: "UserGQL";
-  user_id: string;
+  userID: string;
   username: string;
   adminPriority: number | null;
   details: SignUp_signUp_details | null;

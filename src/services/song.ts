@@ -7,7 +7,7 @@ import { DatabaseService } from '@/database';
 import { MediaService } from '@/services/media';
 
 export interface SongSQL {
-	media_resource_id: string;
+	mediaResourceID: string;
 }
 
 @Service('song.service')
@@ -21,53 +21,53 @@ export class SongService {
 		return Container.get('media.service');
 	}
 
-	getSongByID(media_resource_id: string): SongSQL | null {
+	getSongByID(mediaResourceID: string): SongSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
-			media_resource_id
+			mediaResourceID
 		FROM
 			Song
 		WHERE
-			media_resource_id = $media_resource_id
-		`).get({media_resource_id}) as SongSQL | undefined;
+			mediaResourceID = $mediaResourceID
+		`).get({mediaResourceID}) as SongSQL | undefined;
 
 		return media ?? null;
 	}
 
-	getAllSongs(source_resource_id?: string): SongSQL[] {
+	getAllSongs(sourceResourceID?: string): SongSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
-			Song.media_resource_id
+			Song.mediaResourceID
 		FROM
 			Song
 		INNER JOIN
 			Media
 		ON
-			Media.resource_id = Song.media_resource_id
+			Media.resourceID = Song.mediaResourceID
 		WHERE
 			(
-				($source_resource_id IS null)
-				OR (Media.source_resource_id = $source_resource_id)
+				($sourceResourceID IS null)
+				OR (Media.sourceResourceID = $sourceResourceID)
 			)
-		`).all({source_resource_id: source_resource_id ?? null}) as SongSQL[];
+		`).all({sourceResourceID: sourceResourceID ?? null}) as SongSQL[];
 	}
 
-	async addSong(media_resource_id: string): Promise<SongSQL | null> {
+	async addSong(mediaResourceID: string): Promise<SongSQL | null> {
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Song
 		(
-			media_resource_id
+			mediaResourceID
 		)
 		VALUES
 		(
-			$media_resource_id
+			$mediaResourceID
 		)
-		`).run({media_resource_id}).changes > 0;
+		`).run({mediaResourceID}).changes > 0;
 
 		if (!success)
 			return null;
 
-		const media = this.mediaSvc.getMediaByID(media_resource_id)!;
+		const media = this.mediaSvc.getMediaByID(mediaResourceID)!;
 		const parseFileOpts: mm.IOptions = {
 			duration: true,
 		};
@@ -79,19 +79,19 @@ export class SongService {
 		} catch {
 			/* could not access or parse file */
 			// TODO: Log here
-			this.removeSong(media_resource_id);
+			this.removeSong(mediaResourceID);
 			return null;
 		}
 
 		/* add mimeType to Media object */
 		const container = metadata?.format?.container;
-		if (!(container && this.mediaSvc.setMimeType(media_resource_id, container)))
-			this.removeSong(media_resource_id);
+		if (!(container && this.mediaSvc.setMimeType(mediaResourceID, container)))
+			this.removeSong(mediaResourceID);
 
-		return this.getSongByID(media_resource_id);
+		return this.getSongByID(mediaResourceID);
 	}
 
-	removeSong(media_resource_id: string): boolean {
-		return this.mediaSvc.removeMedia(media_resource_id);
+	removeSong(mediaResourceID: string): boolean {
+		return this.mediaSvc.removeMedia(mediaResourceID);
 	}
 }

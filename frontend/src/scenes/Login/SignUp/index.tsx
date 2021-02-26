@@ -16,7 +16,7 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 	const history = useHistory();
 
 	const [user, setUser] = useState({
-		real_name: '',
+		realName: '',
 		username: '',
 		password: '',
 		email: '',
@@ -36,7 +36,7 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 				username: user.username,
 				password: user.password,
 				details: {
-					real_name: user.real_name,
+					realName: user.realName,
 					email: user.email,
 				},
 			},
@@ -56,8 +56,8 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 			<>
 				<h2>Register</h2>
 				<form onSubmit={submit}>
-					<input name="real_name" type="text" placeholder="Your name"
-						value={user.real_name}
+					<input name="realName" type="text" placeholder="Your name"
+						value={user.realName}
 						onChange={evt => updateUser(evt)}
 					/>
 					<p>

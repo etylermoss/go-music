@@ -5,14 +5,14 @@ import { Service, Inject } from 'typedi';
 import { DatabaseService } from '@/database';
 
 export interface UserSQL {
-	user_id: string;
+	userID: string;
     username: string;
 }
 
 export interface UserDetailsSQL {
-	user_id: string;
+	userID: string;
 	email: string;
-	real_name: string;
+	realName: string;
 }
 
 @Service('user.service')
@@ -21,59 +21,72 @@ export class UserService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	/** Retrieves a users basic data (user_id, username), searching for
-	 *  them by user_id.
+	/** Retrieves a users basic data, searching for
+	 *  them by userID.
 	 */
-	getUserByID(user_id: string): UserSQL | null {
+	getUserByID(userID: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
-		SELECT user_id, username
-		FROM User
-		WHERE user_id = $user_id
-		`).get({user_id}) as UserSQL | undefined;
+		SELECT
+			*
+		FROM
+			User
+		WHERE
+			userID = ?
+		`).get(userID) as UserSQL | undefined;
 
 		return user ?? null;
 	}
 
-	/** Retrieves a users basic data (user_id, username), searching for
+	/** Retrieves a users basic data, searching for
 	 *  them by username.
 	 */
 	getUserByUsername(username: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
-		SELECT user_id, username
-		FROM User
-		WHERE username = $username
-		`).get({username}) as UserSQL | undefined;
+		SELECT
+			*
+		FROM
+			User
+		WHERE
+			username = ?
+		`).get(username) as UserSQL | undefined;
 
 		return user ?? null;
 	}
 	
 	/** Retrives a given user's personal information.
 	 */
-	getUserDetails(user_id: string): UserDetailsSQL | null {
+	getUserDetails(userID: string): UserDetailsSQL | null {
 		const details = this.dbSvc.prepare(`
-		SELECT user_id, email, real_name
-		FROM UserDetails
-		WHERE user_id = $user_id
-		`).get({user_id}) as UserDetailsSQL | undefined;
+		SELECT
+			*
+		FROM
+			UserDetails
+		WHERE
+			userID = ?
+		`).get(userID) as UserDetailsSQL | undefined;
 
 		return details ?? null;
 	}
 	
-	/** Retrieves all users (user_id and username) from the database.
+	/** Retrieves all users from the database.
 	 */
 	getAllUsers(): UserSQL[] {
 		return this.dbSvc.prepare(`
-		SELECT user_id, username
-		FROM User
+		SELECT
+			*
+		FROM
+			User
 		`).all() as UserSQL[];
 	}
 
-	/** Deletes a user, searching by the given user_id, returns success.
+	/** Deletes a user, searching by the given userID, returns success.
 	 */
-	deleteUser(user_id: string): boolean {
+	deleteUser(userID: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM User
-		WHERE user_id = $user_id
-		`).run({user_id}).changes > 0 ? true : false;
+		DELETE FROM
+			User
+		WHERE
+			userID = ?
+		`).run(userID).changes > 0;
 	}
 }

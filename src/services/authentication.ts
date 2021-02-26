@@ -45,87 +45,108 @@ export class AuthenticationService {
 	 *  Returns the user, including their personal details (email etc).
 	 */
 	createUser({ username, password, details}: SignUpInput): UserSQL | null {
-		const user_id = generateRandomID();
+		const userID = generateRandomID();
 		const createUserChanges = this.dbSvc.prepare(`
-		INSERT INTO User (user_id, username)
-		VALUES ($user_id, $username)
-		`).run({ user_id, username }).changes;
+		INSERT INTO User
+		(
+			userID,
+			username
+		)
+		VALUES
+		(
+			$userID,
+			$username
+		)
+		`).run({ userID, username }).changes;
 
 		/* Ensure that the user was inserted into the database */
 		if (createUserChanges !== 1)
 			return null;
 
-		const user_details: UserDetailsSQL = {
-			user_id,
+		const userDetails: UserDetailsSQL = {
+			userID,
 			email: details.email,
-			real_name: details.real_name,
+			realName: details.realName,
 		};
 
-		this.createOrUpdateUserDetails(user_id, user_details);
-		this.updateUserPassword(user_id, password);
+		this.createOrUpdateUserDetails(userID, userDetails);
+		this.updateUserPassword(userID, password);
 
-		return this.userSvc.getUserByID(user_id);
+		return this.userSvc.getUserByID(userID);
 	}
 
 	/** Updates a users personal information (email etc.), returning
 	 *  success as a boolean.
 	 */
-	createOrUpdateUserDetails(user_id: string, details: UserDetailsSQL): boolean {
+	createOrUpdateUserDetails(userID: string, details: UserDetailsSQL): boolean {
 		return this.dbSvc.prepare(`
-		REPLACE INTO UserDetails (user_id, email, real_name)
-		VALUES ($user_id, $email, $real_name)
+		REPLACE INTO UserDetails (userID, email, realName)
+		VALUES ($userID, $email, $realName)
 		`).run({
-			user_id: user_id,
+			userID: userID,
 			email: details.email,
-			real_name: details.real_name,
+			realName: details.realName,
 		}).changes > 0;
 	}
 
 	/** Updates the users password in the database, creating it if it (and
 	 *  the salt) does not already exist. Returns success as a boolean.
 	 */
-	updateUserPassword(user_id: string, password: string): boolean {
-		const sqlCreatePasswordData = this.dbSvc.prepare(unsafe`
-		REPLACE INTO UserPassword (user_id, salt, hash)
-		VALUES ($user_id, $salt, $hash)
-		`);
+	updateUserPassword(userID: string, password: string): boolean {
 		const salt = randomBytes(16);
-		const hash = this.hashUserPassword(password, salt);
-		return sqlCreatePasswordData.run({
-			user_id,
+
+		return this.dbSvc.prepare(unsafe`
+		REPLACE INTO UserPassword
+		(
+			userID,
 			salt,
-			hash,
-		}).changes === 1 ? true : false;
+			hash
+		)
+		VALUES
+		(
+			$userID, 
+			$salt,
+			$hash
+		)
+		`).run({
+			userID,
+			salt,
+			hash: this.hashUserPassword(password, salt),
+		}).changes > 0;
 	}
 
-	/** Checks the supplied password against the supplied user_id.
+	/** Checks the supplied password against the supplied userID.
 	 */
-	comparePasswordToUser(user_id: string, password: string): boolean {
-		const passwordData = this.getUserPasswordData(user_id);
+	comparePasswordToUser(userID: string, password: string): boolean {
+		const passwordData = this.getUserPasswordData(userID);
 		if (passwordData && this.hashUserPassword(password, passwordData.salt).equals(passwordData.hash)) {
 			return true;
 		}
 		return false;
 	}
 
-	/** Retrieves the associated user_id's password data (salt and hash).
+	/** Retrieves the associated userID's password data (salt and hash).
 	 */
-	getUserPasswordData(user_id: string): PasswordData {
+	getUserPasswordData(userID: string): PasswordData {
 		return this.dbSvc.prepare(unsafe`
 		SELECT salt, hash
 		FROM UserPassword
-		WHERE user_id = $user_id
-		`).get({user_id});
+		WHERE userID = $userID
+		`).get({userID});
 	}
 
+	// TODO: reorder statements here?
 	/** Generates and returns a new 128 bit authToken, and removes
 	 *  the oldest token from the database if the user is at the limit.
 	 */
-	newAuthToken(user_id: string): string {
+	newAuthToken(userID: string): string {
 		const sqlGetTokenCount = this.dbSvc.prepare(`
-		SELECT COUNT(*)
-		FROM UserAuthToken
-		WHERE user_id = $user_id
+		SELECT
+			COUNT(*)
+		FROM
+			UserAuthToken
+		WHERE
+			userID = $userID
 		`);
 		const sqlDeleteOldestToken = this.dbSvc.prepare(`
 		DELETE FROM UserAuthToken
@@ -133,35 +154,43 @@ export class AuthenticationService {
 			(
 				SELECT rowid
 				FROM UserAuthToken
-				WHERE user_id = $user_id
-				ORDER BY creation_time ASC LIMIT 1
+				WHERE userID = $userID
+				ORDER BY creationTime ASC LIMIT 1
 			)
 		`);
 		const sqlInsertToken = this.dbSvc.prepare(`
-		INSERT INTO UserAuthToken (user_id, token)
-		VALUES ($user_id, $token)
+		INSERT INTO UserAuthToken
+		(
+			userID,
+			token
+		)
+		VALUES
+		(
+			$userID,
+			$token
+		)
 		`);
 		
 		const token = randomBytes(16).toString('base64url');
-		const tokenCount = sqlGetTokenCount.get({user_id});
+		const tokenCount = sqlGetTokenCount.get({userID});
 
 		if (tokenCount > this.config.maxClients) {
-			sqlDeleteOldestToken.run({user_id});
+			sqlDeleteOldestToken.run({userID});
 		}
 		
-		sqlInsertToken.run({user_id, token});
+		sqlInsertToken.run({userID, token});
 		return token;
 	}
 
 	/** Checks if the supplied authToken is in the database, returning the
-	 *  associated user_id.
+	 *  associated userID.
 	 */
 	checkAuthToken(token: string): string | null {
 		return this.dbSvc.prepare(`
-		SELECT user_id
+		SELECT userID
 		FROM UserAuthToken
 		WHERE token = $token
-		`).get({token})?.user_id ?? null;
+		`).get({token})?.userID ?? null;
 	}
 
 	/** Removes the authToken from the database, returning boolean success.
@@ -170,17 +199,17 @@ export class AuthenticationService {
 		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthToken
 		WHERE token = $token
-		`).run({token}).changes === 1 ? true : false;
+		`).run({token}).changes > 0;
 	}
 
 	/** Removes all authTokens from the database that are associated with
-	 *  the given user_id, returning boolean success.
+	 *  the given userID, returning boolean success.
 	 */
-	revokeAllAuthTokens(user_id: string): boolean {
+	revokeAllAuthTokens(userID: string): boolean {
 		return this.dbSvc.prepare(`
 		DELETE FROM UserAuthToken
-		WHERE user_id = $user_id
-		`).run({user_id}).changes > 0 ? true : false;
+		WHERE userID = $userID
+		`).run({userID}).changes > 0 ? true : false;
 	}
 
 	/** Takes a password and hashes it using scrypt with the given salt. */

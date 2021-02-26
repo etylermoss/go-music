@@ -4,13 +4,13 @@ import { SourceGQL } from '@/graphql/types/source';
 
 // BUG: https://github.com/Microsoft/TypeScript/issues/13995, must cast to any
 
-export const source_to_gql = <T extends SourceSQL | null>(source: T): T extends SourceSQL ? SourceGQL : null =>
+export const sourceToGQL = <T extends SourceSQL | null>(source: T): T extends SourceSQL ? SourceGQL : null =>
 {
 	return source ? {
-		resource_id: source.resource_id,
+		resourceID: source.resourceID,
 		name: source.name,
 		path: source.path,
 		scans: null,
-		scan_underway: null,
+		scanUnderway: null,
 	} as any : null;
 };

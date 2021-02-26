@@ -149,8 +149,8 @@ const main = async (): Promise<void> => {
 	/* Start listening for HTTP requests */
 	app.listen(config.port);
 
-	console.log(`Now running at http://localhost:${config.port}/`);
-	console.log(`GraphQL Endpoint at /${GlobalConfig.gqlPath}`);
+	console.log(`Now running at http://localhost:${config.port}`);
+	console.log(`GraphQL API at /${GlobalConfig.gqlPath}`);
 	console.log(`Media API at /${GlobalConfig.mediaPath}`);
 };
 

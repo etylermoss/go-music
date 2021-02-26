@@ -8,7 +8,7 @@ import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
 
 export interface SourceSQL {
-	resource_id: string;
+	resourceID: string;
 	name: string;
 	path: string;
 }
@@ -29,40 +29,39 @@ export class SourceService {
 	@Inject('resource.service')
 	private rsrcSvc: ResourceService;
 
-	/** Retrieves Source resource, searching for it by resource_id.
+	/** Retrieves Source resource, searching for it by resourceID.
 	 */
-	getSourceByID(resource_id: string): SourceSQL | null {
-		const source = this.dbSvc.prepare(`
-		SELECT resource_id, name, path
-		FROM Source
-		WHERE resource_id = $resource_id
-		`).get({resource_id}) as SourceSQL | undefined;
-
-		return source ?? null;
+	getSourceByID(resourceID: string): SourceSQL | null {
+		return this.dbSvc.prepare(`
+		SELECT
+			*
+		FROM
+			Source
+		WHERE
+			resourceID = ?
+		`).get(resourceID) as SourceSQL | undefined ?? null;
 	}
 
 	/** Retrieve all Sources.
 	 */
 	getAllSources(): SourceSQL[] {
-		const sources = this.dbSvc.prepare(`
-		SELECT resource_id, name, path
+		return this.dbSvc.prepare(`
+		SELECT resourceID, name, path
 		FROM Source
 		`).all() as SourceSQL[];
-
-		return sources;
 	}
 
 	/** Add a new source, returns the source if successful.
 	 *  Does not automatically scan.
 	 */
-	async addSource(name: string, path: string, owner_user_id: string): Promise<SourceSQL | null> {
+	async addSource(name: string, path: string, ownerUserID: string): Promise<SourceSQL | null> {
 		path = fs.realpathSync(path);
 
-		const existing_sources = this.getAllSources();
+		const sources = this.getAllSources();
 
-		for (const existing_source of existing_sources)
+		for (const source of sources)
 		{
-			if (arePathsRelated(path, existing_source.path))
+			if (arePathsRelated(path, source.path))
 				return null;
 		}
 
@@ -73,35 +72,39 @@ export class SourceService {
 			return null;
 		}
 
-		const resource = this.rsrcSvc.createResource(owner_user_id);
+		const resource = this.rsrcSvc.createResource(ownerUserID);
 
 		if (!resource)
 			return null;
 
-		const source: SourceSQL = {
-			resource_id: resource.resource_id,
-			name,
-			path,
-		};
-
 		const success = this.dbSvc.prepare(`
-		INSERT INTO Source (resource_id, name, path)
-		VALUES ($resource_id, $name, $path)
-		`).run(source).changes > 0;
+		INSERT INTO Source
+		(
+			resourceID,
+			name,
+			path
+		)
+		VALUES
+		(
+			$resourceID,
+			$name,
+			$path
+		)
+		`).run({resourceID: resource.resourceID, name, path}).changes > 0;
 
 		if (!success)
 		{
-			this.rsrcSvc.removeResource(resource.resource_id);
+			this.rsrcSvc.removeResource(resource.resourceID);
 			return null;
 		}
 		
-		return success ? this.getSourceByID(source.resource_id) : null;
+		return success ? this.getSourceByID(resource.resourceID) : null;
 	}
 
 	/** Remove a source, returns success.
 	 *  Also removes all resources associated with the source.
 	 */
-	removeSource(resource_id: string): boolean {
-		return this.rsrcSvc.removeResource(resource_id);
+	removeSource(resourceID: string): boolean {
+		return this.rsrcSvc.removeResource(resourceID);
 	}
 }

@@ -7,13 +7,13 @@ export class UserDetailsGQL {
 	email: string;
 
 	@Field()
-	real_name: string;
+	realName: string;
 }
 
 @ObjectType()
 export class UserGQL {
 	@Field(_type => ID)
-	user_id: string;
+	userID: string;
 
 	@Field()
 	username: string;

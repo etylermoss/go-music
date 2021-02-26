@@ -13,11 +13,11 @@ type AuthResponse {
 }
 
 type MediaGQL {
-  mime_type: String
+  mimeType: String
   path: String!
-  resource_id: ID!
+  resourceID: ID!
   size: Int!
-  source_resource_id: ID!
+  sourceResourceID: ID!
 }
 
 type Mutation {
@@ -27,7 +27,7 @@ type Mutation {
   addSource(data: AddSourceInput!): SourceGQL
 
   """Delete a user, returns success."""
-  deleteUser(user_id: String!): Boolean
+  deleteUser(userID: String!): Boolean
 
   """
   Check whether the client is signed in, ensures theauthToken cookie (httpOnly) is present in the database andassociated with a user.
@@ -37,10 +37,10 @@ type Mutation {
   """
   Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
   """
-  removeSource(resource_id: String!): Boolean!
+  removeSource(resourceID: String!): Boolean!
 
   """Scans the given source, returns success.Must be admin."""
-  scanSource(resource_id: String!): Boolean!
+  scanSource(resourceID: String!): Boolean!
 
   """
   Sign into the application, if the supplied credentialsare correct, the authToken httpOnly cookie is set.
@@ -68,15 +68,15 @@ type Mutation {
 
 type Query {
   """Query a user, must be logged in."""
-  song(resource_id: String!): SongGQL
+  song(resourceID: String!): SongGQL
 
   """
   Query all songs the user has access to.Can optionally limit results to songs in a specific source.
   """
-  songs(source_resource_id: String): [SongGQL!]
+  songs(sourceResourceID: String): [SongGQL!]
 
   """Query a source, must have permissions to access to it."""
-  source(resource_id: String!): SourceGQL
+  source(resourceID: String!): SourceGQL
 
   """
   Query all sources, returns those which the user haspermission to access.
@@ -84,18 +84,18 @@ type Query {
   sources: [SourceGQL!]
 
   """Query a user, must be logged in."""
-  user(user_id: String!): UserGQL
+  user(userID: String!): UserGQL
 
   """Query all users, must be an admin."""
   users: [UserGQL!]
 }
 
 type ScanGQL {
-  changes_add: Int
-  changes_remove: Int
-  end_timestamp: Timestamp
-  scan_id: ID!
-  start_timestamp: Timestamp!
+  changesAdd: Int
+  changesRemove: Int
+  endTime: Timestamp
+  scanID: ID!
+  startTime: Timestamp!
 }
 
 input SignInInput {
@@ -111,15 +111,15 @@ input SignUpInput {
 
 type SongGQL {
   media: MediaGQL!
-  media_resource_id: ID!
+  mediaResourceID: ID!
 }
 
 type SourceGQL {
   name: String!
   path: String!
-  resource_id: ID!
-  scan_underway: Boolean!
+  resourceID: ID!
   scans: [ScanGQL!]!
+  scanUnderway: Boolean!
 }
 
 """
@@ -129,17 +129,17 @@ scalar Timestamp
 
 type UserDetailsGQL {
   email: String!
-  real_name: String!
+  realName: String!
 }
 
 input UserDetailsInput {
   email: String!
-  real_name: String!
+  realName: String!
 }
 
 type UserGQL {
   adminPriority: Float
   details: UserDetailsGQL
-  user_id: ID!
+  userID: ID!
   username: String!
 }

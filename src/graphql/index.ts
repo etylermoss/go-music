@@ -42,7 +42,7 @@ export const launchGraphql = async (): Promise<ApolloServer | null> => {
 		},
 		context: (ctx: Context) => {
 			const authSvc: AuthenticationService = Container.get('authentication.service');
-			ctx.user_id = authSvc.checkAuthToken(ctx.req.cookies['authToken']);
+			ctx.userID = authSvc.checkAuthToken(ctx.req.cookies['authToken']);
 			return ctx;
 		},
 	};

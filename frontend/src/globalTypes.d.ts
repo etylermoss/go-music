@@ -7,6 +7,11 @@
 // START Enums and Input Objects
 //==============================================================
 
+export interface AddSourceInput {
+  name: string;
+  path: string;
+}
+
 export interface SignInInput {
   password: string;
   username: string;
@@ -20,7 +25,7 @@ export interface SignUpInput {
 
 export interface UserDetailsInput {
   email: string;
-  real_name: string;
+  realName: string;
 }
 
 //==============================================================

@@ -7,7 +7,7 @@ import { MediaGQL } from '@/graphql/types/media';
 @ObjectType()
 export class SongGQL {
     @Field(_type => ID)
-    media_resource_id: string;
+    mediaResourceID: string;
 
     @Field(_type => MediaGQL)
     media: MediaGQL;

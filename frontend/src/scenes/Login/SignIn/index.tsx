@@ -27,15 +27,14 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 
 	const [signIn] = useMutation<signInTypes.SignIn>(signInTag);
 
-	const submit = (event: React.FormEvent<HTMLFormElement>): void => {
+	const submit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
-		signIn({variables: { data: user }})
-			.then(({data}) => {
-				if (data?.signIn?.details) {
-					store.updateUser(data.signIn);
-					history.push('/dashboard');
-				}
-			});
+		const { data } = await signIn({variables: { data: user }});
+		if (data?.signIn?.details)
+		{
+			store.updateUser(data.signIn);
+			history.push('/dashboard');
+		}
 	};
 
 	return useObserver(() => {

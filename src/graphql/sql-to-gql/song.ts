@@ -5,10 +5,10 @@ import { SongGQL } from '@/graphql/types/song';
 // BUG: https://github.com/Microsoft/TypeScript/issues/13995, must cast to any
 
 // TODO: Do I need such a complex type here?
-export const song_to_gql = <T extends SongSQL | null>(song: T): T extends SongSQL ? SongGQL : null =>
+export const songToGQL = <T extends SongSQL | null>(song: T): T extends SongSQL ? SongGQL : null =>
 {
 	return song ? {
-		media_resource_id: song.media_resource_id,
+		mediaResourceID: song.mediaResourceID,
 		media: null,
 	} as any : null;
 };

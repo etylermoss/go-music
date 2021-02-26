@@ -9,19 +9,20 @@ import { MediaService } from '@/services/media';
 
 export const mediaAPIRouter = Router({caseSensitive: true});
 
-mediaAPIRouter.get('/:resource_id', (req, res) => {
+mediaAPIRouter.get('/:resourceID', (req, res) => {
 	const authSvc: AuthenticationService = Container.get('authentication.service');
 	const aclSvc: AccessControlService = Container.get('access-control.service');
 	const mediaSvc: MediaService = Container.get('media.service');
 
-	const user_id = authSvc.checkAuthToken(req.cookies['authToken']);
-	const level = aclSvc.getResourceAccessLevelForUser(user_id, req.params.resource_id);
+	const resourceID = req.params.resourceID;
+	const userID = authSvc.checkAuthToken(req.cookies['authToken']);
+	const level = aclSvc.getResourceAccessLevelForUser(userID, resourceID);
 
 	if (level && level >= Operations.READ)
 	{
 		/* serve file */
-		const media = mediaSvc.getMediaByID(req.params.resource_id)!;
-		res.setHeader('content-type', media.mime_type ?? 'audio/unknown');
+		const media = mediaSvc.getMediaByID(resourceID)!;
+		res.setHeader('content-type', media.mimeType ?? 'application/octet-stream');
 		res.sendFile(media.path);
 	}
 	else

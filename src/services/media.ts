@@ -10,17 +10,17 @@ import { SongService } from '@/services/song';
 import { ArtworkService } from '@/services/artwork';
 
 export interface MediaSQL {
-	resource_id: string;
-	source_resource_id: string;
+	resourceID: string;
+	sourceResourceID: string;
 	path: string;
 	size: number;
-	mime_type: string | null;
+	mimeType: string | null;
 }
 
 /** Extensions seen by the server, used when
  *  searching for music files / album art.
  */
-export const extension_whitelist =
+export const extensionWhitelist =
 [
 	'.mp3', '.opus', '.ogg', '.wav', '.flac', '.m4a',
 	'.png', '.jpg', '.jpeg', '.bmp', '.gif',
@@ -41,15 +41,15 @@ export class MediaService {
 	@Inject('artwork.service')
 	private artSvc: ArtworkService;
 
-	getMediaByID(resource_id: string): MediaSQL | null {
+	getMediaByID(resourceID: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
 			*
 		FROM
 			Media
 		WHERE
-			resource_id = $resource_id
-		`).get({resource_id}) as MediaSQL | undefined;
+			resourceID = $resourceID
+		`).get({resourceID}) as MediaSQL | undefined;
 
 		return media ?? null;
 	}
@@ -67,7 +67,7 @@ export class MediaService {
 		return media ?? null;
 	}
 
-	getAllMedia(source_resource_id?: string): MediaSQL[] {
+	getAllMedia(sourceResourceID?: string): MediaSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
 			*
@@ -75,13 +75,13 @@ export class MediaService {
 			Media
 		WHERE
 			(
-				($source_resource_id IS null)
-				OR (source_resource_id = $source_resource_id)
+				($sourceResourceID IS null)
+				OR (sourceResourceID = $sourceResourceID)
 			)
-		`).all({source_resource_id: source_resource_id ?? null}) as MediaSQL[];
+		`).all({sourceResourceID: sourceResourceID ?? null}) as MediaSQL[];
 	}
 
-	setMimeType(media_resource_id: string, metadataContainer: string): boolean {
+	setMimeType(mediaResourceID: string, metadataContainer: string): boolean {
 		let mimeType: string | null = null;
 
 		switch (metadataContainer) {
@@ -104,16 +104,16 @@ export class MediaService {
 			UPDATE
 				Media
 			SET
-				mime_type = ?
+				mimeType = ?
 			WHERE
-				resource_id = ?
-			`).run(mimeType, media_resource_id).changes === 1;
+				resourceID = ?
+			`).run(mimeType, mediaResourceID).changes > 0;
 		}
 
 		return false;
 	}
 
-	async mediaParser({path, resource_id}: MediaSQL): Promise<void> {
+	async mediaParser({path, resourceID}: MediaSQL): Promise<void> {
 		const fileExt = extname(path).toLowerCase();
 
 		// TODO: return song / artwork or success?
@@ -125,20 +125,20 @@ export class MediaService {
 			case '.wav':
 			case '.flac':
 			case '.m4a':
-				await this.songSvc.addSong(resource_id);
+				await this.songSvc.addSong(resourceID);
 				break;
 			case '.png':
 			case '.jpg':
 			case '.jpeg':
 			case '.bmp':
 			case '.gif':
-				await this.artSvc.addArtwork(resource_id);
+				await this.artSvc.addArtwork(resourceID);
 				break;
 		}
 	}
 
-	async addMedia(path: string, fh: fs.promises.FileHandle, owner_user_id: string, source_resource_id: string): Promise<MediaSQL | null> {
-		const resource = this.rsrcSvc.createResource(owner_user_id);
+	async addMedia(path: string, fh: fs.promises.FileHandle, ownerUserID: string, sourceResourceID: string): Promise<MediaSQL | null> {
+		const resource = this.rsrcSvc.createResource(ownerUserID);
 
 		if (!resource)
 		{
@@ -146,29 +146,29 @@ export class MediaService {
 		}
 
 		const media: MediaSQL = {
-			resource_id: resource.resource_id,
-			source_resource_id: source_resource_id,
+			resourceID: resource.resourceID,
+			sourceResourceID: sourceResourceID,
 			path,
 			size: (await fh.stat()).size,
-			mime_type: null,
+			mimeType: null,
 		};
 
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Media
 		(
-			resource_id,
-			source_resource_id,
+			resourceID,
+			sourceResourceID,
 			path,
 			size,
-			mime_type
+			mimeType
 		)
 		VALUES
 		(
-			$resource_id,
-			$source_resource_id,
+			$resourceID,
+			$sourceResourceID,
 			$path,
 			$size,
-			$mime_type
+			$mimeType
 		)
 		`).run(media).changes > 0;
 
@@ -176,13 +176,13 @@ export class MediaService {
 		{
 			await this.mediaParser(media);
 			
-			return this.getMediaByID(media.resource_id);
+			return this.getMediaByID(media.resourceID);
 		}
 			
 		return null;
 	}
 
-	removeMedia(resource_id: string): boolean {
-		return this.rsrcSvc.removeResource(resource_id);
+	removeMedia(resourceID: string): boolean {
+		return this.rsrcSvc.removeResource(resourceID);
 	}
 }

@@ -11,13 +11,13 @@ import { SignInInput } from "./../../../../../globalTypes";
 
 export interface SignIn_signIn_details {
   __typename: "UserDetailsGQL";
-  real_name: string;
+  realName: string;
   email: string;
 }
 
 export interface SignIn_signIn {
   __typename: "UserGQL";
-  user_id: string;
+  userID: string;
   username: string;
   adminPriority: number | null;
   details: SignIn_signIn_details | null;

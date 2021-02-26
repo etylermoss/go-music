@@ -15,18 +15,18 @@ import { SourceSQL } from '@/services/source';
 
 /* 1st party imports */
 import { generateRandomID } from '@/common';
-import { extension_whitelist } from '@/services/media';
+import { extensionWhitelist } from '@/services/media';
 
 export interface ScanSQL {
-	scan_id: string;
-	source_resource_id: string;
-	start_timestamp: number;
-	end_timestamp: number | null;
-	changes_add: number | null;
-	changes_remove: number | null;
+	scanID: string;
+	sourceResourceID: string;
+	startTime: number;
+	endTime: number | null;
+	changesAdd: number | null;
+	changesRemove: number | null;
 }
 
-export type UpdateScanSQL = Pick<ScanSQL, 'scan_id' | 'end_timestamp' | 'changes_add' | 'changes_remove'>;
+export type UpdateScanSQL = Pick<ScanSQL, 'scanID' | 'endTime' | 'changesAdd' | 'changesRemove'>;
 
 // TODO: convert checkLatestScanValidity to checkAllScanValidity, return array of
 //       invalid scans, and run scanSource on each
@@ -45,20 +45,20 @@ export class ScanService {
 	@Inject('media.service')
 	private mediaSvc: MediaService;
 
-	getScan(scan_id: string): ScanSQL | null {
+	getScan(scanID: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
 		SELECT
 			*
 		FROM
 			Scan
 		WHERE
-			scan_id = $scan_id
-		`).get({scan_id}) as ScanSQL | undefined;
+			scanID = $scanID
+		`).get({scanID}) as ScanSQL | undefined;
 
 		return scan ?? null;
 	}
 
-	getAllScans(source_resource_id?: string): ScanSQL[] | null {
+	getAllScans(sourceResourceID?: string): ScanSQL[] | null {
 		const scans = this.dbSvc.prepare(`
 		SELECT
 			*
@@ -66,17 +66,17 @@ export class ScanService {
 			Scan
 		WHERE
 			(
-				($source_resource_id IS null)
-				OR (source_resource_id = $source_resource_id)
+				($sourceResourceID IS null)
+				OR (sourceResourceID = $sourceResourceID)
 			)
 		ORDER BY
-			start_timestamp DESC
-		`).all({source_resource_id: source_resource_id ?? null}) as ScanSQL[];
+			startTime DESC
+		`).all({sourceResourceID: sourceResourceID ?? null}) as ScanSQL[];
 
 		return scans.length > 0 ? scans : null;
 	}
 
-	getLatestScan(source_resource_id?: string): ScanSQL | null {
+	getLatestScan(sourceResourceID?: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
 		SELECT
 			*
@@ -84,14 +84,14 @@ export class ScanService {
 			Scan
 		WHERE
 			(
-				($source_resource_id IS null)
-				OR (source_resource_id = $source_resource_id)
+				($sourceResourceID IS null)
+				OR (sourceResourceID = $sourceResourceID)
 			)
 		ORDER BY
-			start_timestamp DESC
+			startTime DESC
 		LIMIT
 			1
-		`).get({source_resource_id: source_resource_id ?? null}) as ScanSQL | undefined;
+		`).get({sourceResourceID: sourceResourceID ?? null}) as ScanSQL | undefined;
 
 		return scan ?? null;
 	}
@@ -99,54 +99,54 @@ export class ScanService {
 	/**
 	 * Find if a scan is currently underway globally or for a specific
 	 * source.
-	 * @param source_resource_id Limit search to a specific source
-	 * @returns Source resource_id of the underway scan, or null if no scan underway
+	 * @param sourceResourceID Limit search to a specific source
+	 * @returns Source resourceID of the underway scan, or null if no scan underway
 	 */
-	scanUnderway(source_resource_id?: string): string | null {
-		if (source_resource_id)
+	scanUnderway(sourceResourceID?: string): string | null {
+		if (sourceResourceID)
 		{
-			const latest_scan = this.getLatestScan(source_resource_id);
+			const latestScan = this.getLatestScan(sourceResourceID);
 
-			if (!latest_scan || !latest_scan.end_timestamp)
+			if (!latestScan || !latestScan.endTime)
 				return null;
 
-			return source_resource_id;
+			return sourceResourceID;
 		}
 		else
 		{
 			const scans = this.getAllScans();
-			const activeScan = scans?.find(scan => !scan.end_timestamp) ?? null;
+			const activeScan = scans?.find(scan => !scan.endTime) ?? null;
 
-			if (activeScan?.source_resource_id)
-				return activeScan.source_resource_id;
+			if (activeScan?.sourceResourceID)
+				return activeScan.sourceResourceID;
 
 			return null;
 		}
 	}
 
-	checkLatestScanValidity(source_resource_id?: string): boolean {
-		const latest_scan = this.getLatestScan(source_resource_id);
+	checkLatestScanValidity(sourceResourceID?: string): boolean {
+		const latestScan = this.getLatestScan(sourceResourceID);
 
-		if (!latest_scan)
+		if (!latestScan)
 			return true;
 
-		const process_start: Date = new Date();
-		process_start.setTime(process_start.getTime() - (process.uptime() * 1000));
+		const processStart: Date = new Date();
+		processStart.setTime(processStart.getTime() - (process.uptime() * 1000));
 
-		if (!latest_scan.end_timestamp && latest_scan.start_timestamp < process_start.getTime() / 1000)
+		if (!latestScan.endTime && latestScan.startTime < processStart.getTime() / 1000)
 			return false;
 
 		return true;
 	}
 
-	createScan(source_resource_id: string): ScanSQL | null {
+	createScan(sourceResourceID: string): ScanSQL | null {
 		const scan: ScanSQL = {
-			scan_id: generateRandomID(),
-			source_resource_id: source_resource_id,
-			start_timestamp: Date.now() / 1000,
-			end_timestamp: null,
-			changes_add: null,
-			changes_remove: null,
+			scanID: generateRandomID(),
+			sourceResourceID: sourceResourceID,
+			startTime: Date.now() / 1000,
+			endTime: null,
+			changesAdd: null,
+			changesRemove: null,
 		};
 
 		const success = this.dbSvc.prepare(`
@@ -154,20 +154,20 @@ export class ScanService {
 			Scan
 		VALUES
 		(
-			$scan_id,
-			$source_resource_id,
-			$start_timestamp,
-			$end_timestamp,
-			$changes_add,
-			$changes_remove
+			$scanID,
+			$sourceResourceID,
+			$startTime,
+			$endTime,
+			$changesAdd,
+			$changesRemove
 		)
 		`).run(scan).changes > 0;
 
-		return success ? this.getScan(scan.scan_id) : null;
+		return success ? this.getScan(scan.scanID) : null;
 	}
 
 	updateScan(updateScan: UpdateScanSQL): ScanSQL | null {
-		const scan = this.getScan(updateScan.scan_id);
+		const scan = this.getScan(updateScan.scanID);
 		let success = false;
 
 		if (scan)
@@ -176,36 +176,36 @@ export class ScanService {
 			UPDATE
 				Scan
 			SET
-				end_timestamp = $end_timestamp,
-				changes_add = $changes_add,
-				changes_remove = $changes_remove
+				endTime = $endTime,
+				changesAdd = $changesAdd,
+				changesRemove = $changesRemove
 			WHERE
-				scan_id = $scan_id
+				scanID = $scanID
 			`).run(updateScan).changes > 0;
 		}
 
-		return success ? this.getScan(updateScan.scan_id) : null;
+		return success ? this.getScan(updateScan.scanID) : null;
 	}
 
 	/** Remove any deleted media files from the database.
 	 */
 	private pruneSource(source: SourceSQL): number {
-		const media = this.mediaSvc.getAllMedia(source.resource_id);
+		const allMedia = this.mediaSvc.getAllMedia(source.resourceID);
 		let counter = 0;
 
-		media.forEach(media_item => {
+		allMedia.forEach(media => {
 			let stat: fs.Stats;
 
 			try {
 				/* check file exists and can access it */
-				fs.accessSync(media_item.path, fs.constants.R_OK);
+				fs.accessSync(media.path, fs.constants.R_OK);
 
-				stat = fs.statSync(media_item.path);
+				stat = fs.statSync(media.path);
 				if (!stat.isFile())
-					throw new Error(`Media not a valid file: ${media_item.path}`);
+					throw new Error(`Media not a valid file: ${media.path}`);
 			} catch {
 				/* can't access file / doesn't exist */
-				this.mediaSvc.removeMedia(media_item.resource_id);
+				this.mediaSvc.removeMedia(media.resourceID);
 				counter++;
 			}
 		});
@@ -221,7 +221,7 @@ export class ScanService {
 	 * @returns number of new files added
 	 */
 	private async populateSource(source: SourceSQL, extensionWhitelist: string[]): Promise<number | null> {
-		const source_resource = this.rsrcSvc.getResourceByID(source.resource_id)!;
+		const sourceResource = this.rsrcSvc.getResourceByID(source.resourceID)!;
 		let counter = 0;
 		
 		try {
@@ -232,7 +232,7 @@ export class ScanService {
 
 				if (validExt && !foundMedia)
 				{
-					const media = await this.mediaSvc.addMedia(fullPath, fh, source_resource.owner_user_id, source.resource_id);
+					const media = await this.mediaSvc.addMedia(fullPath, fh, sourceResource.ownerUserID, source.resourceID);
 					if (media)
 						counter++;
 				}
@@ -251,20 +251,20 @@ export class ScanService {
 	/** Scans for media files associated with the source, returns false
 	 *  if the source directory cannot be opened & read, else true.
 	 */
-	async scanSource(source_resource_id: string): Promise<ScanSQL | null> {
-		const source = this.srcSvc.getSourceByID(source_resource_id);
+	async scanSource(sourceResourceID: string): Promise<ScanSQL | null> {
+		const source = this.srcSvc.getSourceByID(sourceResourceID);
 		if (!source) return null;
-		const scan = this.createScan(source.resource_id);
+		const scan = this.createScan(source.resourceID);
 		if (!scan) return null;
 
 		const prune = this.pruneSource(source);
-		const populate = await this.populateSource(source, extension_whitelist);
+		const populate = await this.populateSource(source, extensionWhitelist);
 
 		return this.updateScan({
-			scan_id: scan.scan_id,
-			end_timestamp: Date.now() / 1000,
-			changes_remove: prune,
-			changes_add: populate,
+			scanID: scan.scanID,
+			endTime: Date.now() / 1000,
+			changesRemove: prune,
+			changesAdd: populate,
 		});
 	}
 }

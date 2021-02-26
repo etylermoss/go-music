@@ -20,8 +20,8 @@ import { ScanGQL } from '@/graphql/types/scan';
 import { AddSourceInput } from '@/graphql/inputs/source';
 
 /* 1st party imports - SQL object to GQL object converters */
-import { source_to_gql } from '@/graphql/sql_to_gql/source';
-import { scan_to_gql } from '@/graphql/sql_to_gql/scan';
+import { sourceToGQL } from '@/graphql/sql-to-gql/source';
+import { scanToGQL } from '@/graphql/sql-to-gql/scan';
 
 @Service()
 @Resolver(_of => SourceGQL)
@@ -44,21 +44,21 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 
 	@FieldResolver(_returns => [ScanGQL])
 	scans(@Root() root: SourceGQL): ScanGQL[] {
-		const scans_sql = this.scanSvc.getAllScans(root.resource_id);
-		return scans_sql ? scans_sql.map<ScanGQL>(scan => scan_to_gql(scan)) : [];
+		const scans = this.scanSvc.getAllScans(root.resourceID);
+		return scans ? scans.map<ScanGQL>(scan => scanToGQL(scan)) : [];
 	}
 
 	@FieldResolver()
-	scan_underway(@Root() root: SourceGQL): boolean {
-		return this.scanSvc.scanUnderway(root.resource_id) ? true : false;
+	scanUnderway(@Root() root: SourceGQL): boolean {
+		return this.scanSvc.scanUnderway(root.resourceID) ? true : false;
 	}
 
 	/** @typegraphql Query a source, must have permissions to access to it.
 	 */
-	@AccessControl('READ', 'resource_id')
+	@AccessControl('READ', 'resourceID')
 	@Query(_returns => SourceGQL, {nullable: true})
-	source(@Arg('resource_id') resource_id: string): SourceGQL | null {
-		return source_to_gql(this.srcSvc.getSourceByID(resource_id));
+	source(@Arg('resourceID') resourceID: string): SourceGQL | null {
+		return sourceToGQL(this.srcSvc.getSourceByID(resourceID));
 	}
 	
 	/** @typegraphql Query all sources, returns those which the user has
@@ -67,13 +67,13 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	@AccessControl()
 	@Query(_returns => [SourceGQL], {nullable: true})
 	sources(@Ctx() ctx: Context): SourceGQL[] {
-		const sources_sql = this.srcSvc.getAllSources();
+		const sources = this.srcSvc.getAllSources();
 
-		if (sources_sql)
-			return sources_sql.reduce<SourceGQL[]>((acc, source) => {
-				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.user_id!, source.resource_id);
+		if (sources)
+			return sources.reduce<SourceGQL[]>((acc, source) => {
+				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.userID!, source.resourceID);
 				if (level && level >= Operations.READ)
-					acc.push(source_to_gql(source));
+					acc.push(sourceToGQL(source));
 				return acc;
 			}, []);
 
@@ -86,8 +86,7 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	@IsAdmin()
 	@Mutation(_returns => SourceGQL, {nullable: true})
 	async addSource(@Arg('data') data: AddSourceInput, @Ctx() ctx: Context): Promise<SourceGQL | null> {
-		const source_sql = await this.srcSvc.addSource(data.name, data.path, ctx.user_id!);
-		return source_to_gql(source_sql);
+		return sourceToGQL(await this.srcSvc.addSource(data.name, data.path, ctx.userID!));
 	}
 
 	/** @typegraphql Remove a source, must be admin, returns success.
@@ -96,8 +95,8 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	 */
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
-	async removeSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
-		return await this.srcSvc.removeSource(resource_id);
+	async removeSource(@Arg('resourceID') resourceID: string): Promise<boolean> {
+		return this.srcSvc.removeSource(resourceID);
 	}
 
 	/** @typegraphql Scans the given source, returns success.
@@ -106,8 +105,8 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	// TODO: change to @AccessControl
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
-	async scanSource(@Arg('resource_id') resource_id: string): Promise<boolean> {
-		const scan = await this.scanSvc.scanSource(resource_id);
+	async scanSource(@Arg('resourceID') resourceID: string): Promise<boolean> {
+		const scan = await this.scanSvc.scanSource(resourceID);
 
 		return scan ? true : false;
 	}

@@ -2,14 +2,14 @@
 import gql from 'graphql-tag';
 
 export default gql`
-	mutation SignIn($data: SignInInput!) {
-		signIn(data: $data) {
+	query AllUsers {
+		users {
 			userID
 			username
 			adminPriority
 			details {
-				realName
 				email
+				realName
 			}
 		}
 	}
