@@ -16,10 +16,8 @@ export class ArtworkService {
 		private dbSvc: DatabaseService,
 	) {}
 	
-	/* fix circular dependency crash */
-	private get mediaSvc(): MediaService {
-		return Container.get(MediaService);
-	}
+	/* circular dependency */
+	private mediaSvc = Container.get(MediaService);
 
 	/**
 	 * Retrieve artwork, search by mediaResourceID.

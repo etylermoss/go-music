@@ -17,10 +17,8 @@ export class SongService {
 		private dbSvc: DatabaseService,
 	) {}
 	
-	/* fix circular dependency crash */
-	private get mediaSvc(): MediaService {
-		return Container.get(MediaService);
-	}
+	/* circular dependency */
+	private mediaSvc = Container.get(MediaService);
 
 	/**
 	 * Retrieve a song, search by mediaResourceID.
