@@ -10,9 +10,9 @@ import { MediaService } from '@/services/media';
 export const mediaAPIRouter = Router({caseSensitive: true});
 
 mediaAPIRouter.get('/:resourceID', (req, res) => {
-	const authSvc: AuthenticationService = Container.get('authentication.service');
-	const aclSvc: AccessControlService = Container.get('access-control.service');
-	const mediaSvc: MediaService = Container.get('media.service');
+	const authSvc = Container.get(AuthenticationService);
+	const aclSvc = Container.get(AccessControlService);
+	const mediaSvc = Container.get(MediaService);
 
 	const resourceID = req.params.resourceID;
 	const userID = authSvc.checkAuthToken(req.cookies['authToken']);

@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Query, Ctx, FieldResolver, Root } from 'type-graphql';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports */
 import Context from '@/context';
@@ -23,14 +23,11 @@ import { mediaToGQL } from '@/graphql/sql-gql-conversion/media';
 @Resolver(_of => SongGQL)
 export default class SongResolver {
 
-	@Inject('media.service')
-	mediaSvc: MediaService;
-
-	@Inject('song.service')
-	songSvc: SongService;
-
-	@Inject('access-control.service')
-	aclSvc: AccessControlService;
+	constructor (
+		private mediaSvc: MediaService,
+		private songSvc: SongService,
+		private aclSvc: AccessControlService,
+	) {}
 
 	@FieldResolver(_type => MediaGQL)
 	media(@Root() root: SongGQL): MediaGQL {

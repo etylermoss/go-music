@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Service, Inject, Container } from 'typedi';
+import { Service, Container } from 'typedi';
 import * as mm from 'music-metadata';
 
 /* 1st party imports - Services */
@@ -10,15 +10,16 @@ export interface SongSQL {
 	mediaResourceID: string;
 }
 
-@Service('song.service')
+@Service()
 export class SongService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
+	constructor (
+		private dbSvc: DatabaseService,
+	) {}
 	
 	/* fix circular dependency crash */
 	private get mediaSvc(): MediaService {
-		return Container.get('media.service');
+		return Container.get(MediaService);
 	}
 
 	/**

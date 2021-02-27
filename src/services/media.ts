@@ -1,7 +1,7 @@
 /* 3rd party imports */
 import fs from 'fs';
 import { extname } from 'path';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -26,20 +26,15 @@ export const extensionWhitelist =
 	'.png', '.jpg', '.jpeg', '.bmp', '.gif',
 ];
 
-@Service('media.service')
+@Service()
 export class MediaService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('resource.service')
-	private rsrcSvc: ResourceService;
-
-	@Inject('song.service')
-	private songSvc: SongService;
-
-	@Inject('artwork.service')
-	private artSvc: ArtworkService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private rsrcSvc: ResourceService,
+		private songSvc: SongService,
+		private artSvc: ArtworkService,
+	) {}
 
 	/**
 	 * Retrieve a media item, search by resourceID.

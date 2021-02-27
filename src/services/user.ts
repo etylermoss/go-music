@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -25,14 +25,13 @@ export interface CreateUser {
 	details: Omit<UserDetailsSQL, 'userID'>;
 }
 
-@Service('user.service')
+@Service()
 export class UserService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('authentication.service')
-	private authSvc: AuthenticationService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private authSvc: AuthenticationService,
+	) {}
 
 	/**
 	 * Retrieve a user, search by userID.

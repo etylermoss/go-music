@@ -27,7 +27,7 @@ export const AccessControl = (
 	fieldResolver: boolean = false,
 ): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({args, info, context, root}, next) => {
-		const aclSvc: AccessControlService = Container.get('access-control.service');
+		const aclSvc = Container.get(AccessControlService);
 		const userID = context.userID;
 
 		if (!userID)

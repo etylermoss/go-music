@@ -14,7 +14,7 @@ import { AdminService } from '@/services/admin';
  */
 export const IsAdmin = (): MethodDecorator => {
 	return createMethodDecorator<Context>(async ({context}, next) => {
-		const adminSvc: AdminService = Container.get('admin.service');
+		const adminSvc = Container.get(AdminService);
 		const userID = context.userID;
 
 		if (userID)

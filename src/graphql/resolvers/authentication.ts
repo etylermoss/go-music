@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Ctx, Mutation } from 'type-graphql';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 import { CookieOptions } from 'express';
 
 /* 1st party imports */
@@ -27,15 +27,12 @@ const authTokenCookie: CookieOptions = {
 @Service()
 @Resolver()
 export default class AuthResolver {
-	
-	@Inject('authentication.service')
-	authSvc: AuthenticationService;
 
-	@Inject('user.service')
-	userSvc: UserService;
-
-	@Inject('admin.service')
-	adminSvc: AdminService;
+	constructor (
+		private authSvc: AuthenticationService,
+		private userSvc: UserService,
+		private adminSvc: AdminService,
+	) {}
 
 	/** @typegraphql Sign up, creating a new user/account, and signing in
 	 *  the user automatically. The first account created is automatically

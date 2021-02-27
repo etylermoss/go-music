@@ -1,5 +1,4 @@
 *) Cleanup
-    *) Inject services using constructor not @Inject
     *) Change Admin Priority to simple AdminDate
     *) Clean up sql_to_gql converter type
     *) sort out scan service / checkLatestScanValidity

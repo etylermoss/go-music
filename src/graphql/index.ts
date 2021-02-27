@@ -6,10 +6,10 @@ import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express';
 
 /* 1st party imports */
 import Context from '@/context';
-import { ConfigSchema } from '@/config';
 
 /* 1st party imports - Services */
 import { AuthenticationService } from '@/services/authentication';
+import { ConfigService } from '@/services/config';
 
 /* 1st party imports - Resolvers */
 import AuthResolver from '@/graphql/resolvers/authentication';
@@ -18,8 +18,8 @@ import SourceResolver from '@/graphql/resolvers/source';
 import SongResolver from '@/graphql/resolvers/song';
 
 export const launchGraphql = async (): Promise<ApolloServer | null> => {
-
-	const config: ConfigSchema = Container.get('config');
+	
+	const config = Container.get(ConfigService).get();
 
 	const apolloOptions: ApolloServerExpressConfig = {
 		introspection: !RELEASE,
@@ -41,7 +41,7 @@ export const launchGraphql = async (): Promise<ApolloServer | null> => {
 			} as any,
 		},
 		context: (ctx: Context) => {
-			const authSvc: AuthenticationService = Container.get('authentication.service');
+			const authSvc = Container.get(AuthenticationService);
 			ctx.userID = authSvc.checkAuthToken(ctx.req.cookies['authToken']);
 			return ctx;
 		},

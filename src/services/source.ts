@@ -1,7 +1,7 @@
 /* 3rd party imports */
 import path from 'path';
 import fs from 'fs';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -20,14 +20,13 @@ const arePathsRelated = (path_lhs: string, path_rhs: string): boolean => {
 	return !(left && right);
 };
 
-@Service('source.service')
+@Service()
 export class SourceService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('resource.service')
-	private rsrcSvc: ResourceService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private rsrcSvc: ResourceService,
+	) {}
 
 	/**
 	 * Retrieve a source, search by resourceID.

@@ -5,7 +5,7 @@ import sqlite from 'better-sqlite3';
 import { Service, Container } from 'typedi';
 
 /* 1st party imports */
-import { ConfigSchema } from '@/config';
+import { ConfigService } from '@/services/config';
 
 /* 1st party imports - SQL */
 import User from '@/database/tables/00-user.sql';
@@ -22,11 +22,11 @@ PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 `;
 
-@Service('database.service')
+@Service()
 export class DatabaseService extends sqlite {
 
 	constructor() {
-		const config: ConfigSchema = Container.get('config');
+		const config = Container.get(ConfigService).get();
 
 		if (!fs.existsSync(config.dataDirectory)) fs.mkdirSync(config.dataDirectory, '0700');
 

@@ -1,12 +1,10 @@
 /* 3rd party imports */
 import { scryptSync, randomBytes } from 'crypto';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-
-/* 1st party imports */
-import { ConfigSchema } from '@/config';
+import { ConfigService } from '@/services/config';
 
 interface PasswordData {
 	salt: Buffer;
@@ -21,14 +19,13 @@ const unsafe = (sqlInput: TemplateStringsArray): string => {
 	return '/*UNSAFE*/' + sqlInput;
 };
 
-@Service('authentication.service')
+@Service()
 export class AuthenticationService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('config')
-	private config: ConfigSchema;
+	constructor (
+		private dbSvc: DatabaseService,
+		private confSvc: ConfigService,
+	) {}
 
 	/**
 	 * Update the password of the given user, creating it (and the salt)
@@ -136,7 +133,7 @@ export class AuthenticationService {
 		const token = randomBytes(16).toString('base64url');
 		const tokenCount = sqlGetTokenCount.get({userID});
 
-		if (tokenCount > this.config.maxClients) {
+		if (tokenCount > this.confSvc.get().maxClients) {
 			sqlDeleteOldestToken.run({userID});
 		}
 		

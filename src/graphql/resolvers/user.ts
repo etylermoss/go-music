@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root } from 'type-graphql';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports */
 import { AccessControl, FieldAccessControl } from '@/graphql/decorators/access-control';
@@ -20,11 +20,10 @@ import { userToGQL, userDetailsToGQL } from '@/graphql/sql-gql-conversion/user';
 @Resolver(_of => UserGQL)
 export default class UserResolver implements ResolverInterface<UserGQL> {
 
-	@Inject('user.service')
-	userSvc: UserService;
-
-	@Inject('admin.service')
-	adminSvc: AdminService;
+	constructor (
+		private userSvc: UserService,
+		private adminSvc: AdminService,
+	) {}
 
 	/** @typegraphql Query a user, must be logged in.
 	 */

@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Service, Inject, Container } from 'typedi';
+import { Service, Container } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -9,15 +9,16 @@ export interface ArtworkSQL {
 	mediaResourceID: string;
 }
 
-@Service('artwork.service')
+@Service()
 export class ArtworkService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
+	constructor (
+		private dbSvc: DatabaseService,
+	) {}
 	
 	/* fix circular dependency crash */
 	private get mediaSvc(): MediaService {
-		return Container.get('media.service');
+		return Container.get(MediaService);
 	}
 
 	/**

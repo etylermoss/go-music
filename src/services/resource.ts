@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -13,14 +13,13 @@ export interface ResourceSQL {
 	ownerUserID: string;
 }
 
-@Service('resource.service')
+@Service()
 export class ResourceService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-	
-	@Inject('user.service')
-	private userSvc: UserService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private userSvc: UserService,
+	) {}
 	
 	/**
 	 * Retrieve a resource, search by resourceID.

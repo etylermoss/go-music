@@ -1,14 +1,15 @@
 /* 3rd party imports */
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 
-@Service('admin.service')
+@Service()
 export class AdminService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
+	constructor (
+		private dbSvc: DatabaseService,
+	) {}
 
 	/**
 	 * Checks if the given user is an admin.

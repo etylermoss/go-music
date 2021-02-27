@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
@@ -30,17 +30,14 @@ interface ResourceGroup {
 	allowedOperations: Operations;
 }
 
-@Service('access-control.service')
+@Service()
 export class AccessControlService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('resource.service')
-	private rsrcSvc: ResourceService;
-
-	@Inject('admin.service')
-	private adminSvc: AdminService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private rsrcSvc: ResourceService,
+		private adminSvc: AdminService,
+	) {}
 
 	/**
 	 * Get access level on the target resource for the given user.

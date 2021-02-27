@@ -1,7 +1,7 @@
 /* 3rd party imports */
 import fs from 'fs';
 import { join, extname } from 'path';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 import { walkAsync } from 'walk-async-fd';
 
 /* 1st party imports - Services */
@@ -31,20 +31,15 @@ export type UpdateScanSQL = Pick<ScanSQL, 'scanID' | 'endTime' | 'changesAdd' | 
 // TODO: convert checkLatestScanValidity to checkAllScanValidity, return array of
 //       invalid scans, and run scanSource on each
 
-@Service('scan.service')
+@Service()
 export class ScanService {
 
-	@Inject('database.service')
-	private dbSvc: DatabaseService;
-
-	@Inject('resource.service')
-	private rsrcSvc: ResourceService;
-
-	@Inject('source.service')
-	private srcSvc: SourceService;
-
-	@Inject('media.service')
-	private mediaSvc: MediaService;
+	constructor (
+		private dbSvc: DatabaseService,
+		private rsrcSvc: ResourceService,
+		private srcSvc: SourceService,
+		private mediaSvc: MediaService,
+	) {}
 
 	/**
 	 * Retrieve a scan, search by scanID.

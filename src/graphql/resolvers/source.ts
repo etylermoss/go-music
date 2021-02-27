@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import { Resolver, Arg, Query, Mutation, FieldResolver, ResolverInterface, Root, Ctx, Int } from 'type-graphql';
-import { Service, Inject } from 'typedi';
+import { Service } from 'typedi';
 
 /* 1st party imports */
 import Context from '@/context';
@@ -11,9 +11,7 @@ import { IsAdmin } from '@/graphql/decorators/admin';
 import { SourceService } from '@/services/source';
 import { MediaService } from '@/services/media';
 import { ScanService } from '@/services/scan';
-import { UserService } from '@/services/user';
 import { AccessControlService, Operations } from '@/services/access-control';
-import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
 import { SourceGQL } from '@/graphql/types/source';
@@ -28,23 +26,12 @@ import { scanToGQL } from '@/graphql/sql-gql-conversion/scan';
 @Resolver(_of => SourceGQL)
 export default class SourceResolver implements ResolverInterface<SourceGQL> {
 
-	@Inject('user.service')
-	userSvc: UserService;
-	
-	@Inject('source.service')
-	srcSvc: SourceService;
-
-	@Inject('media.service')
-	mediaSvc: MediaService;
-
-	@Inject('scan.service')
-	scanSvc: ScanService;
-
-	@Inject('admin.service')
-	adminSvc: AdminService;
-	
-	@Inject('access-control.service')
-	aclSvc: AccessControlService;
+	constructor (
+		private srcSvc: SourceService,
+		private scanSvc: ScanService,
+		private mediaSvc: MediaService,
+		private aclSvc: AccessControlService,
+	) {}
 
 	@FieldResolver(_returns => Int)
 	mediaCount(@Root() root: SourceGQL): number {
