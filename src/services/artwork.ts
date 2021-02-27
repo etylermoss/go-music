@@ -20,6 +20,11 @@ export class ArtworkService {
 		return Container.get('media.service');
 	}
 
+	/**
+	 * Retrieve artwork, search by mediaResourceID.
+	 * @param mediaResourceID ID of artwork
+	 * @returns Artwork
+	 */
 	getArtworkByID(mediaResourceID: string): ArtworkSQL | null {
 		const artwork = this.dbSvc.prepare(`
 		SELECT
@@ -33,6 +38,11 @@ export class ArtworkService {
 		return artwork ?? null;
 	}
 
+	/**
+	 * Retrieve all artwork.
+	 * @param sourceResourceID Optional source ID to limit search to
+	 * @returns Artwork array
+	 */
 	getAllArtwork(sourceResourceID?: string): ArtworkSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -51,7 +61,12 @@ export class ArtworkService {
 		`).all({sourceResourceID: sourceResourceID ?? null}) as ArtworkSQL[];
 	}
 
-	addArtwork(mediaResourceID: string): ArtworkSQL | null {
+	/**
+	 * Create new artwork.
+	 * @param mediaResourceID ID of the parent media supertype
+	 * @returns Artwork
+	 */
+	createArtwork(mediaResourceID: string): ArtworkSQL | null {
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Artwork
 		(
@@ -66,7 +81,12 @@ export class ArtworkService {
 		return success ? this.getArtworkByID(mediaResourceID) : null;
 	}
 
-	removeArtwork(mediaResourceID: string): boolean {
-		return this.mediaSvc.removeMedia(mediaResourceID);
+	/**
+	 * Delete artwork, search by mediaResourceID.
+	 * @param mediaResourceID ID of artwork
+	 * @returns Success of deletion
+	 */
+	deleteArtwork(mediaResourceID: string): boolean {
+		return this.mediaSvc.deleteMedia(mediaResourceID);
 	}
 }

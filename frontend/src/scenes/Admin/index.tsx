@@ -7,11 +7,11 @@ import { useHistory } from 'react-router-dom';
 /* 1st part imports - GraphQL */
 import allUsersTag from '@/scenes/Admin/gql/AllUsers';
 import allSourcesTag from '@/scenes/Admin/gql/AllSources';
-import addSourceTag from '@/scenes/Admin/gql/AddSource';
+import createSourceTag from '@/scenes/Admin/gql/CreateSource';
 import allUsersTypes from '@/scenes/Admin/gql/types/AllUsers';
 import scanSourceTag from '@/scenes/Admin/gql/ScanSource';
 import allSourcesTypes from '@/scenes/Admin/gql/types/AllSources';
-import addSourceTypes from '@/scenes/Admin/gql/types/AddSource';
+import createSourceTypes from '@/scenes/Admin/gql/types/CreateSource';
 import scanSourceTypes from '@/scenes/Admin/gql/types/ScanSource';
 
 /* 1st party imports */
@@ -22,7 +22,7 @@ const Scene = (): JSX.Element => {
 	const history = useHistory();
 	const { error: users_error, data: users_data } = useQuery<allUsersTypes.AllUsers>(allUsersTag);
 	const { error: sources_error, data: sources_data } = useQuery<allSourcesTypes.AllSources>(allSourcesTag);
-	const [addSource] = useMutation<addSourceTypes.AddSource>(addSourceTag);
+	const [createSource] = useMutation<createSourceTypes.CreateSource>(createSourceTag);
 	const [scanSource] = useMutation<scanSourceTypes.ScanSource>(scanSourceTag);
 
 	if (!store.user?.adminPriority)
@@ -41,8 +41,8 @@ const Scene = (): JSX.Element => {
 
 	const submitAddSource = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
-		const result = await addSource({variables: { data: source }});
-		if (result?.data?.addSource?.resourceID)
+		const result = await createSource({variables: { data: source }});
+		if (result?.data?.createSource?.resourceID)
 			alert('Successfully added source!');
 	};
 

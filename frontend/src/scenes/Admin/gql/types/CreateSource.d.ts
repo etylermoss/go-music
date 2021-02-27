@@ -3,26 +3,26 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { AddSourceInput } from "./../../../../globalTypes";
+import { CreateSourceInput } from "./../../../../globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: AddSource
+// GraphQL mutation operation: CreateSource
 // ====================================================
 
-export interface AddSource_addSource {
+export interface CreateSource_createSource {
   __typename: "SourceGQL";
   resourceID: string;
   name: string;
   path: string;
 }
 
-export interface AddSource {
+export interface CreateSource {
   /**
    * Add a new source, must be an admin.The source is not scanned automatically.
    */
-  addSource: AddSource_addSource | null;
+  createSource: CreateSource_createSource | null;
 }
 
-export interface AddSourceVariables {
-  data: AddSourceInput;
+export interface CreateSourceVariables {
+  data: CreateSourceInput;
 }

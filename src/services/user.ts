@@ -21,8 +21,10 @@ export class UserService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	/** Retrieves a users basic data, searching for
-	 *  them by userID.
+	/**
+	 * Retrieve a user, search by userID.
+	 * @param userID ID of user
+	 * @returns User
 	 */
 	getUserByID(userID: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
@@ -37,8 +39,10 @@ export class UserService {
 		return user ?? null;
 	}
 
-	/** Retrieves a users basic data, searching for
-	 *  them by username.
+	/**
+	 * Retrieve a user, search by username.
+	 * @param username Username of user
+	 * @returns User
 	 */
 	getUserByUsername(username: string): UserSQL | null {
 		const user = this.dbSvc.prepare(`
@@ -53,7 +57,10 @@ export class UserService {
 		return user ?? null;
 	}
 	
-	/** Retrives a given user's personal information.
+	/**
+	 * Retrive a user's personal details, search by userID.
+	 * @param userID ID of user
+	 * @returns User details
 	 */
 	getUserDetails(userID: string): UserDetailsSQL | null {
 		const details = this.dbSvc.prepare(`
@@ -67,8 +74,10 @@ export class UserService {
 
 		return details ?? null;
 	}
-	
-	/** Retrieves all users from the database.
+
+	/**
+	 * Retrieve all users.
+	 * @returns User array
 	 */
 	getAllUsers(): UserSQL[] {
 		return this.dbSvc.prepare(`
@@ -79,7 +88,10 @@ export class UserService {
 		`).all() as UserSQL[];
 	}
 
-	/** Deletes a user, searching by the given userID, returns success.
+	/**
+	 * Deletes a user, searching by userID.
+	 * @param userID ID of user
+	 * @returns Success of deletion
 	 */
 	deleteUser(userID: string): boolean {
 		return this.dbSvc.prepare(`

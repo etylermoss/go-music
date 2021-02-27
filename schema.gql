@@ -3,13 +3,13 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-input AddSourceInput {
-  name: String!
-  path: String!
-}
-
 type AuthResponse {
   success: Boolean!
+}
+
+input CreateSourceInput {
+  name: String!
+  path: String!
 }
 
 type MediaGQL {
@@ -24,7 +24,12 @@ type Mutation {
   """
   Add a new source, must be an admin.The source is not scanned automatically.
   """
-  addSource(data: AddSourceInput!): SourceGQL
+  createSource(data: CreateSourceInput!): SourceGQL
+
+  """
+  Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
+  """
+  deleteSource(resourceID: String!): Boolean!
 
   """Delete a user, returns success."""
   deleteUser(userID: String!): Boolean
@@ -33,11 +38,6 @@ type Mutation {
   Check whether the client is signed in, ensures theauthToken cookie (httpOnly) is present in the database andassociated with a user.
   """
   isSignedIn: UserGQL
-
-  """
-  Remove a source, must be admin, returns success.Also removes all resources associated with the source.Must be admin.
-  """
-  removeSource(resourceID: String!): Boolean!
 
   """Scans the given source, returns success.Must be admin."""
   scanSource(resourceID: String!): Boolean!

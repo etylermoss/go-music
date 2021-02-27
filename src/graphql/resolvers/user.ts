@@ -14,7 +14,7 @@ import { AdminService } from '@/services/admin';
 import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
 
 /* 1st party imports - SQL object to GQL object converters */
-import { userToGQL, userDetailsToGQL } from '@/graphql/sql-to-gql/user';
+import { userToGQL, userDetailsToGQL } from '@/graphql/sql-gql-conversion/user';
 
 @Service()
 @Resolver(_of => UserGQL)

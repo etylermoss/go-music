@@ -9,12 +9,15 @@ import { UserService } from '@/services/user';
 /* 1st party imports - SQL types */
 import { UserSQL, UserDetailsSQL } from '@/services/user';
 
-/* 1st party imports - GraphQL inputs */
-import { SignUpInput } from '@/graphql/inputs/authentication';
-
 /* 1st party imports */
 import { generateRandomID } from '@/common';
 import { ConfigSchema } from '@/config';
+
+export interface CreateUser {
+	username: string;
+	password: string;
+	details: Omit<UserDetailsSQL, 'userID'>;
+}
 
 interface PasswordData {
 	salt: Buffer;
@@ -41,10 +44,13 @@ export class AuthenticationService {
 	@Inject('user.service')
 	private userSvc: UserService;
 
-	/** Creates a new user along with related data such as their password.
-	 *  Returns the user, including their personal details (email etc).
+	/**
+	 * Create a new user and accompanying authentication data (such as
+	 * their password).
+	 * @param user Object containing data for the new user
+	 * @returns User if created
 	 */
-	createUser({ username, password, details}: SignUpInput): UserSQL | null {
+	createUser({username, password, details}: CreateUser): UserSQL | null {
 		const userID = generateRandomID();
 		const createUserChanges = this.dbSvc.prepare(`
 		INSERT INTO User
@@ -57,26 +63,23 @@ export class AuthenticationService {
 			$userID,
 			$username
 		)
-		`).run({ userID, username }).changes;
+		`).run({userID, username}).changes;
 
 		/* Ensure that the user was inserted into the database */
 		if (createUserChanges !== 1)
 			return null;
 
-		const userDetails: UserDetailsSQL = {
-			userID,
-			email: details.email,
-			realName: details.realName,
-		};
-
-		this.createOrUpdateUserDetails(userID, userDetails);
+		this.createOrUpdateUserDetails(userID, {...details, userID});
 		this.updateUserPassword(userID, password);
 
 		return this.userSvc.getUserByID(userID);
 	}
 
-	/** Updates a users personal information (email etc.), returning
-	 *  success as a boolean.
+	/**
+	 * Create or update a users personal details (e.g. email).
+	 * @param userID ID of user
+	 * @param details User details to use
+	 * @returns Success of operation
 	 */
 	createOrUpdateUserDetails(userID: string, details: UserDetailsSQL): boolean {
 		return this.dbSvc.prepare(`
@@ -89,8 +92,12 @@ export class AuthenticationService {
 		}).changes > 0;
 	}
 
-	/** Updates the users password in the database, creating it if it (and
-	 *  the salt) does not already exist. Returns success as a boolean.
+	/**
+	 * Update the password of the given user, creating it (and the salt)
+	 * if it does not already exist.
+	 * @param userID ID of user
+	 * @param password Password to create
+	 * @returns Success of operation
 	 */
 	updateUserPassword(userID: string, password: string): boolean {
 		const salt = randomBytes(16);
@@ -115,7 +122,12 @@ export class AuthenticationService {
 		}).changes > 0;
 	}
 
-	/** Checks the supplied password against the supplied userID.
+	/**
+	 * Check the given password matches the existing password of the given
+	 * user (after salting & hashing).
+	 * @param userID ID of user
+	 * @param password Password to check
+	 * @returns Success of comparison
 	 */
 	comparePasswordToUser(userID: string, password: string): boolean {
 		const passwordData = this.getUserPasswordData(userID);
@@ -125,19 +137,31 @@ export class AuthenticationService {
 		return false;
 	}
 
-	/** Retrieves the associated userID's password data (salt and hash).
+	/**
+	 * Retrieve a user's password data.
+	 * @param userID ID of user
+	 * @returns Password data (salt & hash)
 	 */
-	getUserPasswordData(userID: string): PasswordData {
+	getUserPasswordData(userID: string): PasswordData | null {
 		return this.dbSvc.prepare(unsafe`
-		SELECT salt, hash
-		FROM UserPassword
-		WHERE userID = $userID
-		`).get({userID});
+		SELECT
+			salt,
+			hash
+		FROM
+			UserPassword
+		WHERE
+			userID = ?
+		`).get(userID) as PasswordData | undefined ?? null;
 	}
 
 	// TODO: reorder statements here?
-	/** Generates and returns a new 128 bit authToken, and removes
-	 *  the oldest token from the database if the user is at the limit.
+
+	/**
+	 * Create new authToken for the specified user.
+	 * If the user is at their authToken limit, their oldest token is
+	 * revoked.
+	 * @param userID ID of user
+	 * @returns authToken (`base64url` encoding)
 	 */
 	newAuthToken(userID: string): string {
 		const sqlGetTokenCount = this.dbSvc.prepare(`
@@ -182,28 +206,40 @@ export class AuthenticationService {
 		return token;
 	}
 
-	/** Checks if the supplied authToken is in the database, returning the
-	 *  associated userID.
+	/**
+	 * Search for specified authToken in the database.
+	 * @param token Token to check
+	 * @returns User ID of the authToken owner
 	 */
 	checkAuthToken(token: string): string | null {
 		return this.dbSvc.prepare(`
-		SELECT userID
-		FROM UserAuthToken
-		WHERE token = $token
-		`).get({token})?.userID ?? null;
+		SELECT
+			userID
+		FROM
+			UserAuthToken
+		WHERE
+			token = ?
+		`).get(token)?.userID ?? null;
 	}
 
-	/** Removes the authToken from the database, returning boolean success.
+	/**
+	 * Revoke authToken. 
+	 * @param token Token to delete
+	 * @returns Success of operation
 	 */
 	revokeAuthToken(token: string): boolean {
 		return this.dbSvc.prepare(`
-		DELETE FROM UserAuthToken
-		WHERE token = $token
-		`).run({token}).changes > 0;
+		DELETE FROM
+			UserAuthToken
+		WHERE
+			token = ?
+		`).run(token).changes > 0;
 	}
 
-	/** Removes all authTokens from the database that are associated with
-	 *  the given userID, returning boolean success.
+	/**
+	 * Revoke all authToken(s) associated with the given user.
+	 * @param userID ID of user
+	 * @returns Success of operation
 	 */
 	revokeAllAuthTokens(userID: string): boolean {
 		return this.dbSvc.prepare(`
@@ -212,7 +248,11 @@ export class AuthenticationService {
 		`).run({userID}).changes > 0 ? true : false;
 	}
 
-	/** Takes a password and hashes it using scrypt with the given salt. */
+	/**
+	 * Hash password using scrypt.
+	 * @param password Password to hash
+	 * @param salt Password salt
+	 */
 	private hashUserPassword(password: string, salt: Buffer): Buffer {
 		return scryptSync(password, salt, 256);
 	}

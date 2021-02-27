@@ -2,8 +2,8 @@
 import gql from 'graphql-tag';
 
 export default gql`
-	mutation AddSource($data: AddSourceInput!) {
-		addSource(data: $data) {
+	mutation CreateSource($data: CreateSourceInput!) {
+		createSource(data: $data) {
 			resourceID
             name
             path

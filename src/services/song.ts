@@ -21,6 +21,11 @@ export class SongService {
 		return Container.get('media.service');
 	}
 
+	/**
+	 * Retrieve a song, search by mediaResourceID.
+	 * @param mediaResourceID ID of song
+	 * @returns Song
+	 */
 	getSongByID(mediaResourceID: string): SongSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
@@ -34,6 +39,11 @@ export class SongService {
 		return media ?? null;
 	}
 
+	/**
+	 * Retrieve all songs.
+	 * @param sourceResourceID Optional source ID to limit search to
+	 * @returns Song array
+	 */
 	getAllSongs(sourceResourceID?: string): SongSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -52,7 +62,13 @@ export class SongService {
 		`).all({sourceResourceID: sourceResourceID ?? null}) as SongSQL[];
 	}
 
-	async addSong(mediaResourceID: string): Promise<SongSQL | null> {
+	/**
+	 * Create new song.
+	 * Sets the correct MIME Type on the parent supertype / parent Media item.
+	 * @param mediaResourceID ID of the Media item
+	 * @returns Song
+	 */
+	async createSong(mediaResourceID: string): Promise<SongSQL | null> {
 		const success = this.dbSvc.prepare(`
 		INSERT INTO Song
 		(
@@ -79,19 +95,24 @@ export class SongService {
 		} catch {
 			/* could not access or parse file */
 			// TODO: Log here
-			this.removeSong(mediaResourceID);
+			this.deleteSong(mediaResourceID);
 			return null;
 		}
 
 		/* add mimeType to Media object */
 		const container = metadata?.format?.container;
 		if (!(container && this.mediaSvc.setMimeType(mediaResourceID, container)))
-			this.removeSong(mediaResourceID);
+			this.deleteSong(mediaResourceID);
 
 		return this.getSongByID(mediaResourceID);
 	}
 
-	removeSong(mediaResourceID: string): boolean {
-		return this.mediaSvc.removeMedia(mediaResourceID);
+	/**
+	 * Delete a song, search by mediaResourceID.
+	 * @param mediaResourceID ID of song
+	 * @returns Success of deletion
+	 */
+	deleteSong(mediaResourceID: string): boolean {
+		return this.mediaSvc.deleteMedia(mediaResourceID);
 	}
 }

@@ -10,7 +10,10 @@ export class AdminService {
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
 
-	/** Checks if a given user is an admin.
+	/**
+	 * Checks if the given user is an admin.
+	 * @param userID ID of user
+	 * @returns Whether the user is an admin
 	 */
 	isUserAdmin(userID: string): boolean {
 		return this.dbSvc.prepare(`
@@ -23,8 +26,10 @@ export class AdminService {
 		`).get({userID})?.userID ? true : false;
 	}
 	
-	/** If the given user is an admin, returns their admin priority,
-	 *  otherwise null is returned.
+	/**
+	 * Get the admin priority of the specified user (if they are an admin).
+	 * @param userID ID of user
+	 * @returns Admin priority
 	 */
 	getAdminUserPriority(userID: string): number | null {
 		return this.dbSvc.prepare(`
@@ -37,8 +42,10 @@ export class AdminService {
 		`).get({userID})?.priority as number | undefined ?? null;
 	}
 
-	/** Makes the given user an admin. Their admin priority is set as the
-	 *  number of admins + 1. Returns success as boolean.
+	/**
+	 * Make the specified user an admin.
+	 * @param userID ID of user
+	 * @returns Success of operation
 	 */
 	makeUserAdmin(userID: string): boolean {
 		const result = this.dbSvc.prepare(`
@@ -60,12 +67,16 @@ export class AdminService {
 		return true;
 	}
 
-	/** Gets the number of current admin users. 
+	/**
+	 * Get the number of current admin users.
+	 * @returns Number of admins
 	 */
 	getAdminCount(): number {
 		return this.dbSvc.prepare(`
-		SELECT COUNT(*) AS 'count'
-		FROM AdminUser
+		SELECT
+			COUNT(*) AS 'count'
+		FROM
+			AdminUser
 		`).get().count;
 	}
 }

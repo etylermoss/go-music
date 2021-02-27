@@ -3,7 +3,7 @@ import { Field, InputType } from 'type-graphql';
 import { IsAlphanumeric, Length } from 'class-validator';
 
 @InputType()
-export class AddSourceInput {
+export class CreateSourceInput {
     @Field()
     @IsAlphanumeric()
 	@Length(3, 24)

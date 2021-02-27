@@ -17,11 +17,11 @@ import { AdminService } from '@/services/admin';
 /* 1st party imports - GraphQL types & inputs */
 import { SourceGQL } from '@/graphql/types/source';
 import { ScanGQL } from '@/graphql/types/scan';
-import { AddSourceInput } from '@/graphql/inputs/source';
+import { CreateSourceInput } from '@/graphql/inputs/source';
 
 /* 1st party imports - SQL object to GQL object converters */
-import { sourceToGQL } from '@/graphql/sql-to-gql/source';
-import { scanToGQL } from '@/graphql/sql-to-gql/scan';
+import { sourceToGQL } from '@/graphql/sql-gql-conversion/source';
+import { scanToGQL } from '@/graphql/sql-gql-conversion/scan';
 
 @Service()
 @Resolver(_of => SourceGQL)
@@ -72,7 +72,7 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 		if (sources)
 			return sources.reduce<SourceGQL[]>((acc, source) => {
 				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.userID!, source.resourceID);
-				if (level && level >= Operations.READ)
+				if (level >= Operations.READ)
 					acc.push(sourceToGQL(source));
 				return acc;
 			}, []);
@@ -85,8 +85,8 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	 */
 	@IsAdmin()
 	@Mutation(_returns => SourceGQL, {nullable: true})
-	async addSource(@Arg('data') data: AddSourceInput, @Ctx() ctx: Context): Promise<SourceGQL | null> {
-		return sourceToGQL(await this.srcSvc.addSource(data.name, data.path, ctx.userID!));
+	async createSource(@Arg('data') data: CreateSourceInput, @Ctx() ctx: Context): Promise<SourceGQL | null> {
+		return sourceToGQL(await this.srcSvc.createSource(data.name, data.path, ctx.userID!));
 	}
 
 	/** @typegraphql Remove a source, must be admin, returns success.
@@ -95,8 +95,8 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	 */
 	@IsAdmin()
 	@Mutation(_returns => Boolean)
-	async removeSource(@Arg('resourceID') resourceID: string): Promise<boolean> {
-		return this.srcSvc.removeSource(resourceID);
+	async deleteSource(@Arg('resourceID') resourceID: string): Promise<boolean> {
+		return this.srcSvc.deleteSource(resourceID);
 	}
 
 	/** @typegraphql Scans the given source, returns success.

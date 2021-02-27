@@ -53,7 +53,7 @@ export const AccessControl = (
 			case 'groupID': userLevel = aclSvc.getGroupAccessLevelForUser(userID, targetID); break;
 		}
 
-		return userLevel && userLevel >= Operations[requiredLevel] ? next() : null;
+		return userLevel >= Operations[requiredLevel] ? next() : null;
 	});
 };
 

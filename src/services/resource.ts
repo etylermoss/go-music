@@ -22,6 +22,11 @@ export class ResourceService {
 	@Inject('user.service')
 	private userSvc: UserService;
 	
+	/**
+	 * Retrieve a resource, search by resourceID.
+	 * @param resourceID ID of resource
+	 * @returns Resource
+	 */
 	getResourceByID(resourceID: string): ResourceSQL | null {
 		const resource = this.dbSvc.prepare(`
 		SELECT 
@@ -36,8 +41,10 @@ export class ResourceService {
 		return resource ?? null;
 	}
 
-	/** Create a new resource. Returns null if the owner userID does
-	 *  not exist.
+	/**
+	 * Create new generic resource.
+	 * @param ownerUserID Owner of the resource
+	 * @returns Resource
 	 */
 	createResource(ownerUserID: string): ResourceSQL | null {
 		if (!this.userSvc.getUserByID(ownerUserID))
@@ -64,11 +71,12 @@ export class ResourceService {
 		return resource;
 	}
 	
-	
-	/** Remove a resource, returns success.
-	 *  Associated resources are removed.
+	/**
+	 * Delete a resource, search by resourceID.
+	 * @param resourceID ID of resource
+	 * @returns Success of deletion
 	 */
-	removeResource(resourceID: string): boolean {
+	deleteResource(resourceID: string): boolean {
 		return this.dbSvc.prepare(`
 		DELETE FROM
 			Resource

@@ -17,7 +17,7 @@ import { UserGQL } from '@/graphql/types/user';
 import { SignUpInput, SignInInput } from '@/graphql/inputs/authentication';
 
 /* 1st party imports - SQL object to GQL object converters */
-import { userToGQL } from '@/graphql/sql-to-gql/user';
+import { userToGQL, signUpToCreateUserSQL } from '@/graphql/sql-gql-conversion/user';
 
 const authTokenCookie: CookieOptions = {
 	sameSite: 'strict',
@@ -47,7 +47,7 @@ export default class AuthResolver {
 		if (this.userSvc.getUserByUsername(data.username))
 			return null;
 
-		const user = this.authSvc.createUser(data);
+		const user = this.authSvc.createUser(signUpToCreateUserSQL(data));
 
 		if (user)
 		{

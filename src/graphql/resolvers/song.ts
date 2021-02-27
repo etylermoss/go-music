@@ -16,8 +16,8 @@ import { SongGQL } from '@/graphql/types/song';
 import { MediaGQL } from '@/graphql/types/media';
 
 /* 1st party imports - SQL object to GQL object converters */
-import { songToGQL } from '@/graphql/sql-to-gql/song';
-import { mediaToGQL } from '@/graphql/sql-to-gql/media';
+import { songToGQL } from '@/graphql/sql-gql-conversion/song';
+import { mediaToGQL } from '@/graphql/sql-gql-conversion/media';
 
 @Service()
 @Resolver(_of => SongGQL)
@@ -50,6 +50,7 @@ export default class SongResolver {
 	/** @typegraphql Query all songs the user has access to.
 	 *  Can optionally limit results to songs in a specific source.
 	 */
+	@AccessControl()
 	@Query(_returns => [SongGQL], {nullable: true})
 	songs(
 		@Ctx() ctx: Context,
@@ -60,7 +61,7 @@ export default class SongResolver {
 		if (songs)
 			return songs.reduce<SongGQL[]>((acc, song) => {
 				const level = this.aclSvc.getResourceAccessLevelForUser(ctx.userID!, song.mediaResourceID);
-				if (level && level >= Operations.READ)
+				if (level >= Operations.READ)
 					acc.push(songToGQL(song));
 				return acc;
 			}, []);

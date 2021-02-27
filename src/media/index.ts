@@ -16,9 +16,8 @@ mediaAPIRouter.get('/:resourceID', (req, res) => {
 
 	const resourceID = req.params.resourceID;
 	const userID = authSvc.checkAuthToken(req.cookies['authToken']);
-	const level = aclSvc.getResourceAccessLevelForUser(userID, resourceID);
 
-	if (level && level >= Operations.READ)
+	if (userID && aclSvc.getResourceAccessLevelForUser(userID, resourceID) >= Operations.READ)
 	{
 		/* serve file */
 		const media = mediaSvc.getMediaByID(resourceID)!;

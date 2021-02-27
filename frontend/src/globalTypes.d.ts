@@ -7,7 +7,7 @@
 // START Enums and Input Objects
 //==============================================================
 
-export interface AddSourceInput {
+export interface CreateSourceInput {
   name: string;
   path: string;
 }

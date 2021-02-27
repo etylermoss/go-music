@@ -30,6 +30,7 @@ export type UpdateScanSQL = Pick<ScanSQL, 'scanID' | 'endTime' | 'changesAdd' | 
 
 // TODO: convert checkLatestScanValidity to checkAllScanValidity, return array of
 //       invalid scans, and run scanSource on each
+
 @Service('scan.service')
 export class ScanService {
 
@@ -45,6 +46,11 @@ export class ScanService {
 	@Inject('media.service')
 	private mediaSvc: MediaService;
 
+	/**
+	 * Retrieve a scan, search by scanID.
+	 * @param scanID ID of scan
+	 * @returns Scan
+	 */
 	getScan(scanID: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
 		SELECT
@@ -58,6 +64,12 @@ export class ScanService {
 		return scan ?? null;
 	}
 
+	/**
+	 * Retrieve all scans.
+	 * Can search globally or for a specific source.
+	 * @param sourceResourceID Optional source ID to limit search to
+	 * @returns Source array
+	 */
 	getAllScans(sourceResourceID?: string): ScanSQL[] | null {
 		const scans = this.dbSvc.prepare(`
 		SELECT
@@ -76,6 +88,12 @@ export class ScanService {
 		return scans.length > 0 ? scans : null;
 	}
 
+	/**
+	 * Retrieve the latest scan.
+	 * Can search globally or for a specific source.
+	 * @param sourceResourceID Optional source ID to limit search to
+	 * @returns Scan
+	 */
 	getLatestScan(sourceResourceID?: string): ScanSQL | null {
 		const scan = this.dbSvc.prepare(`
 		SELECT
@@ -97,9 +115,9 @@ export class ScanService {
 	}
 
 	/**
-	 * Find if a scan is currently underway globally or for a specific
-	 * source.
-	 * @param sourceResourceID Limit search to a specific source
+	 * Find if a scan is currently underway.
+	 * Can search globally or for a specific source.
+	 * @param sourceResourceID Optional source ID to limit search to
 	 * @returns Source resourceID of the underway scan, or null if no scan underway
 	 */
 	scanUnderway(sourceResourceID?: string): string | null {
@@ -124,6 +142,14 @@ export class ScanService {
 		}
 	}
 
+	/**
+	 * Check that the latest scan completed successfully.
+	 * I.e. if the scans start time was before the server was started,
+	 * and it has not completed, it must have failed.
+	 * TODO: run this on startup of this service for each source
+	 * @param sourceResourceID Optional source ID to limit search to 
+	 * @returns Validity of found scan (true if none found)
+	 */
 	checkLatestScanValidity(sourceResourceID?: string): boolean {
 		const latestScan = this.getLatestScan(sourceResourceID);
 
@@ -139,6 +165,11 @@ export class ScanService {
 		return true;
 	}
 
+	/**
+	 * Create new scan.
+	 * @param sourceResourceID Parent source ID of the scan
+	 * @returns Scan
+	 */
 	createScan(sourceResourceID: string): ScanSQL | null {
 		const scan: ScanSQL = {
 			scanID: generateRandomID(),
@@ -166,6 +197,12 @@ export class ScanService {
 		return success ? this.getScan(scan.scanID) : null;
 	}
 
+	/**
+	 * Update fields of the given scan, use when scan is complete.
+	 * Searches by updateScan.scanID.
+	 * @param updateScan Scan fields to update
+	 * @returns Updated scan
+	 */
 	updateScan(updateScan: UpdateScanSQL): ScanSQL | null {
 		const scan = this.getScan(updateScan.scanID);
 		let success = false;
@@ -187,7 +224,10 @@ export class ScanService {
 		return success ? this.getScan(updateScan.scanID) : null;
 	}
 
-	/** Remove any deleted media files from the database.
+	/**
+	 * Remove missing media files in the path associated with the source.
+	 * @param source Target source to prune
+	 * @returns Count of missing media files removed
 	 */
 	private pruneSource(source: SourceSQL): number {
 		const allMedia = this.mediaSvc.getAllMedia(source.resourceID);
@@ -205,7 +245,7 @@ export class ScanService {
 					throw new Error(`Media not a valid file: ${media.path}`);
 			} catch {
 				/* can't access file / doesn't exist */
-				this.mediaSvc.removeMedia(media.resourceID);
+				this.mediaSvc.deleteMedia(media.resourceID);
 				counter++;
 			}
 		});
@@ -214,11 +254,11 @@ export class ScanService {
 	}
 	
 	/**
-	 * Add new media files contained within the source directory (recursive).
+	 * Add new media files in the path associated with the source.
 	 * New media files are owned by the owner of the source.
-	 * @param source target source to populate (i.e. scan source.path)
-	 * @param extensionWhitelist supported file extensions
-	 * @returns number of new files added
+	 * @param source Target source to populate
+	 * @param extensionWhitelist Supported file extensions
+	 * @returns Count of new media files added
 	 */
 	private async populateSource(source: SourceSQL, extensionWhitelist: string[]): Promise<number | null> {
 		const sourceResource = this.rsrcSvc.getResourceByID(source.resourceID)!;
@@ -232,7 +272,7 @@ export class ScanService {
 
 				if (validExt && !foundMedia)
 				{
-					const media = await this.mediaSvc.addMedia(fullPath, fh, sourceResource.ownerUserID, source.resourceID);
+					const media = await this.mediaSvc.createMedia(fullPath, fh, sourceResource.ownerUserID, source.resourceID);
 					if (media)
 						counter++;
 				}
@@ -245,11 +285,10 @@ export class ScanService {
 		return counter;
 	}
 	
-	// TODO: Use inotify to watch for deleted files and run at least
-	// pruneSource upon event.
-	
-	/** Scans for media files associated with the source, returns false
-	 *  if the source directory cannot be opened & read, else true.
+	/**
+	 * Scan for new/missing media files in the path associated with the given source.
+	 * @param sourceResourceID ID of source resource
+	 * @returns Completed scan
 	 */
 	async scanSource(sourceResourceID: string): Promise<ScanSQL | null> {
 		const source = this.srcSvc.getSourceByID(sourceResourceID);

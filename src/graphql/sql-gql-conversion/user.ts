@@ -1,6 +1,8 @@
-/* 1st party imports - Object types / classes */
+/* 1st party imports */
 import { UserSQL, UserDetailsSQL } from '@/services/user';
 import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
+import { CreateUser } from '@/services/authentication';
+import { SignUpInput } from '@/graphql/inputs/authentication';
 
 // BUG: https://github.com/Microsoft/TypeScript/issues/13995, must cast to any
 
@@ -19,5 +21,17 @@ export const userDetailsToGQL = <T extends UserDetailsSQL | null>(details: T): T
 	return details ? {
 		email: details.email,
 		realName: details.realName,
+	} as any : null;
+};
+
+export const signUpToCreateUserSQL = < T extends SignUpInput | null>(signUpInput: T): T extends SignUpInput ? CreateUser : null =>
+{
+	return signUpInput ? {
+		username: signUpInput.username,
+		password: signUpInput.password,
+		details: {
+			email: signUpInput.details.email,
+			realName: signUpInput.details.realName,
+		},
 	} as any : null;
 };

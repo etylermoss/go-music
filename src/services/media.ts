@@ -41,6 +41,11 @@ export class MediaService {
 	@Inject('artwork.service')
 	private artSvc: ArtworkService;
 
+	/**
+	 * Retrieve a media item, search by resourceID.
+	 * @param resourceID ID of resource
+	 * @returns Media
+	 */
 	getMediaByID(resourceID: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
@@ -54,6 +59,11 @@ export class MediaService {
 		return media ?? null;
 	}
 
+	/**
+	 * Retrieve a media item, search by path.
+	 * @param path Filesystem path to search for
+	 * @returns Media
+	 */
 	getMediaByPath(path: string): MediaSQL | null {
 		const media = this.dbSvc.prepare(`
 		SELECT
@@ -67,6 +77,11 @@ export class MediaService {
 		return media ?? null;
 	}
 
+	/**
+	 * Retrieve all media items.
+	 * @param sourceResourceID Optional source ID to limit search to
+	 * @returns Media array
+	 */
 	getAllMedia(sourceResourceID?: string): MediaSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -81,7 +96,13 @@ export class MediaService {
 		`).all({sourceResourceID: sourceResourceID ?? null}) as MediaSQL[];
 	}
 
-	setMimeType(mediaResourceID: string, metadataContainer: string): boolean {
+	/**
+	 * Set the MIME type field on the media item, search by resourceID.
+	 * @param resourceID ID of resource
+	 * @param metadataContainer Metadata container field to match against
+	 * @returns Success of operation
+	 */
+	setMimeType(resourceID: string, metadataContainer: string): boolean {
 		let mimeType: string | null = null;
 
 		switch (metadataContainer) {
@@ -107,14 +128,26 @@ export class MediaService {
 				mimeType = ?
 			WHERE
 				resourceID = ?
-			`).run(mimeType, mediaResourceID).changes > 0;
+			`).run(mimeType, resourceID).changes > 0;
 		}
 
 		return false;
 	}
 
-	async mediaParser({path, resourceID}: MediaSQL): Promise<void> {
-		const fileExt = extname(path).toLowerCase();
+	// TODO: follow path of song/artwork deletion, is media actually
+	// deleted since it cascades down but not up? and below we aren't
+	// getting success of createSong / createArtwork.
+
+	// TODO: maybe construct up media and song items before adding to
+	// database, easier to cancel transaction.
+
+	/**
+	 * Create subtype song or artwork from the given media item, guessing
+	 * correct format from the file extension (see extensionWhitelist).
+	 * @param media Supertype media item to parse
+	 */
+	async mediaParser(media: MediaSQL): Promise<void> {
+		const fileExt = extname(media.path).toLowerCase();
 
 		// TODO: return song / artwork or success?
 		// TODO: Log - if no match
@@ -125,19 +158,30 @@ export class MediaService {
 			case '.wav':
 			case '.flac':
 			case '.m4a':
-				await this.songSvc.addSong(resourceID);
+				await this.songSvc.createSong(media.resourceID);
 				break;
 			case '.png':
 			case '.jpg':
 			case '.jpeg':
 			case '.bmp':
 			case '.gif':
-				await this.artSvc.addArtwork(resourceID);
+				await this.artSvc.createArtwork(media.resourceID);
 				break;
 		}
 	}
 
-	async addMedia(path: string, fh: fs.promises.FileHandle, ownerUserID: string, sourceResourceID: string): Promise<MediaSQL | null> {
+	// TODO: fixup fh, just pass in size
+
+	/**
+	 * Create new media item.
+	 * It is automatically parsed into the correct subtype (e.g. song).
+	 * @param path Filesystem path of the item
+	 * @param fh Active FileHandle to stat the file
+	 * @param ownerUserID Owner of the created item / resource
+	 * @param sourceResourceID Parent source ID
+	 * @returns Media
+	 */
+	async createMedia(path: string, fh: fs.promises.FileHandle, ownerUserID: string, sourceResourceID: string): Promise<MediaSQL | null> {
 		const resource = this.rsrcSvc.createResource(ownerUserID);
 
 		if (!resource)
@@ -182,7 +226,12 @@ export class MediaService {
 		return null;
 	}
 
-	removeMedia(resourceID: string): boolean {
-		return this.rsrcSvc.removeResource(resourceID);
+	/**
+	 * Delete a media item, search by resourceID.
+	 * @param resourceID ID of resource
+	 * @returns Success of deletion
+	 */
+	deleteMedia(resourceID: string): boolean {
+		return this.rsrcSvc.deleteResource(resourceID);
 	}
 }

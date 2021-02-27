@@ -29,7 +29,10 @@ export class SourceService {
 	@Inject('resource.service')
 	private rsrcSvc: ResourceService;
 
-	/** Retrieves Source resource, searching for it by resourceID.
+	/**
+	 * Retrieve a source, search by resourceID.
+	 * @param resourceID ID of source
+	 * @returns Source
 	 */
 	getSourceByID(resourceID: string): SourceSQL | null {
 		return this.dbSvc.prepare(`
@@ -42,7 +45,9 @@ export class SourceService {
 		`).get(resourceID) as SourceSQL | undefined ?? null;
 	}
 
-	/** Retrieve all Sources.
+	/**
+	 * Retrieve all sources.
+	 * @returns Source array
 	 */
 	getAllSources(): SourceSQL[] {
 		return this.dbSvc.prepare(`
@@ -51,10 +56,15 @@ export class SourceService {
 		`).all() as SourceSQL[];
 	}
 
-	/** Add a new source, returns the source if successful.
-	 *  Does not automatically scan.
+	/**
+	 * Create new source.
+	 * The new source is not automatically scanned for media.
+	 * @param name Name of the source
+	 * @param path Filesystem path of the source
+	 * @param ownerUserID Owner of the source
+	 * @returns Source
 	 */
-	async addSource(name: string, path: string, ownerUserID: string): Promise<SourceSQL | null> {
+	async createSource(name: string, path: string, ownerUserID: string): Promise<SourceSQL | null> {
 		path = fs.realpathSync(path);
 
 		const sources = this.getAllSources();
@@ -94,17 +104,19 @@ export class SourceService {
 
 		if (!success)
 		{
-			this.rsrcSvc.removeResource(resource.resourceID);
+			this.rsrcSvc.deleteResource(resource.resourceID);
 			return null;
 		}
 		
 		return success ? this.getSourceByID(resource.resourceID) : null;
 	}
 
-	/** Remove a source, returns success.
-	 *  Also removes all resources associated with the source.
+	/**
+	 * Delete a source, search by resourceID.
+	 * @param resourceID ID of source
+	 * @returns Success of deletion
 	 */
-	removeSource(resourceID: string): boolean {
-		return this.rsrcSvc.removeResource(resourceID);
+	deleteSource(resourceID: string): boolean {
+		return this.rsrcSvc.deleteResource(resourceID);
 	}
 }
