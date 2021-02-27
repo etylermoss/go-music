@@ -1,7 +1,6 @@
 /* 1st party imports */
-import { UserSQL, UserDetailsSQL } from '@/services/user';
+import { UserSQL, UserDetailsSQL, CreateUser } from '@/services/user';
 import { UserGQL, UserDetailsGQL } from '@/graphql/types/user';
-import { CreateUser } from '@/services/authentication';
 import { SignUpInput } from '@/graphql/inputs/authentication';
 
 // BUG: https://github.com/Microsoft/TypeScript/issues/13995, must cast to any

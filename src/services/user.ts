@@ -3,6 +3,10 @@ import { Service, Inject } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
+import { AuthenticationService } from '@/services/authentication';
+
+/* 1st party imports */
+import { generateRandomID } from '@/common';
 
 export interface UserSQL {
 	userID: string;
@@ -15,11 +19,20 @@ export interface UserDetailsSQL {
 	realName: string;
 }
 
+export interface CreateUser {
+	username: string;
+	password: string;
+	details: Omit<UserDetailsSQL, 'userID'>;
+}
+
 @Service('user.service')
 export class UserService {
 
 	@Inject('database.service')
 	private dbSvc: DatabaseService;
+
+	@Inject('authentication.service')
+	private authSvc: AuthenticationService;
 
 	/**
 	 * Retrieve a user, search by userID.
@@ -86,6 +99,54 @@ export class UserService {
 		FROM
 			User
 		`).all() as UserSQL[];
+	}
+
+	/**
+	 * Create a new user and accompanying authentication data (such as
+	 * their password).
+	 * @param user Object containing data for the new user
+	 * @returns User if created
+	 */
+	createUser({username, password, details}: CreateUser): UserSQL | null {
+		const userID = generateRandomID();
+		const createUserChanges = this.dbSvc.prepare(`
+		INSERT INTO User
+		(
+			userID,
+			username
+		)
+		VALUES
+		(
+			$userID,
+			$username
+		)
+		`).run({userID, username}).changes;
+
+		/* Ensure that the user was inserted into the database */
+		if (createUserChanges !== 1)
+			return null;
+
+		this.createOrUpdateUserDetails(userID, {...details, userID});
+		this.authSvc.updateUserPassword(userID, password);
+
+		return this.getUserByID(userID);
+	}
+
+	/**
+	 * Create or update a users personal details (e.g. email).
+	 * @param userID ID of user
+	 * @param details User details to use
+	 * @returns Success of operation
+	 */
+	createOrUpdateUserDetails(userID: string, details: UserDetailsSQL): boolean {
+		return this.dbSvc.prepare(`
+		REPLACE INTO UserDetails (userID, email, realName)
+		VALUES ($userID, $email, $realName)
+		`).run({
+			userID: userID,
+			email: details.email,
+			realName: details.realName,
+		}).changes > 0;
 	}
 
 	/**

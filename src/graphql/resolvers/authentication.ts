@@ -47,7 +47,7 @@ export default class AuthResolver {
 		if (this.userSvc.getUserByUsername(data.username))
 			return null;
 
-		const user = this.authSvc.createUser(signUpToCreateUserSQL(data));
+		const user = this.userSvc.createUser(signUpToCreateUserSQL(data));
 
 		if (user)
 		{
