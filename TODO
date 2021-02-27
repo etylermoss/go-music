@@ -1,5 +1,4 @@
 *) Cleanup
-    *) Store count of files in Source
     *) Inject services using constructor not @Inject
     *) Change Admin Priority to simple AdminDate
     *) Clean up sql_to_gql converter type

@@ -10,6 +10,7 @@ export const sourceToGQL = <T extends SourceSQL | null>(source: T): T extends So
 		resourceID: source.resourceID,
 		name: source.name,
 		path: source.path,
+		mediaCount: null,
 		scans: null,
 		scanUnderway: null,
 	} as any : null;

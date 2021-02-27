@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { ObjectType, Field, ID } from 'type-graphql';
+import { ObjectType, Field, ID, Int } from 'type-graphql';
 
 @ObjectType()
 export class UserDetailsGQL {
@@ -21,6 +21,6 @@ export class UserGQL {
 	@Field(_type => UserDetailsGQL)
 	details: UserDetailsGQL;
 
-	@Field(_type => Number, {nullable: true})
+	@Field(_type => Int, {nullable: true})
 	adminPriority: number | null;
 }

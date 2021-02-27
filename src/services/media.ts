@@ -53,8 +53,8 @@ export class MediaService {
 		FROM
 			Media
 		WHERE
-			resourceID = $resourceID
-		`).get({resourceID}) as MediaSQL | undefined;
+			resourceID = ?
+		`).get(resourceID) as MediaSQL | undefined;
 
 		return media ?? null;
 	}
@@ -71,8 +71,8 @@ export class MediaService {
 		FROM
 			Media
 		WHERE
-			path = $path
-		`).get({path}) as MediaSQL | undefined;
+			path = ?
+		`).get(path) as MediaSQL | undefined;
 
 		return media ?? null;
 	}
@@ -89,11 +89,30 @@ export class MediaService {
 		FROM
 			Media
 		WHERE
-			(
-				($sourceResourceID IS null)
-				OR (sourceResourceID = $sourceResourceID)
-			)
+		(
+			($sourceResourceID IS null)
+			OR (sourceResourceID = $sourceResourceID)
+		)
 		`).all({sourceResourceID: sourceResourceID ?? null}) as MediaSQL[];
+	}
+
+	/**
+	 * Retrieve number of media items.
+	 * @param resourceID Optional source ID to limit count to
+	 * @returns Number of media items
+	 */
+	getMediaCount(sourceResourceID?: string): number {
+		return this.dbSvc.prepare(`
+		SELECT
+			COUNT(*) AS 'count'
+		FROM
+			Media
+		WHERE
+		(
+			($sourceResourceID IS null)
+			OR (sourceResourceID = $sourceResourceID)
+		)
+		`).get({sourceResourceID: sourceResourceID ?? null}).count;
 	}
 
 	/**
@@ -125,10 +144,10 @@ export class MediaService {
 			UPDATE
 				Media
 			SET
-				mimeType = ?
+				mimeType = $mimeType
 			WHERE
-				resourceID = ?
-			`).run(mimeType, resourceID).changes > 0;
+				resourceID = $resourceID
+			`).run({mimeType, resourceID}).changes > 0;
 		}
 
 		return false;

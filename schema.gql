@@ -111,6 +111,7 @@ type SongGQL {
 }
 
 type SourceGQL {
+  mediaCount: Int!
   name: String!
   path: String!
   resourceID: ID!
@@ -134,7 +135,7 @@ input UserDetailsInput {
 }
 
 type UserGQL {
-  adminPriority: Float
+  adminPriority: Int
   details: UserDetailsGQL!
   userID: ID!
   username: String!
