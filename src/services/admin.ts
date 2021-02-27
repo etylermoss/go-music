@@ -45,10 +45,23 @@ export class AdminService {
 
 	/**
 	 * Make the specified user an admin.
+	 * Their priority as admin is the highest priority of any current
+	 * admins, plus one. (Or 0 if they are the first).
 	 * @param userID ID of user
 	 * @returns Success of operation
 	 */
 	makeUserAdmin(userID: string): boolean {
+		const highestAdminPriority = this.dbSvc.prepare(`
+		SELECT
+			priority
+		FROM
+			AdminUser
+		ORDER BY
+			priority DESC
+		LIMIT
+			1
+		`).get()?.priority as number | undefined ?? null;
+
 		const result = this.dbSvc.prepare(`
 		INSERT INTO AdminUser
 		(
@@ -58,14 +71,11 @@ export class AdminService {
 		VALUES
 		(
 			$userID,
-			( SELECT COUNT(*) FROM AdminUser ) + 1
+			$priority
 		)
-		`).run({userID});
-		if (result.changes === 0) {
-			console.log(`Could not make userID ${userID} an admin, does the user exist?`);
-			return false;
-		}
-		return true;
+		`).run({userID, priority: highestAdminPriority !== null ? highestAdminPriority + 1 : 0});
+
+		return result.changes > 0;
 	}
 
 	/**

@@ -1,6 +1,4 @@
 *) Cleanup
-    *) Change Admin Priority to simple AdminDate
-    *) Clean up sql_to_gql converter type
     *) sort out scan service / checkLatestScanValidity
     *) Add Admin User exception in services/access-control
        *) Change to AccessControl in graphql/scanSource
