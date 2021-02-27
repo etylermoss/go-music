@@ -1,6 +1,4 @@
 *) Cleanup
-    *) Should details (and other fields) be nullable in GQL, null should be
-       on side of SQL convertion
     *) Store count of files in Source
     *) Inject services using constructor not @Inject
     *) Change Admin Priority to simple AdminDate
