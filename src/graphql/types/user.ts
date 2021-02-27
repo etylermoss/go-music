@@ -17,10 +17,10 @@ export class UserGQL {
 
 	@Field()
 	username: string;
+	
+	@Field(_type => UserDetailsGQL)
+	details: UserDetailsGQL;
 
 	@Field(_type => Number, {nullable: true})
 	adminPriority: number | null;
-	
-	@Field(_type => UserDetailsGQL, {nullable: true})
-	details: UserDetailsGQL | null;
 }

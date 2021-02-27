@@ -12,7 +12,6 @@ import { UserService } from '@/services/user';
 import { AdminService } from '@/services/admin';
 
 /* 1st party imports - GraphQL types & inputs */
-import { AuthResponse } from '@/graphql/types/authentication';
 import { UserGQL } from '@/graphql/types/user';
 import { SignUpInput, SignInInput } from '@/graphql/inputs/authentication';
 
@@ -88,44 +87,44 @@ export default class AuthResolver {
 	/** @typegraphql Update the users password. Requires the client to
 	 *  sign-in again (i.e provide username & password).
 	 */
-	@Mutation(_returns => AuthResponse)
-	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
+	@Mutation(_returns => Boolean)
+	updatePassword(@Arg('data') data: SignInInput, @Ctx() ctx: Context): boolean {
 		const user = this.userSvc.getUserByUsername(data.username);
-		if (!user || !ctx.userID) return { success: false };
+		if (!user || !ctx.userID) return false;
 		
 		if (ctx.userID === user.userID && this.authSvc.comparePasswordToUser(user.userID, data.password))
 		{
 			this.authSvc.revokeAllAuthTokens(ctx.userID);
 			this.authSvc.updateUserPassword(ctx.userID, data.password);
 			this.authUser(ctx, user.userID);
-			return { success: true };
+			return true;
 		}
 
-		return { success: false };
+		return false;
 	}
 
 	/** @typegraphql Sign out of the application, revoking authToken.
 	 */
-	@Mutation(_returns => AuthResponse)
-	signOut(@Ctx() ctx: Context): AuthResponse {
-		return { success: this.unAuthUser(ctx) };
+	@Mutation(_returns => Boolean)
+	signOut(@Ctx() ctx: Context): boolean {
+		return this.unAuthUser(ctx);
 	}
 
 	/** @typegraphql Sign out of the application on all currently
 	 *  authorized clients, including the client sending the request.
 	 *  Required to sign in again.
 	 */
-	@Mutation(_returns => AuthResponse)
-	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): AuthResponse {
+	@Mutation(_returns => Boolean)
+	signOutAll(@Arg('data') data: SignInInput, @Ctx() ctx: Context): boolean {
 		const user = this.userSvc.getUserByUsername(data.username);
 
 		if (!user || !ctx.userID)
-			return { success: false };
+			return false;
 
 		if (ctx.userID === user.userID && this.authSvc.comparePasswordToUser(user.userID, data.password))
-			return { success: this.unAuthUser(ctx, ctx.userID) };
+			return this.unAuthUser(ctx, ctx.userID);
 		
-		return { success: false };
+		return false;
 	}
 
 	/** Revokes a users authToken cookie, signing them out. If a userID is

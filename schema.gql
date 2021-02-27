@@ -3,10 +3,6 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-type AuthResponse {
-  success: Boolean!
-}
-
 input CreateSourceInput {
   name: String!
   path: String!
@@ -48,12 +44,12 @@ type Mutation {
   signIn(data: SignInInput!): UserGQL
 
   """Sign out of the application, revoking authToken."""
-  signOut: AuthResponse!
+  signOut: Boolean!
 
   """
   Sign out of the application on all currentlyauthorized clients, including the client sending the request.Required to sign in again.
   """
-  signOutAll(data: SignInInput!): AuthResponse!
+  signOutAll(data: SignInInput!): Boolean!
 
   """
   Sign up, creating a new user/account, and signing inthe user automatically. The first account created is automaticallyset as an admin.
@@ -63,7 +59,7 @@ type Mutation {
   """
   Update the users password. Requires the client tosign-in again (i.e provide username & password).
   """
-  updatePassword(data: SignInInput!): AuthResponse!
+  updatePassword(data: SignInInput!): Boolean!
 }
 
 type Query {
@@ -139,7 +135,7 @@ input UserDetailsInput {
 
 type UserGQL {
   adminPriority: Float
-  details: UserDetailsGQL
+  details: UserDetailsGQL!
   userID: ID!
   username: String!
 }

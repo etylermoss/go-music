@@ -53,9 +53,9 @@ export default class UserResolver implements ResolverInterface<UserGQL> {
 	/** @typegraphql Query a user's details, checking if permitted.
 	 */
 	@FieldAccessControl('READ', 'userID')
-	@FieldResolver(_returns => UserDetailsGQL, {nullable: true})
-	details(@Root() root: UserGQL): UserDetailsGQL | null {
-		return userDetailsToGQL(this.userSvc.getUserDetails(root.userID));
+	@FieldResolver(_returns => UserDetailsGQL)
+	details(@Root() root: UserGQL): UserDetailsGQL {
+		return userDetailsToGQL(this.userSvc.getUserDetails(root.userID)!);
 	}
 
 	/** @typegraphql Delete a user, returns success.
