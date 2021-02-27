@@ -17,7 +17,9 @@ export class ArtworkService {
 	) {}
 	
 	/* circular dependency */
-	private mediaSvc = Container.get(MediaService);
+	private get mediaSvc(): MediaService {
+		return Container.get(MediaService);
+	}
 
 	/**
 	 * Retrieve artwork, search by mediaResourceID.

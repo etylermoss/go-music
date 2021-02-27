@@ -18,7 +18,9 @@ export class SongService {
 	) {}
 	
 	/* circular dependency */
-	private mediaSvc = Container.get(MediaService);
+	private get mediaSvc(): MediaService {
+		return Container.get(MediaService);
+	}
 
 	/**
 	 * Retrieve a song, search by mediaResourceID.

@@ -73,7 +73,7 @@ export class AdminService {
 			$userID,
 			$priority
 		)
-		`).run({userID, priority: highestAdminPriority !== null ? highestAdminPriority + 1 : 0});
+		`).run({userID, priority: highestAdminPriority !== null ? highestAdminPriority + 1 : 1});
 
 		return result.changes > 0;
 	}
