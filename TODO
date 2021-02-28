@@ -1,13 +1,8 @@
+*) Create tables & resolvers for computed metadata
+    (albums, artists, composers, labels, genres, ...)
+*) Work on frontend, components for albums, sorting etc.
+*) Implement filter, orderBy, limit, etc. GQL variables
 *) Add Log service
     *) Use unsafe and strip indent functions and print SQL
-       https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-*) Parse metadata
-    *) Add inherant metadata to tables
-       (title, year, track #, disk #, format)
-*) Create tables & resolvers for computed properties
-    (albums, artists, composers, labels, genres )
-*) Create REST API to serve audio and artwork
-*) Use frontend to create first working prototype!
-*) Make API able to transcode
-*) Ensure song and artwork are actually what they say they are
+       https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels*) Use frontend to create first working prototype!
 ... lots more

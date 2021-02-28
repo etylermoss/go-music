@@ -1,4 +1,4 @@
-CREATE TABLE 'Media' (
+CREATE TABLE IF NOT EXISTS 'Media' (
     'resourceID' TEXT NOT NULL PRIMARY KEY,
     'sourceResourceID' TEXT NOT NULL,
     'path' TEXT NOT NULL UNIQUE,

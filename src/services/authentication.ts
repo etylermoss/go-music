@@ -105,16 +105,22 @@ export class AuthenticationService {
 		FROM
 			UserAuthToken
 		WHERE
-			userID = $userID
+			userID = ?
 		`);
 		const sqlDeleteOldestToken = this.dbSvc.prepare(`
-		DELETE FROM UserAuthToken
+		DELETE FROM
+			UserAuthToken
 		WHERE rowid =
 			(
-				SELECT rowid
-				FROM UserAuthToken
-				WHERE userID = $userID
-				ORDER BY creationTime ASC LIMIT 1
+				SELECT
+					rowid
+				FROM
+					UserAuthToken
+				WHERE
+					userID = ?
+				ORDER BY
+					creationTime ASC
+				LIMIT 1
 			)
 		`);
 		const sqlInsertToken = this.dbSvc.prepare(`
@@ -131,10 +137,10 @@ export class AuthenticationService {
 		`);
 		
 		const token = randomBytes(16).toString('base64url');
-		const tokenCount = sqlGetTokenCount.get({userID});
+		const tokenCount = sqlGetTokenCount.pluck().get(userID);
 
 		if (tokenCount > this.confSvc.get().maxClients) {
-			sqlDeleteOldestToken.run({userID});
+			sqlDeleteOldestToken.run(userID);
 		}
 		
 		sqlInsertToken.run({userID, token});

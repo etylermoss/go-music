@@ -85,9 +85,9 @@ export class AdminService {
 	getAdminCount(): number {
 		return this.dbSvc.prepare(`
 		SELECT
-			COUNT(*) AS 'count'
+			COUNT(*)
 		FROM
 			AdminUser
-		`).get().count;
+		`).pluck().get();
 	}
 }

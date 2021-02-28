@@ -26,6 +26,9 @@ export const extensionWhitelist =
 	'.png', '.jpg', '.jpeg', '.bmp', '.gif',
 ];
 
+// TODO: maybe construct up media and song items before adding to
+// database, easier to cancel transaction.
+
 @Service()
 export class MediaService {
 
@@ -99,7 +102,7 @@ export class MediaService {
 	getMediaCount(sourceResourceID?: string): number {
 		return this.dbSvc.prepare(`
 		SELECT
-			COUNT(*) AS 'count'
+			COUNT(*)
 		FROM
 			Media
 		WHERE
@@ -107,7 +110,7 @@ export class MediaService {
 			($sourceResourceID IS null)
 			OR (sourceResourceID = $sourceResourceID)
 		)
-		`).get({sourceResourceID: sourceResourceID ?? null}).count;
+		`).pluck().get({sourceResourceID: sourceResourceID ?? null});
 	}
 
 	/**
@@ -148,22 +151,14 @@ export class MediaService {
 		return false;
 	}
 
-	// TODO: follow path of song/artwork deletion, is media actually
-	// deleted since it cascades down but not up? and below we aren't
-	// getting success of createSong / createArtwork.
-
-	// TODO: maybe construct up media and song items before adding to
-	// database, easier to cancel transaction.
-
 	/**
 	 * Create subtype song or artwork from the given media item, guessing
 	 * correct format from the file extension (see extensionWhitelist).
 	 * @param media Supertype media item to parse
 	 */
-	async mediaParser(media: MediaSQL): Promise<void> {
+	async mediaParser(media: MediaSQL): Promise<boolean> {
 		const fileExt = extname(media.path).toLowerCase();
 
-		// TODO: return song / artwork or success?
 		// TODO: Log - if no match
 		switch (fileExt) {
 			case '.mp3':
@@ -172,19 +167,17 @@ export class MediaService {
 			case '.wav':
 			case '.flac':
 			case '.m4a':
-				await this.songSvc.createSong(media.resourceID);
-				break;
+				return await this.songSvc.createSong(media.resourceID) ? true : false;
 			case '.png':
 			case '.jpg':
 			case '.jpeg':
 			case '.bmp':
 			case '.gif':
-				await this.artSvc.createArtwork(media.resourceID);
-				break;
+				return this.artSvc.createArtwork(media.resourceID) ? true : false;
 		}
-	}
 
-	// TODO: fixup fh, just pass in size
+		return false;
+	}
 
 	/**
 	 * Create new media item.
@@ -235,11 +228,9 @@ export class MediaService {
 		)
 		`).run(media).changes > 0;
 
-		if (success)
-		{
-			await this.mediaParser(media);
-			
-			return this.getMediaByID(media.resourceID);
+		if (success) {
+			const parse = await this.mediaParser(media);
+			return parse ? this.getMediaByID(media.resourceID) : (this.deleteMedia(media.resourceID), null);
 		}
 			
 		return null;

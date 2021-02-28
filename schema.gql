@@ -106,8 +106,19 @@ input SignUpInput {
 }
 
 type SongGQL {
+  codec: String
+  diskNo: Int
+  diskOf: Int
+  duration: Float
+  lossless: Boolean
   media: MediaGQL!
   mediaResourceID: ID!
+  releaseCountry: String
+  releaseFormat: String
+  title: String!
+  trackNo: Int
+  trackOf: Int
+  year: Int
 }
 
 type SourceGQL {
@@ -115,8 +126,8 @@ type SourceGQL {
   name: String!
   path: String!
   resourceID: ID!
-  scans: [ScanGQL!]!
   scanUnderway: Boolean!
+  scans: [ScanGQL!]!
 }
 
 """
