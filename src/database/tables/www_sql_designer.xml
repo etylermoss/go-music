@@ -277,4 +277,33 @@
 <part>mediaResourceID</part>
 </key>
 </table>
+<table x="1400" y="300" name="Album">
+<row name="resourceID" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Resource" row="resourceID" />
+</row>
+<row name="name" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+</row>
+<key type="PRIMARY" name="">
+<part>resourceID</part>
+</key>
+<key type="UNIQUE" name="">
+<part>name</part>
+</key>
+</table>
+<table x="1400" y="400" name="AlbumSong">
+<row name="songMediaResourceID" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Song" row="mediaResourceID" />
+</row>
+<row name="albumResourceID" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+<relation table="Album" row="resourceID" />
+</row>
+<key type="PRIMARY" name="">
+<part>songMediaResourceID</part>
+</key>
+<comment>Defines what songs belong to an album.</comment>
+</table>
 </sql>

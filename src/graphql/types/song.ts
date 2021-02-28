@@ -3,6 +3,7 @@ import { ObjectType, Field, ID, Int, Float } from 'type-graphql';
 
 /* 1st party imports - GraphQL types & inputs */
 import { MediaGQL } from '@/graphql/types/media';
+import { AlbumGQL } from '@/graphql/types/album';
 
 const nullable = true;
 
@@ -13,6 +14,9 @@ export class SongGQL {
 
     @Field(_type => MediaGQL)
     media: MediaGQL;
+
+    @Field(_type => AlbumGQL, {nullable})
+    album: AlbumGQL | null;
     
     @Field(_type => String)
     title: string;

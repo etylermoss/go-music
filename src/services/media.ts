@@ -5,9 +5,12 @@ import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-import { ResourceService, ResourceSQL } from '@/services/resource';
+import { ResourceService } from '@/services/resource';
 import { SongService } from '@/services/song';
 import { ArtworkService } from '@/services/artwork';
+
+/* 1st party imports - SQL types */
+import { ResourceSQL } from '@/services/resource';
 
 export interface MediaSQL {
 	resourceID: string;

@@ -9,15 +9,18 @@ import { AccessControl } from '@/graphql/decorators/access-control';
 /* 1st party imports - Services */
 import { MediaService } from '@/services/media';
 import { SongService } from '@/services/song';
+import { AlbumService } from '@/services/album';
 import { AccessControlService, Operations } from '@/services/access-control';
 
 /* 1st party imports - GraphQL types & inputs */
 import { SongGQL } from '@/graphql/types/song';
 import { MediaGQL } from '@/graphql/types/media';
+import { AlbumGQL } from '@/graphql/types/album';
 
 /* 1st party imports - SQL object to GQL object converters */
 import { songToGQL } from '@/graphql/sql-gql-conversion/song';
 import { mediaToGQL } from '@/graphql/sql-gql-conversion/media';
+import { albumToGQL } from '@/graphql/sql-gql-conversion/album';
 
 @Service()
 @Resolver(_of => SongGQL)
@@ -26,12 +29,18 @@ export default class SongResolver implements ResolverInterface<SongGQL> {
 	constructor (
 		private mediaSvc: MediaService,
 		private songSvc: SongService,
+		private albumSvc: AlbumService,
 		private aclSvc: AccessControlService,
 	) {}
 
 	@FieldResolver(_type => MediaGQL)
 	media(@Root() root: SongGQL): MediaGQL {
 		return mediaToGQL(this.mediaSvc.getMediaByID(root.mediaResourceID)!);
+	}
+
+	@FieldResolver(_type => AlbumGQL, {nullable: true})
+	album(@Root() root: SongGQL): AlbumGQL | null {
+		return albumToGQL(this.albumSvc.getSongAlbum(root.mediaResourceID));
 	}
 
 	/**

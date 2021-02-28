@@ -119,7 +119,7 @@ export class ScanService {
 		{
 			const latestScan = this.getLatestScan(sourceResourceID);
 
-			if (!latestScan || !latestScan.endTime)
+			if (latestScan === null || latestScan.endTime === null)
 				return null;
 
 			return sourceResourceID;

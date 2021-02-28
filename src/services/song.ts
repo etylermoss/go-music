@@ -5,7 +5,12 @@ import { Service, Container } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-import { MediaService, MediaSQL } from '@/services/media';
+import { MediaService } from '@/services/media';
+import { AlbumService } from '@/services/album';
+import { ResourceService } from '@/services/resource';
+
+/* 1st party imports - SQL types */
+import { MediaSQL } from '@/services/media';
 
 export interface SongSQL {
 	mediaResourceID: string;
@@ -21,11 +26,14 @@ export interface SongSQL {
 	codec: string | null;
 	lossless: number | null;
 }
+
 @Service()
 export class SongService {
 
 	constructor (
 		private dbSvc: DatabaseService,
+		private albumSvc: AlbumService,
+		private rsrcSvc: ResourceService,
 	) {}
 	
 	/* circular dependency */
@@ -98,7 +106,7 @@ export class SongService {
 
 		/* get properties out of metadata */
 		const { container, duration, codec, lossless } = metadata.format;
-		const { year, title } = metadata.common;
+		const { title, year, track, disk, releasecountry, media: mediatype } = metadata.common;
 
 		/* add mimeType to Media object, cancel if can't or if no container metadata */
 		if (!(container && this.mediaSvc.setMimeType(mediaResourceID, container))) {
@@ -111,12 +119,12 @@ export class SongService {
 			mediaResourceID,
 			title: title ?? `Untitled - ${basename(media.path)}`,
 			year: year ? (year >= 1877 ? year : null) : null,
-			trackNo: metadata.common.track.no ?? null,
-			trackOf: metadata.common.track.of ?? null,
-			diskNo: metadata.common.disk.no ?? null,
-			diskOf: metadata.common.disk.of ?? null,
-			releaseFormat: metadata.common.media ?? null,
-			releaseCountry: metadata.common.releasecountry ?? null,
+			trackNo: track.no ?? null,
+			trackOf: track.of ?? null,
+			diskNo: disk.no ?? null,
+			diskOf: disk.of ?? null,
+			releaseFormat: mediatype ?? null,
+			releaseCountry: releasecountry ?? null,
 			duration: duration ?? null,
 			codec: codec ?? null,
 			lossless: lossless ? 1 : (lossless !== null ? 0 : null),
@@ -156,8 +164,20 @@ export class SongService {
 		)
 		`).run(song).changes > 0;
 
+		/* assign to shared objects */
+		this.assignToSharedObjects(metadata.common, mediaResourceID);
+
 		/* if creation unsuccessful, delete the song and return null */
 		return success ? this.getSongByID(mediaResourceID) : (this.deleteSong(mediaResourceID), null);
+	}
+
+	private assignToSharedObjects(common: mm.ICommonTagsResult, songMediaResourceID: string): void {
+		const songResource = this.rsrcSvc.getResourceByID(songMediaResourceID);
+		const albumName = (common.album || common.albumsort) ?? null;
+
+		if (songResource && albumName) {
+			this.albumSvc.createOrAddToAlbum(albumName, songMediaResourceID, songResource.ownerUserID);
+		}
 	}
 
 	/**

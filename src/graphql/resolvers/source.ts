@@ -46,7 +46,7 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 
 	@FieldResolver()
 	scanUnderway(@Root() root: SourceGQL): boolean {
-		return this.scanSvc.scanUnderway(root.resourceID) ? true : false;
+		return this.scanSvc.scanUnderway(root.resourceID) ? false : true;
 	}
 
 	/** @typegraphql Query a source, must have permissions to access to it.

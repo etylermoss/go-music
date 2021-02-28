@@ -3,6 +3,12 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type AlbumGQL {
+  name: String!
+  resourceID: ID!
+  songs: [SongGQL!]!
+}
+
 input CreateSourceInput {
   name: String!
   path: String!
@@ -63,12 +69,16 @@ type Mutation {
 }
 
 type Query {
-  """Query a user, must be logged in."""
+  """Query a specific album."""
+  album(resourceID: String!): AlbumGQL
+
+  """Query all albums the user has access to."""
+  albums: [AlbumGQL!]
+
+  """Query a specific song."""
   song(resourceID: String!): SongGQL
 
-  """
-  Query all songs the user has access to.Can optionally limit results to songs in a specific source.
-  """
+  """Query all songs the user has access to."""
   songs(sourceResourceID: String): [SongGQL!]
 
   """Query a source, must have permissions to access to it."""

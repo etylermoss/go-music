@@ -50,8 +50,10 @@ export class SourceService {
 	 */
 	getAllSources(): SourceSQL[] {
 		return this.dbSvc.prepare(`
-		SELECT resourceID, name, path
-		FROM Source
+		SELECT
+			*
+		FROM
+			Source
 		`).all() as SourceSQL[];
 	}
 
