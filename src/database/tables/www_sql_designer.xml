@@ -231,11 +231,44 @@
 <datatype>TEXT</datatype>
 <relation table="Media" row="resourceID" />
 </row>
+<row name="title" null="0" autoincrement="0">
+<datatype>TEXT</datatype>
+</row>
+<row name="year" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="trackNo" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="trackOf" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="diskNo" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="diskOf" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="releaseFormat" null="1" autoincrement="0">
+<datatype>TEXT</datatype>
+<default>NULL</default></row>
+<row name="releaseCountry" null="1" autoincrement="0">
+<datatype>TEXT</datatype>
+<default>NULL</default></row>
+<row name="duration" null="1" autoincrement="0">
+<datatype>REAL</datatype>
+<default>NULL</default></row>
+<row name="codec" null="1" autoincrement="0">
+<datatype>TEXT</datatype>
+<default>NULL</default></row>
+<row name="lossless" null="1" autoincrement="0">
+<datatype>TEXT</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>mediaResourceID</part>
 </key>
 </table>
-<table x="1100" y="500" name="Artwork">
+<table x="1100" y="700" name="Artwork">
 <row name="mediaResourceID" null="0" autoincrement="0">
 <datatype>TEXT</datatype>
 <relation table="Media" row="resourceID" />
