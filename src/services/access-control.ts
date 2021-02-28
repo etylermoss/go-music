@@ -3,6 +3,7 @@ import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
+import { UserService } from '@/services/user';
 import { ResourceService } from '@/services/resource';
 import { AdminService } from '@/services/admin';
 
@@ -35,13 +36,13 @@ export class AccessControlService {
 
 	constructor (
 		private dbSvc: DatabaseService,
+		private userSvc: UserService,
 		private rsrcSvc: ResourceService,
 		private adminSvc: AdminService,
 	) {}
 
 	/**
 	 * Get access level on the target resource for the given user.
-	 * TODO: Add exception for admin users
 	 * @param userID ID of user
 	 * @param targetResourceID ID of target resource
 	 * @returns Allowed operations
@@ -49,9 +50,17 @@ export class AccessControlService {
 	getResourceAccessLevelForUser(userID: string, targetResourceID: string): Operations {
 		const resource = this.rsrcSvc.getResourceByID(targetResourceID);
 
-		if (!resource) return Operations.NONE;
+		/* non-existent resource */
+		if (!resource)
+			return Operations.NONE;
 
-		if (userID === resource.ownerUserID) return Operations.DELETE;
+		/* user owns the resource */
+		if (userID === resource.ownerUserID)
+			return Operations.DELETE;
+
+		/* user is admin */
+		if (this.adminSvc.isUserAdmin(userID))
+			return Operations.DELETE;
 
 		const sharedGroups: ResourceGroup[] = this.dbSvc.prepare(`
 		SELECT
@@ -72,20 +81,22 @@ export class AccessControlService {
 			userID,
 		});
 
-		if (!sharedGroups.length) return Operations.NONE;
+		/* user shares no groups with the target resource */
+		if (!sharedGroups.length)
+			return Operations.NONE;
 
+		/* get highest operation level across shared groups */
 		return sharedGroups.reduce<Operations>((prev, current) => {
 			return (current.allowedOperations > prev)
 				? current.allowedOperations
 				: prev;
-		}, Operations.READ);
+		}, Operations.NONE);
 	}
 
 	/**
 	 * Get access level on the target user for the given user.
 	 * Basic user data (username) is public, this is only for private data,
 	 * e.g. email.
-	 * TODO: Verify below implementation is correct
 	 * @param userID ID of user
 	 * @param targetUserID ID of target user
 	 * @returns Allowed operations
@@ -93,11 +104,20 @@ export class AccessControlService {
 	getUserAccessLevelForUser(userID: string, targetUserID: string): Operations {
 		const userAdmin = this.adminSvc.getAdminUserPriority(userID);
 		const tUserAdmin = this.adminSvc.getAdminUserPriority(targetUserID);
-	
-		if (userAdmin && (tUserAdmin && userAdmin > tUserAdmin) || !tUserAdmin)
+
+		/* non-existent target user */
+		if (!this.userSvc.getUserByID(targetUserID))
+			return Operations.NONE;
+
+		/* both users are the same user */
+		if (userID === targetUserID)
 			return Operations.DELETE;
 
-		return userID === targetUserID ? Operations.DELETE : Operations.NONE;
+		/* userID must have a higher priority (lower number) than targetUserID */
+		if (userAdmin && (!tUserAdmin || userAdmin < tUserAdmin))
+			return Operations.DELETE;
+
+		return Operations.NONE;
 	}
 
 	/**
@@ -112,7 +132,16 @@ export class AccessControlService {
 	getGroupAccessLevelForUser(userID: string, targetGroupID: string): Operations {
 		const group = this.getGroupByID(targetGroupID);
 
-		if (group && userID === group.ownerUserID)
+		/* non-existent target group */
+		if (!group)
+			return Operations.NONE;
+
+		/* user is owner of target group */
+		if (userID === group.ownerUserID)
+			return Operations.DELETE;
+
+		/* user is admin */
+		if (this.adminSvc.isUserAdmin(userID))
 			return Operations.DELETE;
 
 		return Operations.READ;

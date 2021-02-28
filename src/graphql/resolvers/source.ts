@@ -98,8 +98,7 @@ export default class SourceResolver implements ResolverInterface<SourceGQL> {
 	/** @typegraphql Scans the given source, returns success.
 	 *  Must be admin.
 	 */
-	// TODO: change to @AccessControl
-	@IsAdmin()
+	@AccessControl('WRITE', 'resourceID')
 	@Mutation(_returns => Boolean)
 	async scanSource(@Arg('resourceID') resourceID: string): Promise<boolean> {
 		const scan = await this.scanSvc.scanSource(resourceID);

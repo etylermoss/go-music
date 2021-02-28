@@ -1,6 +1,3 @@
-*) Cleanup
-    *) Add Admin User exception in services/access-control
-       *) Change to AccessControl in graphql/scanSource
 *) Speedup walk-async-fd, maybe remove fd
 *) Add Log service
     *) Use unsafe and strip indent functions and print SQL
