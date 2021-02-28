@@ -7,7 +7,6 @@ import { ResourceGQL } from '@/graphql/types/resource';
 export const resourceToGQL = <T extends ResourceSQL | null>(resource: T): T extends ResourceSQL ? ResourceGQL : null =>
 {
 	return resource ? {
-		resourceID: resource.resourceID,
-		ownerUserID: resource.ownerUserID,
+		...resource,
 	} as any : null;
 };
