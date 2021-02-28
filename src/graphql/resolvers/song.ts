@@ -1,5 +1,5 @@
 /* 3rd party imports */
-import { Resolver, Arg, Query, Ctx, FieldResolver, Root } from 'type-graphql';
+import { Resolver, Arg, Query, Ctx, FieldResolver, Root, ResolverInterface } from 'type-graphql';
 import { Service } from 'typedi';
 
 /* 1st party imports */
@@ -21,7 +21,7 @@ import { mediaToGQL } from '@/graphql/sql-gql-conversion/media';
 
 @Service()
 @Resolver(_of => SongGQL)
-export default class SongResolver {
+export default class SongResolver implements ResolverInterface<SongGQL> {
 
 	constructor (
 		private mediaSvc: MediaService,
@@ -34,7 +34,8 @@ export default class SongResolver {
 		return mediaToGQL(this.mediaSvc.getMediaByID(root.mediaResourceID)!);
 	}
 
-	/** @typegraphql Query a user, must be logged in.
+	/**
+	 * @typegraphql Query a specific song.
 	 */
 	@AccessControl('READ', 'resourceID')
 	@Query(_returns => SongGQL, {nullable: true})
@@ -44,8 +45,9 @@ export default class SongResolver {
 		return song ? songToGQL(song) : null;
 	}
 
-	/** @typegraphql Query all songs the user has access to.
-	 *  Can optionally limit results to songs in a specific source.
+	/**
+	 * @typegraphql Query all songs the user has access to.
+	 * @param sourceResourceID Optionally limit results to songs in a specific source.
 	 */
 	@AccessControl()
 	@Query(_returns => [SongGQL], {nullable: true})
