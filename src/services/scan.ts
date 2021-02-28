@@ -1,6 +1,6 @@
 /* 3rd party imports */
 import fs from 'fs';
-import { join, extname } from 'path';
+import { extname } from 'path';
 import { Service } from 'typedi';
 import { walkAsync } from 'walk-async-fd';
 
@@ -258,20 +258,19 @@ export class ScanService {
 		let counter = 0;
 		
 		try {
-			await walkAsync(source.path, async (fh, root, name) => {
-				const fullPath = join(root, name);
-				const validExt = extensionWhitelist.includes(extname(name).toLowerCase());
-				const foundMedia = this.mediaSvc.getMediaByPath(fullPath);
+			await walkAsync(source.path, async (path) => {
+				const validExt = extensionWhitelist.includes(extname(path).toLowerCase());
+				const foundMedia = this.mediaSvc.getMediaByPath(path);
 
 				if (validExt && !foundMedia)
 				{
-					const media = await this.mediaSvc.createMedia(fullPath, fh, sourceResource.ownerUserID, source.resourceID);
+					const media = await this.mediaSvc.createMedia(path, sourceResource.ownerUserID, source.resourceID);
 					if (media)
 						counter++;
 				}
 			}, {skipHidden: true});
 		} catch (err) {
-			// TODO: Log
+			// TODO: Log, could not access source path, is it not a directory?
 			return null;
 		}
 

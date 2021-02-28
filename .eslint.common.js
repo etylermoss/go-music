@@ -25,7 +25,7 @@ module.exports = {
 		"comma-dangle": ["warn", "always-multiline"],
 		"no-duplicate-imports": "off",
 		"linebreak-style": ["error", "unix"],
-		"no-cond-assign": ["error", "always"],
+		"no-cond-assign": ["error", "except-parens"],
 		"no-console": "off",
 		"semi": ["warn", "always", {
 			"omitLastInOneLineBlock": true

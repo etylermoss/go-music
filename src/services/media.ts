@@ -5,7 +5,7 @@ import { Service } from 'typedi';
 
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
-import { ResourceService } from '@/services/resource';
+import { ResourceService, ResourceSQL } from '@/services/resource';
 import { SongService } from '@/services/song';
 import { ArtworkService } from '@/services/artwork';
 
@@ -195,19 +195,24 @@ export class MediaService {
 	 * @param sourceResourceID Parent source ID
 	 * @returns Media
 	 */
-	async createMedia(path: string, fh: fs.promises.FileHandle, ownerUserID: string, sourceResourceID: string): Promise<MediaSQL | null> {
-		const resource = this.rsrcSvc.createResource(ownerUserID);
+	async createMedia(path: string, ownerUserID: string, sourceResourceID: string): Promise<MediaSQL | null> {
+		let resource: ResourceSQL | null;
+		let size: number;
 
-		if (!resource)
-		{
+		try {
+			size = (await fs.promises.stat(path)).size;
+		} catch {
 			return null;
 		}
+
+		if (!(resource = this.rsrcSvc.createResource(ownerUserID)))
+			return null;
 
 		const media: MediaSQL = {
 			resourceID: resource.resourceID,
 			sourceResourceID: sourceResourceID,
 			path,
-			size: (await fh.stat()).size,
+			size,
 			mimeType: null,
 		};
 
