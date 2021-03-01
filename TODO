@@ -1,7 +1,6 @@
-*) On song delete, check if last song in album, and delete the album if so
+*) Work on frontend, components for albums etc.
 *) Create tables & resolvers for computed metadata
     (artists, composers, labels, genres, ...)
-*) Work on frontend, components for albums, sorting etc.
 *) Implement filter, orderBy, limit, etc. GQL variables
 *) Add Log service
     *) Use unsafe and strip indent functions and print SQL
