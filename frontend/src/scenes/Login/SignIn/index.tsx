@@ -1,20 +1,21 @@
 /* 3rd party imports */
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useObserver } from 'mobx-react';
 import { useMutation } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
+
+/* 1st party imports */
+import { SignedInFunc } from '@/scenes/Login';
 
 /* 1st part imports - GraphQL */
 import signInTag from '@/scenes/Login/SignIn/gql/SignIn';
 import signInTypes from '@/scenes/Login/SignIn/gql/types/SignIn';
 
-/* 1st party imports */
-import { StoreContext } from '@/store';
+interface SignInProps {
+	active: boolean;
+	signedIn: SignedInFunc;
+}
 
-const Scene = (props: { active: boolean }): JSX.Element => {
-	const store = useContext(StoreContext);
-	const history = useHistory();
-
+const Component = ({active, signedIn}: SignInProps): JSX.Element => {
 	const [user, setUser] = useState({
 		username: '',
 		password: '',
@@ -29,16 +30,25 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 
 	const submit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
-		const { data } = await signIn({variables: { data: user }});
-		if (data?.signIn?.details)
-		{
-			store.updateUser(data.signIn);
-			history.push('/dashboard');
+
+		const result = await signIn({ variables: { data: {
+			username: user.username,
+			password: user.password,
+		}}});
+
+		if (result.data?.signIn?.details) {
+			const { userID, username, adminPriority, details } = result.data.signIn;
+			signedIn({
+				userID,
+				username,
+				adminPriority,
+				details,
+			});
 		}
 	};
 
 	return useObserver(() => {
-		if (!props.active) return ( <></> );
+		if (!active) return ( <></> );
 		return (
 			<>
 				<h2>Sign in</h2>
@@ -58,4 +68,4 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 	});
 };
 
-export default Scene;
+export default Component;

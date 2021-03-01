@@ -1,20 +1,21 @@
 /* 3rd party imports */
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useObserver } from 'mobx-react';
 import { useMutation } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
 
 /* 1st party imports */
-import { StoreContext } from '@/store';
+import { SignedInFunc } from '@/scenes/Login';
 
 /* 1st part imports - GraphQL */
 import signUpTag from '@/scenes/Login/SignUp/gql/SignUp';
 import signUpTypes from '@/scenes/Login/SignUp/gql/types/SignUp';
 
-const Scene = (props: { active: boolean }): JSX.Element => {
-	const store = useContext(StoreContext);
-	const history = useHistory();
+interface SignUpProps {
+	active: boolean;
+	signedIn: SignedInFunc;
+}
 
+const Component = ({active, signedIn}: SignUpProps): JSX.Element => {
 	const [user, setUser] = useState({
 		realName: '',
 		username: '',
@@ -27,31 +28,33 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 		[evt.target.name]: evt.target.value,
 	});
 
-	const [signUp] = useMutation<signUpTypes.SignUp>(signUpTag);
+	const [signUp] = useMutation<signUpTypes.SignUp, signUpTypes.SignUpVariables>(signUpTag);
 
-	const submit = (event: React.FormEvent<HTMLFormElement>): void => {
+	const submit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
-		const signUpVars: signUpTypes.SignUpVariables = {
-			data: {
-				username: user.username,
-				password: user.password,
-				details: {
-					realName: user.realName,
-					email: user.email,
-				},
+
+		const result = await signUp({ variables: { data: {
+			username: user.username,
+			password: user.password,
+			details: {
+				realName: user.realName,
+				email: user.email,
 			},
-		};
-		signUp({variables: { data: signUpVars.data }})
-			.then(({data}) => {
-				if (data?.signUp?.details) {
-					store.updateUser(data.signUp);
-					history.push('/dashboard');
-				}
+		}}});
+
+		if (result?.data?.signUp?.details) {
+			const { userID, username, adminPriority, details } = result.data.signUp;
+			signedIn({
+				userID,
+				username,
+				adminPriority,
+				details,
 			});
+		}
 	};
 
 	return useObserver(() => {
-		if (!props.active) return ( <></> );
+		if (!active) return ( <></> );
 		return (
 			<>
 				<h2>Register</h2>
@@ -93,4 +96,4 @@ const Scene = (props: { active: boolean }): JSX.Element => {
 	});
 };
 
-export default Scene;
+export default Component;

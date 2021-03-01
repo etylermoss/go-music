@@ -32,5 +32,5 @@ class Store {
 const StoreInstance = new Store();
 const StoreContext = createContext(StoreInstance);
 
-export { StoreContext, Store };
+export { Store, StoreContext, User, UserDetails };
 export default StoreInstance;
