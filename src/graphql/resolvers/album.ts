@@ -9,6 +9,7 @@ import { AccessControl } from '@/graphql/decorators/access-control';
 /* 1st party imports - Services */
 import { AlbumService } from '@/services/album';
 import { AccessControlService, Operations } from '@/services/access-control';
+import { AlbumSongService } from '@/services/album-song';
 
 /* 1st party imports - GraphQL types & inputs */
 import { AlbumGQL } from '@/graphql/types/album';
@@ -24,12 +25,13 @@ export default class AlbumResolver implements ResolverInterface<AlbumGQL> {
 
 	constructor (
 		private albumSvc: AlbumService,
+		private albumSongSvc: AlbumSongService,
 		private aclSvc: AccessControlService,
 	) {}
 
 	@FieldResolver(_type => [SongGQL])
 	songs(@Root() root: AlbumGQL): SongGQL[] {
-		const songs = this.albumSvc.getAlbumSongs(root.resourceID);
+		const songs = this.albumSongSvc.getAlbumSongs(root.resourceID);
 		return songs ? songs.map<SongGQL>(song => songToGQL(song)) : [];
 	}
 

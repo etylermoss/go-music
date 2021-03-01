@@ -4,9 +4,10 @@ import { Service } from 'typedi';
 /* 1st party imports - Services */
 import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
+import { AlbumSongService } from '@/services/album-song';
 
 /* 1st party imports - SQL types */
-import { SongSQL } from '@/services/song';
+import { ResourceSQL } from '@/services/resource';
 
 export interface AlbumSQL {
 	resourceID: string;
@@ -19,8 +20,14 @@ export class AlbumService {
 	constructor (
 		private dbSvc: DatabaseService,
 		private rsrcSvc: ResourceService,
+		private albumSongSvc: AlbumSongService,
 	) {}
 
+	/**
+	 * Retrieve an album, search by resourceID.
+	 * @param resourceID ID of album
+	 * @returns Album
+	 */
 	getAlbumByID(resourceID: string): AlbumSQL | null {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -32,6 +39,11 @@ export class AlbumService {
 		`).get(resourceID) as AlbumSQL | undefined ?? null;
 	}
 
+	/**
+	 * Retrieve an album, search by name.
+	 * @param name Name of album
+	 * @returns Album
+	 */
 	getAlbumByName(name: string): AlbumSQL | null {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -43,6 +55,10 @@ export class AlbumService {
 		`).get(name) as AlbumSQL | undefined ?? null;
 	}
 	
+	/**
+	 * Retrieve all albums.
+	 * @returns Album array
+	 */
 	getAllAlbums(): AlbumSQL[] {
 		return this.dbSvc.prepare(`
 		SELECT
@@ -51,98 +67,63 @@ export class AlbumService {
 			Album
 		`).all() as AlbumSQL[];
 	}
-	
-	getAlbumSongs(resourceID: string): SongSQL[] {
-		return this.dbSvc.prepare(`
-		SELECT
-			Song.*
-		FROM
-			Song
-		INNER JOIN
-			AlbumSong
-		ON
-			Song.mediaResourceID = AlbumSong.songMediaResourceID
-		WHERE
-			AlbumSong.albumResourceID = ?
-		`).all(resourceID) as SongSQL[];
-	}
 
-	getSongAlbum(songMediaResourceID: string): AlbumSQL | null {
-		return this.dbSvc.prepare(`
-		SELECT
-			Album.*
-		FROM
-			Album
-		INNER JOIN
-			AlbumSong
-		ON
-			Album.resourceID = AlbumSong.albumResourceID
-		WHERE
-			AlbumSong.songMediaResourceID = ?
-		`).get(songMediaResourceID) as AlbumSQL | undefined ?? null;
-	}
-
+	/**
+	 * Adds the given song to the album, searching for it (album) by
+	 * name. If the album does not exist, it is created.
+	 * @param name Album name
+	 * @param songMediaResourceID ID of song
+	 * @param ownerUserID Owner of the new album (if created)
+	 * @returns Album
+	 */
 	createOrAddToAlbum(name: string, songMediaResourceID: string, ownerUserID: string): AlbumSQL | null {
 		const album = this.getAlbumByName(name);
 
-		/* associate song with album */
-		const insertIntoAlbumSong = this.dbSvc.prepare(`
-		INSERT INTO AlbumSong
-		(
-			songMediaResourceID,
-			albumResourceID
-		)
-		VALUES
-		(
-			$songMediaResourceID,
-			$albumResourceID
-		)
-		`);
-
-		/* create new album */
-		const insertIntoAlbum = this.dbSvc.prepare(`
-		INSERT INTO Album
-		(
-			resourceID,
-			name
-		)
-		VALUES
-		(
-			$resourceID,
-			$name
-		)
-		`);
-
 		if (album) {
-			const success = insertIntoAlbumSong.run({
-				songMediaResourceID: songMediaResourceID,
-				albumResourceID: album.resourceID,
-			}).changes > 0;
+			const success = this.albumSongSvc.addSongToAlbum(songMediaResourceID, album.resourceID);
 
 			return success ? this.getAlbumByID(album.resourceID) : null;
 		} else {
-			const resource = this.rsrcSvc.createResource(ownerUserID);
+			/* create new album statement */
+			const createAlbum = this.dbSvc.prepare(`
+			INSERT INTO Album
+			(
+				resourceID,
+				name
+			)
+			VALUES
+			(
+				$resourceID,
+				$name
+			)
+			`);
 
-			if (!resource)
+			/* create generic resource for the album */
+			let resource: ResourceSQL | null;
+			if (!(resource = this.rsrcSvc.createResource(ownerUserID)))
 				return null;
 
-			const successAlbum = insertIntoAlbum.run({
+			/* create the album */
+			const successCreateAlbum = createAlbum.run({
 				resourceID: resource.resourceID,
 				name: name,
 			}).changes > 0;
 
-			let successAlbumSong: boolean;
-			if (successAlbum) {
-				successAlbumSong = insertIntoAlbumSong.run({
-					songMediaResourceID,
-					albumResourceID: resource.resourceID,
-				}).changes > 0;
-			} else {
-				successAlbumSong = false;
+			/* add song to the new album */
+			let successAddToAlbum: boolean = false;
+			if (!successCreateAlbum || !(successAddToAlbum = this.albumSongSvc.addSongToAlbum(songMediaResourceID, resource.resourceID)))
 				this.rsrcSvc.deleteResource(resource.resourceID);
-			}
 
-			return successAlbumSong ? this.getAlbumByID(resource.resourceID) : null;
+			return successAddToAlbum ? this.getAlbumByID(resource.resourceID) : null;
 		}
+	}
+
+	/**
+	 * Delete an album, search by albumResourceID.
+	 * @param albumResourceID ID of album
+	 * @returns Success of deletion
+	 */
+	deleteAlbum(albumResourceID: string): boolean {		
+		return this.rsrcSvc.deleteResource(albumResourceID);
 	}
 }

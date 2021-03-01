@@ -116,6 +116,7 @@ input SignUpInput {
 }
 
 type SongGQL {
+  album: AlbumGQL
   codec: String
   diskNo: Int
   diskOf: Int

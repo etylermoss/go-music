@@ -7,10 +7,11 @@ import { Service, Container } from 'typedi';
 import { DatabaseService } from '@/database';
 import { MediaService } from '@/services/media';
 import { AlbumService } from '@/services/album';
+import { AlbumSongService } from '@/services/album-song';
 import { ResourceService } from '@/services/resource';
 
 /* 1st party imports - SQL types */
-import { MediaSQL } from '@/services/media';
+import { MediaSQL, mediaSubType } from '@/services/media';
 
 export interface SongSQL {
 	mediaResourceID: string;
@@ -33,6 +34,7 @@ export class SongService {
 	constructor (
 		private dbSvc: DatabaseService,
 		private albumSvc: AlbumService,
+		private albumSongSvc: AlbumSongService,
 		private rsrcSvc: ResourceService,
 	) {}
 	
@@ -108,8 +110,8 @@ export class SongService {
 		const { container, duration, codec, lossless } = metadata.format;
 		const { title, year, track, disk, releasecountry, media: mediatype } = metadata.common;
 
-		/* add mimeType to Media object, cancel if can't or if no container metadata */
-		if (!(container && this.mediaSvc.setMimeType(mediaResourceID, container))) {
+		/* add mimeType & subType to Media object, cancel if can't or if no container metadata */
+		if (!(container && this.mediaSvc.updateMedia(mediaResourceID, mediaSubType.SONG, container))) {
 			this.deleteSong(mediaResourceID);
 			return null;
 		}
@@ -165,19 +167,10 @@ export class SongService {
 		`).run(song).changes > 0;
 
 		/* assign to shared objects */
-		this.assignToSharedObjects(metadata.common, mediaResourceID);
+		this.assignToSharedObjects(mediaResourceID, metadata.common);
 
 		/* if creation unsuccessful, delete the song and return null */
 		return success ? this.getSongByID(mediaResourceID) : (this.deleteSong(mediaResourceID), null);
-	}
-
-	private assignToSharedObjects(common: mm.ICommonTagsResult, songMediaResourceID: string): void {
-		const songResource = this.rsrcSvc.getResourceByID(songMediaResourceID);
-		const albumName = (common.album || common.albumsort) ?? null;
-
-		if (songResource && albumName) {
-			this.albumSvc.createOrAddToAlbum(albumName, songMediaResourceID, songResource.ownerUserID);
-		}
 	}
 
 	/**
@@ -185,7 +178,28 @@ export class SongService {
 	 * @param mediaResourceID ID of song
 	 * @returns Success of deletion
 	 */
-	deleteSong(mediaResourceID: string): boolean {
-		return this.mediaSvc.deleteMedia(mediaResourceID);
+	deleteSong(songMediaResourceID: string): boolean {
+
+		let albumResourceID: string | null;
+		if ((albumResourceID = this.albumSongSvc.isLastSongInAlbum(songMediaResourceID))) {
+			this.albumSvc.deleteAlbum(albumResourceID);
+		}
+		
+		return this.mediaSvc.deleteMedia(songMediaResourceID);
+	}
+
+	/**
+	 * Adds the song to appropriate shared objects, such as albums and
+	 * artists, if specified in the song metadata.
+	 * @param songMediaResourceID ID of song
+	 * @param common Common metadata object from music-metadata
+	 */
+	private assignToSharedObjects(songMediaResourceID: string, common: mm.ICommonTagsResult): void {
+		const songResource = this.rsrcSvc.getResourceByID(songMediaResourceID);
+		const albumName = (common.album || common.albumsort) ?? null;
+
+		if (songResource && albumName) {
+			this.albumSvc.createOrAddToAlbum(albumName, songMediaResourceID, songResource.ownerUserID);
+		}
 	}
 }

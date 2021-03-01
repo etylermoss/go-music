@@ -9,9 +9,12 @@ import { DatabaseService } from '@/database';
 import { ResourceService } from '@/services/resource';
 import { SourceService } from '@/services/source';
 import { MediaService } from '@/services/media';
+import { SongService } from '@/services/song';
+import { ArtworkService } from '@/services/artwork';
 
 /* 1st party imports - SQL types */
 import { SourceSQL } from '@/services/source';
+import { mediaSubType } from '@/services/media';
 
 /* 1st party imports */
 import { generateRandomID } from '@/common';
@@ -36,6 +39,8 @@ export class ScanService {
 		private rsrcSvc: ResourceService,
 		private srcSvc: SourceService,
 		private mediaSvc: MediaService,
+		private songSvc: SongService,
+		private artSvc: ArtworkService,
 	) {
 		this.checkAllScansValidity(true);
 	}
@@ -137,28 +142,6 @@ export class ScanService {
 	}
 
 	/**
-	 * Check that the latest scan for each source completed successfully,
-	 * I.e. if the scans start time was before the server was started,
-	 * and it has not completed, it must have failed.
-	 * @param fix Should the source be scanned again if the last scan failed
-	 */
-	private async checkAllScansValidity(fix: boolean): Promise<void> {
-		const processStart: Date = new Date();
-		processStart.setTime(processStart.getTime() - (process.uptime() * 1000));
-
-		for (const source of this.srcSvc.getAllSources())
-		{
-			const scan = this.getLatestScan(source.resourceID);
-
-			if (!scan)
-				return;
-
-			if (!scan.endTime && scan.startTime < processStart.getTime() / 1000 && fix)
-				await this.scanSource(source.resourceID, true);
-		}
-	}
-
-	/**
 	 * Create new scan.
 	 * @param sourceResourceID Parent source ID of the scan
 	 * @returns Scan
@@ -218,30 +201,72 @@ export class ScanService {
 	}
 
 	/**
+	 * Scan for new/missing media files in the path associated with the given source.
+	 * @param sourceResourceID ID of source resource
+	 * @param pruneOnly If true, new media files are not added to the database, only missing ones removed
+	 * @returns Completed scan
+	 */
+	async scanSource(sourceResourceID: string, pruneOnly?: boolean): Promise<ScanSQL | null> {
+		const source = this.srcSvc.getSourceByID(sourceResourceID);
+		if (!source) return null;
+		const scan = this.createScan(source.resourceID);
+		if (!scan) return null;
+
+		const prune = await this.pruneSource(source);
+		const populate = !pruneOnly ? await this.populateSource(source, extensionWhitelist) : null;
+
+		return this.updateScan({
+			scanID: scan.scanID,
+			endTime: Date.now() / 1000,
+			changesRemove: prune,
+			changesAdd: populate,
+		});
+	}
+
+	/**
 	 * Remove missing media files in the path associated with the source.
 	 * @param source Target source to prune
 	 * @returns Count of missing media files removed
 	 */
-	private pruneSource(source: SourceSQL): number {
+	private async pruneSource(source: SourceSQL): Promise<number> {
 		const allMedia = this.mediaSvc.getAllMedia(source.resourceID);
-		let counter = 0;
+		let counter: number = 0;
+		let file: fs.promises.FileHandle | null;
+		let stat: fs.Stats | null;
 
-		allMedia.forEach(media => {
-			let stat: fs.Stats;
+		for (const media of allMedia) {
+			file = null;
+			stat = null;
 
 			try {
-				/* check file exists and can access it */
-				fs.accessSync(media.path, fs.constants.R_OK);
+				/* check file exists and can access (read) it */
+				file = await fs.promises.open(media.path, 'r');
+				stat = await file.stat();
 
-				stat = fs.statSync(media.path);
 				if (!stat.isFile())
 					throw new Error(`Media not a valid file: ${media.path}`);
+
 			} catch {
 				/* can't access file / doesn't exist */
-				this.mediaSvc.deleteMedia(media.resourceID);
+				switch (media.subType) {
+					case mediaSubType.SONG:
+						this.songSvc.deleteSong(media.resourceID);
+						break;
+					case mediaSubType.ARTWORK:
+						this.artSvc.deleteArtwork(media.resourceID);
+						break;
+					case mediaSubType.UNSET:
+					default:
+						this.mediaSvc.deleteMedia(media.resourceID);
+				}
+
 				counter++;
+			} finally {
+				if (file) {
+					await file.close();
+				}
 			}
-		});
+		}
 
 		return counter;
 	}
@@ -276,29 +301,26 @@ export class ScanService {
 
 		return counter;
 	}
-	
+
 	/**
-	 * Scan for new/missing media files in the path associated with the given source.
-	 * @param sourceResourceID ID of source resource
-	 * @param pruneOnly If true, new media files are not added to the database, only missing ones removed
-	 * @returns Completed scan
+	 * Check that the latest scan for each source completed successfully,
+	 * I.e. if the scans start time was before the server was started,
+	 * and it has not completed, it must have failed.
+	 * @param fix Should the source be scanned again if the last scan failed
 	 */
-	async scanSource(sourceResourceID: string, pruneOnly?: boolean): Promise<ScanSQL | null> {
-		const source = this.srcSvc.getSourceByID(sourceResourceID);
-		if (!source) return null;
-		const scan = this.createScan(source.resourceID);
-		if (!scan) return null;
+	private async checkAllScansValidity(fix?: boolean): Promise<void> {
+		const processStart: Date = new Date();
+		processStart.setTime(processStart.getTime() - (process.uptime() * 1000));
 
-		const prune = this.pruneSource(source);
-		let populate: number | null = null;
-		if (!pruneOnly)
-			populate = await this.populateSource(source, extensionWhitelist);
+		for (const source of this.srcSvc.getAllSources())
+		{
+			const scan = this.getLatestScan(source.resourceID);
 
-		return this.updateScan({
-			scanID: scan.scanID,
-			endTime: Date.now() / 1000,
-			changesRemove: prune,
-			changesAdd: populate,
-		});
+			if (!scan)
+				return;
+
+			if (!scan.endTime && scan.startTime < processStart.getTime() / 1000 && fix === true)
+				await this.scanSource(source.resourceID, true);
+		}
 	}
 }

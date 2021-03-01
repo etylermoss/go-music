@@ -17,7 +17,14 @@ export interface MediaSQL {
 	sourceResourceID: string;
 	path: string;
 	size: number;
+	subType: mediaSubType;
 	mimeType: string | null;
+}
+
+export enum mediaSubType {
+	UNSET = 0,
+	SONG = 1,
+	ARTWORK = 2,
 }
 
 /** Extensions seen by the server, used when
@@ -117,12 +124,12 @@ export class MediaService {
 	}
 
 	/**
-	 * Set the MIME type field on the media item, search by resourceID.
+	 * Set the subType and mimeType fields on the given media item (ID).
 	 * @param resourceID ID of resource
 	 * @param metadataContainer Metadata container field to match against
 	 * @returns Success of operation
 	 */
-	setMimeType(resourceID: string, metadataContainer: string): boolean {
+	updateMedia(resourceID: string, subType: mediaSubType, metadataContainer: string): boolean {
 		let mimeType: string | null = null;
 
 		switch (metadataContainer) {
@@ -145,10 +152,11 @@ export class MediaService {
 			UPDATE
 				Media
 			SET
+				subType = $subType,
 				mimeType = $mimeType
 			WHERE
 				resourceID = $resourceID
-			`).run({mimeType, resourceID}).changes > 0;
+			`).run({resourceID, subType, mimeType}).changes > 0;
 		}
 
 		return false;
@@ -209,6 +217,7 @@ export class MediaService {
 			sourceResourceID: sourceResourceID,
 			path,
 			size,
+			subType: mediaSubType.UNSET,
 			mimeType: null,
 		};
 
@@ -219,6 +228,7 @@ export class MediaService {
 			sourceResourceID,
 			path,
 			size,
+			subType,
 			mimeType
 		)
 		VALUES
@@ -227,6 +237,7 @@ export class MediaService {
 			$sourceResourceID,
 			$path,
 			$size,
+			$subType,
 			$mimeType
 		)
 		`).run(media).changes > 0;

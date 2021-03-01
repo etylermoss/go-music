@@ -9,7 +9,7 @@ import { AccessControl } from '@/graphql/decorators/access-control';
 /* 1st party imports - Services */
 import { MediaService } from '@/services/media';
 import { SongService } from '@/services/song';
-import { AlbumService } from '@/services/album';
+import { AlbumSongService } from '@/services/album-song';
 import { AccessControlService, Operations } from '@/services/access-control';
 
 /* 1st party imports - GraphQL types & inputs */
@@ -29,7 +29,7 @@ export default class SongResolver implements ResolverInterface<SongGQL> {
 	constructor (
 		private mediaSvc: MediaService,
 		private songSvc: SongService,
-		private albumSvc: AlbumService,
+		private albumSongSvc: AlbumSongService,
 		private aclSvc: AccessControlService,
 	) {}
 
@@ -40,7 +40,7 @@ export default class SongResolver implements ResolverInterface<SongGQL> {
 
 	@FieldResolver(_type => AlbumGQL, {nullable: true})
 	album(@Root() root: SongGQL): AlbumGQL | null {
-		return albumToGQL(this.albumSvc.getSongAlbum(root.mediaResourceID));
+		return albumToGQL(this.albumSongSvc.getSongAlbum(root.mediaResourceID));
 	}
 
 	/**
