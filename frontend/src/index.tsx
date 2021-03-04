@@ -1,15 +1,18 @@
 /* 3rd party imports */
-import React, { useEffect } from 'react';
+import 'mobx-react/batchingForReactDom';
+import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
 import ApolloClient, { InMemoryCache } from 'apollo-boost';
 import { ApolloProvider, useMutation } from '@apollo/react-hooks';
 import { Router, Switch, Route } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
-import 'mobx-react/batchingForReactDom';
+import { ThemeProvider } from 'theme-ui';
 
 /* 1st party imports */
+import '@/style.scss';
 import GlobalConfig from '@G/config.json';
 import StoreInstance, { StoreContext } from '@/store';
+import Theme from '@/theme';
 
 /* 1st party imports - Scenes */
 import Splash from '@/scenes/Splash';
@@ -32,7 +35,7 @@ if (DEVSERVER) port = GlobalConfig.port + GlobalConfig.devServerPortOffset;
 const url = `${window.location.protocol}//${window.location.hostname}:${port}`;
 
 /* Launch Apollo Client */
-const client = new ApolloClient({
+const client = new ApolloClient<InMemoryCache>({
 	uri: `${url}/${GlobalConfig.gqlPath}`,
 	cache: new InMemoryCache(),
 	credentials: 'same-origin',
@@ -42,13 +45,10 @@ const client = new ApolloClient({
 const history = createBrowserHistory();
 
 const Root = (): JSX.Element => {
+	const [isSignedIn] = useMutation<IsSignedInTypes.IsSignedIn>(IsSignedInTag, {client});
+	const [loadingIsSignedIn, setloadingIsSignedIn] = useState(true);
 
-	const [isSignedIn] = useMutation<IsSignedInTypes.IsSignedIn>(
-		IsSignedInTag,
-		{client: client as ApolloClient<object>},
-	);
 	
-	// TODO: below happens after routing, so scenes may think user is not logged in when they are
 	useEffect(() => {
 		isSignedIn().then(result => {
 			if (result.data?.isSignedIn) {
@@ -57,31 +57,38 @@ const Root = (): JSX.Element => {
 				StoreInstance.updateUser(null);
 				history.replace('/');
 			}
+
+			setloadingIsSignedIn(false);
 		});
 	}, []);
+
+	/* This runs later in event loop so must use state */
+	if (loadingIsSignedIn) return <>Loading</>;
 
 	return (
 		<StoreContext.Provider value={StoreInstance}>
 			<ApolloProvider client={client}>
-				<Router history={history}>
-					<Switch>
-						<Route exact path="/">
-							<Splash loginPath="/login"/>
-						</Route>
-						<Route path="/login">
-							<Login/>
-						</Route>
-						<Route path="/dashboard">
-							<Dashboard url={url}/>
-						</Route>
-						<Route path="/admin">
-							<Admin/>
-						</Route>
-						<Route path="*">
-							<NotFound/>
-						</Route>
-					</Switch>
-				</Router>
+				<ThemeProvider theme={Theme}>
+					<Router history={history}>
+						<Switch>
+							<Route exact path="/">
+								<Splash loginPath="/login"/>
+							</Route>
+							<Route path="/login">
+								<Login/>
+							</Route>
+							<Route path="/dashboard">
+								<Dashboard/>
+							</Route>
+							<Route path="/admin">
+								<Admin/>
+							</Route>
+							<Route path="*">
+								<NotFound/>
+							</Route>
+						</Switch>
+					</Router>
+				</ThemeProvider>
 			</ApolloProvider>
 		</StoreContext.Provider>
 	);
